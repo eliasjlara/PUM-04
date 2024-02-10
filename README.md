@@ -1,6 +1,6 @@
 # AIDA
 
-AIDA is a robot worked on by group 4 in the course TDDD96. The project is requested by IDA and is currently worked on by eight people simultaneously, which is in turn, why this repo exists! The repo is used to assist in the creation of code as well as keeping track of our kanban board and other iterative processes. In this README there is a guide for use on how to use the repo, as well as some useful links. 
+AIDA is a robot worked on by a group of students in the course TDDD96. The project is requested by IDA and is currently worked on by eight people simultaneously, which in turn, is why this repo exists! The repo is used to assist in the creation of code as well as keeping track of our kanban board and other iterative processes. In this README there is a guide for use on how to use the repo, as well as some useful links. 
 
 ## Table of contents
 * [Setup](#setup)
@@ -75,7 +75,7 @@ TODO: Write the rest about our iterative development
 
 ### Approve a pull request
 So, someone has asked you to review a pull request... well, don't worry. Here is a guide on how to do it step by step.
-1. First off, reviewing a pr isn't anything special, you simply want to check that all the code that the author wants to merge into main looks good. The simplest way to check is using the `Files changed` tab on the pr page. When actually checking the code, there is no specific way to do this so go ahead and do it in what ever way is best for you, BUT be thorough, we don't want any errors in main just because you approved the pull request without looking!
+1. First off, reviewing a pr isn't anything special, you simply want to check that all the code that the author wants to merge into main looks good. The simplest way to check is using the `Files changed` tab on the pr page. When actually checking the code, there is no specific way to do this so go ahead and do it in what ever way is best for you, BUT, be thorough, we don't want any errors in main just because you approved the pull request without looking!
 2. If there are any comments you want to add:
    - The simplest way to add a comment is to click the line where you have a comment and then simply write the comment and post it.
    - After the author of the pull request has changed or answered your comments, and it now looks good to you, press the `resolve conversation` button to "remove" the comment.
