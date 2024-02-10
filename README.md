@@ -38,8 +38,18 @@ To https://github.com/eliasjlara/PUM-04.git
 Navigate over to the link in the message, or if this isn't the first time you push to the branch, you can find the pull request in the the [Pull requests tab](https://github.com/eliasjlara/PUM-04/pulls) on the repo github page. After this, you are now ready to create a pull request!
 
 **Steps on github.com, aka creating the pull request**
+1. When clicking the link you should be greated by a page that looks something like this:
+   <img width="1244" alt="Pasted Graphic" src="https://github.com/eliasjlara/PUM-04/assets/94451739/e645c351-6c79-4e77-  8cd0-8ff452e8cda3">
+   Choose a good title, preferable the name of the ticket and update the description according to the template I have created, you may remove the comments. When ready, press the green `Create pull request` button!
+2. You should now be directed to a page that looks like this: <img width="1065" alt="Update README md #10" src="https://github.com/eliasjlara/PUM-04/assets/94451739/169fc8a6-ec10-4fd4-94ba-7da0d680f1ca">
+   Congratulations, you have now created a PR! This is where all updates added to the branch will be shown. If you continue  working on the branch, for example if you forgot a bug, each commit will be shown on the timeline, creating a simple way  to keep track of everything that has happened. Also, notice the big red crosses, don't be alarmed, we will take care of this in the next step.
+3. Before we can merge this pull request we first need someone else to look at it, this is the safety precaution previously mentioned. To request a review from someone you either click on the cogwheel that belongs to the reviewers tab on the to right of the page, and choose a specific person to review the PR. The easiet way however would probably just be to send the link in discord and ask for a review.
+4. Once the PR is reviewed and approved, you can now go ahead and merge the PR into main!
+
+This should be it for someone who is developing, if someone asked you to review a PR, check out [this section](https://github.com/eliasjlara/PUM-04/edit/main/README.md#code-development).
 
 
+### How to approve a pull request
 
 
 
