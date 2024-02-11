@@ -30,7 +30,7 @@ To https://github.com/eliasjlara/PUM-04.git
  ! [remote rejected] main -> main (protected branch hook declined)
 error: failed to push some refs to 'https://github.com/eliasjlara/PUM-04.git'
 ```
-This is a safety precaution to keep bugs and non-approved code from the most important branch, the main one! To add a feature you have been coding on, follow these steps: 
+This is a safety precaution to keep bugs and non-approved code from the most important branch, the main one! To start coding on a ticket, you can follow these steps as a guide: 
 
 #### Steps on your local machine
 1. Check that you're on the main branch using `git branch`, if you're not, do `git checkout main`.
