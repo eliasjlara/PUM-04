@@ -13,9 +13,12 @@ AIDA is a robot worked on by a group of students in the course TDDD96. The proje
 * [Structure of repo](#structure-of-repo)
 * [Useful links](#useful-links)
 
+<br/>
 
 ## Setup
 TODO: What is used for the repo, do I need to install anything? 
+
+<br/>
 
 ## How to use this repo
 This is a guide on how to use this git repo, both for code development and for the iterative development, to maintain consistency and to make our work easier. 
@@ -82,10 +85,12 @@ So, someone has asked you to review a pull request... well, don't worry. Here is
 3. When the pr looks good. Head over to the `Files changed` tab again and press the `Review changes` button, select `Approve` and then submit the review.
 4. The pr should now be reviewed and the author can merge it into main.
 
+<br/>
+
 ## Structure of repo
 
 
-
+<br/>
 
 
 ## Useful links
