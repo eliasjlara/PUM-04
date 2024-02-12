@@ -57,6 +57,8 @@ To https://github.com/eliasjlara/PUM-04.git
 ```
 Navigate over to the link in the message, or if this isn't the first time you push to the branch, you can find the pull request in the the [Pull requests tab](https://github.com/eliasjlara/PUM-04/pulls) on the repo github page. After this, you are now ready to create a pull request!
 
+<br/>
+
 #### Steps on github.com, aka creating the pull request
 1. When clicking the link you should be greeted by a page that looks something like this:
    <img width="1244" alt="Pasted Graphic" src="https://github.com/eliasjlara/PUM-04/assets/94451739/e645c351-6c79-4e77-8cd0-8ff452e8cda3">
