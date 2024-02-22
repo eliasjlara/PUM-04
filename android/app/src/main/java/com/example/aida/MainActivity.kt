@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Greeting("Android")
                     var state by remember { mutableStateOf(0) }
-                    val titles = listOf("Tab 1", "Tab 2", "Tab 3 with lots of text")
+                    val titles = listOf("Camera", "Configuration")
                     Column {
                         PrimaryTabRow(selectedTabIndex = state) {
                             titles.forEachIndexed { index, title ->
