@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -32,7 +31,6 @@ import com.example.aida.ui.theme.AIDATheme
 
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -59,7 +57,6 @@ class MainActivity : ComponentActivity() {
                                 onClick = { state = index },
                                 state = state,
                                 index = index,
-                                titles = titles,
                                 item = item,
                             )
                         }
@@ -76,13 +73,11 @@ fun SegmentedButtonFun(
     onClick: () -> Unit,
     state: Int,
     index: Int,
-    titles: List<String>,
     item: String
 ) {
     val cornerRadius = 16.dp
     val configuration = LocalConfiguration.current
 
-    val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
 
     OutlinedButton(
@@ -95,28 +90,12 @@ fun SegmentedButtonFun(
             )
             .zIndex(if (state == index) 1f else 0f)
             .wrapContentHeight(),
-        shape = when (index) {
-            0 -> RoundedCornerShape(
-                topStart = cornerRadius,
-                topEnd = 0.dp,
-                bottomStart = cornerRadius,
-                bottomEnd = 0.dp
-            )
-
-            titles.size - 1 -> RoundedCornerShape(
-                topStart = 0.dp,
-                topEnd = cornerRadius,
-                bottomStart = 0.dp,
-                bottomEnd = cornerRadius
-            )
-
-            else -> RoundedCornerShape(
-                topStart = 0.dp,
-                topEnd = 0.dp,
-                bottomStart = 0.dp,
-                bottomEnd = 0.dp
-            )
-        },
+        shape = RoundedCornerShape(
+            topStart = if (index == 0) cornerRadius else 0.dp,
+            topEnd = if (index == 0) 0.dp else cornerRadius,
+            bottomStart = if (index == 0) cornerRadius else 0.dp,
+            bottomEnd = if (index == 0) 0.dp else cornerRadius
+        ),
         border = BorderStroke(
             1.dp, if (state == index) {
                 MaterialTheme.colorScheme.primary
@@ -124,17 +103,14 @@ fun SegmentedButtonFun(
                 MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
             }
         ),
-        colors = if (state == index) {
-            ButtonDefaults.outlinedButtonColors(
-                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                contentColor = Color.White
-            )
-        } else {
-            ButtonDefaults.outlinedButtonColors(
-                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
-                contentColor = MaterialTheme.colorScheme.primary
-            )
-        }
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = if (state == index)
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else
+                    MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+            contentColor = if (state == index)
+                Color.White else
+                MaterialTheme.colorScheme.primary
+        )
     ) {
         Text(item)
     }
