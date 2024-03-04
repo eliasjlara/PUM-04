@@ -14,7 +14,7 @@ AIDA is a robot worked on by a group of students in the course TDDD96. The proje
   - [Approve a pull request](#approve-a-pull-request)
 * [Structure of repo](#structure-of-repo)
 * [Useful links](#useful-links)
-
+* [License](#license)
 <br/>
 
 ## Setup
@@ -93,8 +93,12 @@ So, someone has asked you to review a pull request... well, don't worry. Here is
 
 ## Structure of repo
 
-
 <br/>
 
 
 ## Useful links
+
+<br/>
+
+## License
+This project is released under the MIT License. For more info, see [MIT License](https://github.com/eliasjlara/PUM-04?tab=MIT-1-ov-file).
