@@ -4,7 +4,7 @@
 std_msgs/Header header
 
 # The audio data, as a byte array
-uint8[] data
+int32[] data
 
 
 # The sample rate of the audio data

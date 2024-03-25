@@ -21,7 +21,9 @@ setup(
     entry_points={
         'console_scripts': [
             'audio_transmit = audio_package.audio_transmit:main',
-            'audio_receive = audio_package.audio_receive:main'
+            'audio_receive = audio_package.audio_receive:main',
+            'audio_transmit_file = audio_package.audio_transmit_file:main',
+            'audio_receive_faster = audio_package.audio_receive_faster:main',
         ],
     },
 )
