@@ -1,6 +1,5 @@
 import numpy as np
 from faster_whisper import WhisperModel
-#import decodeAudio
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData
@@ -51,7 +50,7 @@ class AudioReceiverSTT(Node):
         Translates the received audio data to text.
 
         Args:
-            audio_data: A 2D numpy array representing the received audio data.
+            audio_data: A 1D numpy array representing the received audio data.
 
         Returns:
             A list of semgents representing the translated text.
@@ -84,13 +83,16 @@ class AudioReceiverSTT(Node):
         Converts an ros message from topic to an np array for use
         to apply STT
 
+        Args:
+            msg: An AudioData object representing the received audio data
         Returns: 
             normalized float32 numpy array
         """
         
         audio_data = np.frombuffer(msg.data, dtype=np.int32)
-
         audio_data = audio_data.astype(np.float32)
+        # we may need to reshape the data if we have several channels, 
+        # not handled yet
         audio_data = audio_data / 2**16
         return audio_data
 

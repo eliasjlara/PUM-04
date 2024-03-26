@@ -4,17 +4,15 @@ import threading
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData 
-import audio_package.decode_audio as decode_audio
 import numpy as np
 import time
 import librosa
-import io
 
 class AudioTransmitterFileNode(Node):
     """
     A ROS2 node for transmitting audio data.
 
-    This node initializes a publisher to publish audio data and captures audio from the microphone.
+    This node initializes a publisher to publish audio data and sends data from a specific audio file
     It provides methods to start and stop the capture and publisher workers.
     """
 
@@ -62,7 +60,7 @@ class AudioTransmitterFileNode(Node):
         self.capture_queue = queue.Queue()
 
         self.capture_event = threading.Event()
-        self.capturer_thread = threading.Thread(target=self.record_audio, name='capturer')
+        self.capturer_thread = threading.Thread(target=self.get_audio_from_file, name='capturer')
 
         self.publisher_event = threading.Event()
         self.publisher_thread = threading.Thread(target=self.publish_audio, name='publisher')
@@ -86,7 +84,7 @@ class AudioTransmitterFileNode(Node):
         if hasattr(self, 'capturer_thread') and self.capturer_thread.is_alive():
             self.capturer_thread.join()
 
-    def record_audio(self):
+    def get_audio_from_file(self):
         """
         This method converts and puts audio from file in capture queue to be sent to subscribers
 
@@ -95,8 +93,11 @@ class AudioTransmitterFileNode(Node):
         channels = self.get_parameter('channels').get_parameter_value().integer_value
         duration = self.get_parameter('duration').get_parameter_value().double_value
         
-        audio = decode_audio.decode_audio("/home/alex/projects/PUM-04/ros2/experimentation/audio_ws/src/audio_package/resource/Move3mForwardTurnRight2.wav")
-        msg = self._to_msg(audio, sample_rate=sample_rate, channels=channels)
+        audio_path = "/home/alex/projects/PUM-04/ros2/experimentation/audio_ws/src/audio_package/resource/Move3mForwardTurnRight2.wav"
+        audio_data, _ = librosa.load(audio_path, sr=16000)
+        audio_data = audio_data * (2**16)
+        audio_data = audio_data.astype(np.int32)
+        msg = self._to_msg(audio_data, sample_rate=sample_rate, channels=channels)
 
         while not self.capture_event.is_set():
             self.capture_queue.put(msg)
