@@ -52,14 +52,6 @@ class AudioReceiverNode(Node):
         translation = self.translate(audio_data)
         for segment in translation:
             print(segment.text + "\n")
-        
-        
-        audio_data = np.frombuffer(msg.data, dtype=np.uint8)
-        print("reshaping audio data")
-        audio_data = audio_data.reshape((msg.samples, msg.channels))
-        print("writing to wav-file")
-        write(f'output_{self.file_counter}.wav', msg.sample_rate, audio_data)
-        self.file_counter += 1
 
     def _msg_to_nparray(self, msg) -> np.ndarray:
         """
