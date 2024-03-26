@@ -5,6 +5,8 @@ import sounddevice as sd
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData 
+import numpy as np
+
 
 class AudioTransmitterNode(Node):
     """
@@ -23,8 +25,8 @@ class AudioTransmitterNode(Node):
         super().__init__('ros2_mic_node', namespace='mic')
 
         self.declare_parameter("audio_topic", "mic_audio")
-        self.declare_parameter("sample_rate", 44100)
-        self.declare_parameter("channels", 2)
+        self.declare_parameter("sample_rate", 16000)
+        self.declare_parameter("channels", 1)
         self.declare_parameter("duration", 5.0)
 
         self.initialize_publisher()
@@ -92,7 +94,13 @@ class AudioTransmitterNode(Node):
         channels = self.get_parameter('channels').get_parameter_value().integer_value
         duration = self.get_parameter('duration').get_parameter_value().double_value
         while not self.capture_event.is_set():
-            audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype='uint8')
+            # Can we directly use this funtion to translate to int 32? Or do we want to 
+            # 
+            #audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.int32)
+            
+            audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels)
+            audio_data = audio_data* (2**16)
+            audio_data = audio_data.astype(np.int32)
             sd.wait()
             msg = self._to_msg(audio_data, sample_rate, channels, duration)            
             self.frame_num += 1
