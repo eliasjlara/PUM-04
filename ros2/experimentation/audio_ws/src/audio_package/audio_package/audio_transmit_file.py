@@ -94,7 +94,7 @@ class AudioTransmitterFileNode(Node):
         duration = self.get_parameter('duration').get_parameter_value().double_value
         
         audio_path = "/home/alex/projects/PUM-04/ros2/experimentation/audio_ws/src/audio_package/resource/Move3mForwardTurnRight2.wav"
-        audio_data, _ = librosa.load(audio_path, sr=16000)
+        audio_data, _ = librosa.load(audio_path, sr=sample_rate)
         audio_data = audio_data * (2**16)
         audio_data = audio_data.astype(np.int32)
         msg = self._to_msg(audio_data, sample_rate=sample_rate, channels=channels)

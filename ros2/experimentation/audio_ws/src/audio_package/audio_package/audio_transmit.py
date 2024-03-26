@@ -96,11 +96,11 @@ class AudioTransmitterNode(Node):
         while not self.capture_event.is_set():
             # Can we directly use this funtion to translate to int 32? Or do we want to 
             # 
-            #audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.int32)
+            audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.int32)
             
-            audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels)
-            audio_data = audio_data* (2**16)
-            audio_data = audio_data.astype(np.int32)
+            #audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels)
+            #audio_data = audio_data* (2**16)
+            #audio_data = audio_data.astype(np.int32)
             sd.wait()
             msg = self._to_msg(audio_data, sample_rate, channels, duration)            
             self.frame_num += 1
