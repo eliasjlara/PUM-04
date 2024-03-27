@@ -64,7 +64,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
     }
 }
 
@@ -83,7 +82,7 @@ fun SegmentedButtonFun(
     OutlinedButton(
         onClick = onClick,
         modifier = Modifier
-            .width(screenWidth/6)
+            .width(screenWidth / 6)
             .offset(
                 x = if (index == 0) 0.dp else (-1 * index).dp,
                 y = 0.dp
@@ -105,8 +104,8 @@ fun SegmentedButtonFun(
         ),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = if (state == index)
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
             contentColor = if (state == index)
                 Color.White else
                 MaterialTheme.colorScheme.primary
