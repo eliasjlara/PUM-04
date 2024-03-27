@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'speech_to_text'
+package_name = 'audio'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'faster_whisper_node = speech_to_text.faster_whisper_node:main',
+            'audio_transmit_mic = audio.audio_transmit_mic:main',
         ],
     },
 )
