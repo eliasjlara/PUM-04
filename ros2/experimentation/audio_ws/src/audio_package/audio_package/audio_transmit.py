@@ -1,10 +1,13 @@
 import queue
 import threading
 import sounddevice as sd
+import time
 
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData 
+from aida_interfaces.srv import SetState
+
 
 class AudioTransmitterNode(Node):
     """
@@ -26,9 +29,26 @@ class AudioTransmitterNode(Node):
         self.declare_parameter("sample_rate", 44100)
         self.declare_parameter("channels", 2)
         self.declare_parameter("duration", 5.0)
+        self.declare_parameter("capture_once", True)
 
-        self.initialize_publisher()
-        self.initialize_capture_queue()
+        self.init_services()
+        self.init_publisher()
+        self.init_capture_queue()
+
+    def set_recording(self, request: SetState.Request, response: SetState.Response) -> SetState.Response:
+        try:
+            if request.desired_state == "active":
+                self.start_workers()
+                print("Recording started, node is active.")
+            elif request.desired_state == "idle":
+                self.stop_workers()
+                print("Recording cancelled, node is idle.")
+            response.message = f"Successfully set state to: {request.desired_state}"
+            response.success = True
+        except Exception as e:
+            response.message = f"Error setting state: {request.desired_state} - {e}"
+            response.success = False
+        return response
 
     def destroy_node(self):
         """
@@ -38,7 +58,10 @@ class AudioTransmitterNode(Node):
         """
         super().destroy_node()
 
-    def initialize_publisher(self):
+    def init_services(self) -> None:
+        self.srv = self.create_service(SetState, 'SetState', self.set_recording)
+
+    def init_publisher(self):
         """
         Initializes the publisher.
 
@@ -47,7 +70,7 @@ class AudioTransmitterNode(Node):
         self.publisher = self.create_publisher(AudioData, self.get_parameter('audio_topic').get_parameter_value().string_value, 10)
         self.frame_num = 0
 
-    def initialize_capture_queue(self):
+    def init_capture_queue(self):
         """
         Initializes the capture queue and workers.
 
@@ -57,11 +80,15 @@ class AudioTransmitterNode(Node):
 
         self.capture_queue = queue.Queue()
 
+    def start_workers(self) -> None:
         self.capture_event = threading.Event()
+        self.capture_event.clear()
         self.capturer_thread = threading.Thread(target=self.record_audio, name='capturer')
 
         self.publisher_event = threading.Event()
+        self.publisher_event.clear()
         self.publisher_thread = threading.Thread(target=self.publish_audio, name='publisher')
+
 
         self.capturer_thread.start()
         self.publisher_thread.start()
@@ -86,17 +113,22 @@ class AudioTransmitterNode(Node):
         """
         Records audio from the microphone.
 
-        This method continuously captures audio data from the microphone and puts it into the capture queue.
+        This method captures audio data from the microphone and puts it into the capture queue.
         """
         sample_rate = self.get_parameter('sample_rate').get_parameter_value().integer_value
         channels = self.get_parameter('channels').get_parameter_value().integer_value
         duration = self.get_parameter('duration').get_parameter_value().double_value
+        print(f"Recording audio at {sample_rate} Hz, {channels} channels, for {duration} seconds")
         while not self.capture_event.is_set():
+            print("Recording...")
             audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype='uint8')
             sd.wait()
             msg = self._to_msg(audio_data, sample_rate, channels, duration)            
             self.frame_num += 1
             self.capture_queue.put(msg)
+            if self.get_parameter('capture_once').get_parameter_value().bool_value:
+                print("Capture once is activated, recording finished.")
+                self.capture_event.set()
 
     def _to_msg(self, data, sample_rate, channels, duration):
         """

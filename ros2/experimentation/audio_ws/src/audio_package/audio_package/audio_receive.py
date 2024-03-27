@@ -17,7 +17,9 @@ class AudioReceiverNode(Node):
         listener_callback: The callback function for processing the received audio data.
     """
 
-    def __init__(self):
+
+
+    def __init__(self) -> None:
         """
         Initializes the AudioReceiverNode object.
 
@@ -34,9 +36,9 @@ class AudioReceiverNode(Node):
             self.listener_callback,
             10)
         self.subscription
-        self.file_counter = 0
+        self.file_counter: int = 0
 
-    def listener_callback(self, msg):
+    def listener_callback(self, msg: AudioData) -> None:
         """
         The callback function for processing the received audio data.
 
@@ -54,7 +56,7 @@ class AudioReceiverNode(Node):
         write(f'output_{self.file_counter}.wav', msg.sample_rate, audio_data)
         self.file_counter += 1
 
-def main(args=None):
+def main(args=None) -> None:
     rclpy.init(args=args)
 
     audio_receiver_node = AudioReceiverNode()
