@@ -1,6 +1,9 @@
 import queue
 import threading
 import sounddevice as sd
+from scipy import signal
+from scipy.io.wavfile import write
+import librosa
 
 import rclpy
 from rclpy.node import Node
@@ -93,18 +96,24 @@ class AudioTransmitterNode(Node):
         sample_rate = self.get_parameter('sample_rate').get_parameter_value().integer_value
         channels = self.get_parameter('channels').get_parameter_value().integer_value
         duration = self.get_parameter('duration').get_parameter_value().double_value
-        while not self.capture_event.is_set():
+        #while not self.capture_event.is_set():
             # Can we directly use this funtion to translate to int 32? Or do we want to 
             # 
-            audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.int32)
-            
-            #audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels)
-            #audio_data = audio_data* (2**16)
-            #audio_data = audio_data.astype(np.int32)
-            sd.wait()
-            msg = self._to_msg(audio_data, sample_rate, channels, duration)            
-            self.frame_num += 1
-            self.capture_queue.put(msg)
+        print("startning recording \ n")
+        audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.float32)
+
+        audio_path = 'output_' + str(self.frame_num) + '.wav'
+        #audio_data : np.ndarray[np.float32] = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.float32)
+        sd.wait()
+        #write(audio_path, sample_rate, audio_data)
+        print("pausing the recording\n")
+        #audio_data, _ = librosa.load(audio_path, sr=sample_rate)
+        #audio_data = audio_data * (2**16)
+        #audio_data = audio_data.astype(np.int32)
+        #audio_data = signal.resample(audio_data, int(len(audio_data) * sample_rate/44100))
+        msg = self._to_msg(audio_data, sample_rate, channels, duration)            
+        self.frame_num += 1
+        self.capture_queue.put(msg)
 
     def _to_msg(self, data, sample_rate, channels, duration):
         """
@@ -117,6 +126,7 @@ class AudioTransmitterNode(Node):
         msg.sample_rate = sample_rate
         msg.channels = channels
         msg.samples = int(sample_rate * duration)
+        #msg.samples = len(data)
         msg.header.frame_id = str(self.frame_num)
         return msg
 
@@ -136,6 +146,7 @@ class AudioTransmitterNode(Node):
             if self.publisher_event.is_set():
                 break
             if msg != None:
+                print("Publishing a message \n")
                 self.publisher.publish(msg)
 
 

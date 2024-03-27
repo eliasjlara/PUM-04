@@ -3,6 +3,7 @@ from scipy.io.wavfile import write
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData
+from faster_whisper import WhisperModel
 
 class AudioReceiverNode(Node):
     """
@@ -35,6 +36,26 @@ class AudioReceiverNode(Node):
             10)
         self.subscription
         self.file_counter = 0
+        
+        default_model = "base.en"
+        self.model = WhisperModel(default_model)
+
+
+
+    def translate(self, audio_data) -> list:
+        """
+        Translates the received audio data to text.
+
+        Args:
+            audio_data: A 1D numpy array representing the received audio data.
+
+        Returns:
+            A list of semgents representing the translated text.
+        """
+
+        segments, _ = self.model.transcribe(audio_data, beam_size=5)
+        return list(segments)
+    
 
     def listener_callback(self, msg):
         """
@@ -51,7 +72,9 @@ class AudioReceiverNode(Node):
         audio_data = self._msg_to_nparray(msg)
         translation = self.translate(audio_data)
         for segment in translation:
+            print("the segment contains: ")
             print(segment.text + "\n")
+        print("The current message is finished")
 
     def _msg_to_nparray(self, msg) -> np.ndarray:
         """
@@ -64,11 +87,9 @@ class AudioReceiverNode(Node):
             normalized float32 numpy array
         """
         
-        audio_data = np.frombuffer(msg.data, dtype=np.int32)
-        audio_data = audio_data.astype(np.float32)
+        audio_data = np.frombuffer(msg.data, dtype=np.float32)
         # we may need to reshape the data if we have several channels, 
         # not handled yet
-        audio_data = audio_data / 2**16
         return audio_data
 
 def main(args=None):

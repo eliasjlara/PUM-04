@@ -89,11 +89,11 @@ class AudioReceiverSTT(Node):
             normalized float32 numpy array
         """
         
-        audio_data = np.frombuffer(msg.data, dtype=np.int32)
-        audio_data = audio_data.astype(np.float32)
+        audio_data = np.frombuffer(msg.data, dtype=np.float32)
+        #audio_data = audio_data.astype(np.float32)
         # we may need to reshape the data if we have several channels, 
         # not handled yet
-        audio_data = audio_data / 2**16
+        #audio_data = audio_data / 2**16
         return audio_data
 
 
