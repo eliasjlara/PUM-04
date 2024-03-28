@@ -11,11 +11,11 @@ class VideoReceiveNode(Node):
         self.bridge = CvBridge()
 
     def callback(self, msg):
-        print("received video data")
-        print("reshaping video data")
+        # received video data
+        # converting video data
         cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
-        print("updating video window") 
-        cv2.imshow('video', cv_image) // Creating (or updating if called once before) a window to display the video data
+        # updating video window 
+        cv2.imshow('video', cv_image) # Creating (or updating if called once before) a window to display the video data
         cv2.waitKey(1)
 
 def main(args=None):
