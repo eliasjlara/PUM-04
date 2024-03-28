@@ -19,7 +19,9 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': [
-        ],
-    },
+    'console_scripts': [
+        'video_transmit = video_package.video_transmit:main',
+        'video_receive = video_package.video_receive:main'
+    ],
+},
 )
