@@ -91,7 +91,9 @@ class AudioTransmitterNode(Node):
         sample_rate = self.get_parameter('sample_rate').get_parameter_value().integer_value
         channels = self.get_parameter('channels').get_parameter_value().integer_value
         duration = self.get_parameter('duration').get_parameter_value().double_value
+        print(f"Recording audio at {sample_rate} Hz, {channels} channels, for {duration} seconds")
         while not self.capture_event.is_set():
+            print("Recording...")
             audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype='uint8')
             sd.wait()
             msg = self._to_msg(audio_data, sample_rate, channels, duration)            
