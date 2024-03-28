@@ -11,15 +11,25 @@ class VideoReceiveNode(Node):
         self.bridge = CvBridge()
 
     def callback(self, msg):
+        print("received video data")
+        print("reshaping video data")
         cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
-        cv2.imshow('video', cv_image)
+        print("updating video window") 
+        cv2.imshow('video', cv_image) // Creating (or updating if called once before) a window to display the video data
         cv2.waitKey(1)
 
 def main(args=None):
     rclpy.init(args=args)
     node = VideoReceiveNode()
-    rclpy.spin(node)
+    
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.get_logger().info('Video Receiver: Keyboard interrupt')
+
     cv2.destroyAllWindows()
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
