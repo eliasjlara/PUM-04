@@ -14,8 +14,10 @@ class VideoReceiveNode(Node):
         # received video data
         # converting video data
         cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+
+        imS = cv2.resize(cv_image, (960, 540)) 
         # updating video window 
-        cv2.imshow('video', cv_image) # Creating (or updating if called once before) a window to display the video data
+        cv2.imshow('video', imS) # Creating (or updating if called once before) a window to display the video data
         cv2.waitKey(1)
 
 def main(args=None):

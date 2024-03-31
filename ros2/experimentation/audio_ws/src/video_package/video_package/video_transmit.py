@@ -234,8 +234,9 @@ class VideoTransmitNode(Node):
         self.timer = self.create_timer(
             0.1, self.publish_video)  # Adjust the rate as needed
         # Replace with your video file or stream URL
-        self.cap = cv2.VideoCapture('http://195.196.36.242/mjpg/video.mjpg')
+        #self.cap = cv2.VideoCapture('http://195.196.36.242/mjpg/video.mjpg')
         #self.cap = cv2.VideoCapture('https://media.mammothresorts.com/mmsa/mammoth/cams/Village_Gondola_1280x720.jpg')
+        self.cap = cv2.VideoCapture('https://rr5---sn-5hneknek.googlevideo.com/videoplayback?expire=1711896499&ei=UyMJZvL0J924v_IPpqqe4Ak&ip=155.4.149.196&id=o-AJkOJvKJpZgGu2GUT914-YPCpthOnCYXZ5zdjo5HcpU2&itag=22&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&spc=UWF9f0qJHXLl2Ln2_HUDrYJqtysKXLOIC2DiVWyEYHsupKA&vprv=1&svpuc=1&mime=video%2Fmp4&ns=K-O66OL5NmmrkK4PCX2ZcroQ&rqh=1&cnr=14&ratebypass=yes&dur=110.341&lmt=1587657090139165&fexp=51141541&c=WEB&sefc=1&txp=6316222&n=LYcmuM4GWabtsdlw&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AJfQdSswRQIhAMzm0uYpfJT7tA-IFSjRGKNfqVHJjrgQGxByMzzEuJhoAiAVWdtjJnPFAEyMqmqAWivs3EgpfLXNTTos76rBtpe0xg%3D%3D&cm2rm=sn-c5ioiv45c-hhme7s,sn-c5ioiv45c-5gol7e,sn-5golr7e&req_id=54a3154540e1a3ee&redirect_counter=3&cms_redirect=yes&cmsv=e&mh=gx&mm=34&mn=sn-5hneknek&ms=ltu&mt=1711874663&mv=m&mvi=5&pl=20&lsparams=mh,mm,mn,ms,mv,mvi,pl&lsig=ALClDIEwRQIgAWilUnYEyMVImp3k15p3mVFWroDHizwRVY3OmYq9rbUCIQDCS2bRGCQNLzdC84dMQ0bkBWmBV40mXtxyvkvqEb_tvQ%3D%3D')
 
         # Initialize the PoseLandmarkerNode with the video capture
         self.pose_landmarker = PoseLandmarkerNode(self.cap)
