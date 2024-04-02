@@ -26,6 +26,8 @@ class GestureRecognizerNode():
         
         # Global variables to calculate FPS
         self.COUNTER, self.FPS = 0, 0
+        self.test_count = 0
+        self.test_store = []
         self.START_TIME = time.time()
 
         # Test
@@ -66,7 +68,7 @@ class GestureRecognizerNode():
             help='The minimum confidence score for the hand tracking to be '
                 'considered successful.',
             required=False,
-            default=0.5)
+            default=0.3)
         # Finding the camera ID can be very reliant on platform-dependent methods.
         # One common approach is to use the fact that camera IDs are usually indexed sequentially by the OS, starting from 0.
         # Here, we use OpenCV and create a VideoCapture object for each potential ID with 'cap = cv2.VideoCapture(i)'.
@@ -115,7 +117,7 @@ class GestureRecognizerNode():
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
         # Visualization parameters
-        fps_avg_frame_count = 10
+        fps_avg_frame_count = 25
 
         recognition_frame = None
         #recognition_result_list = []
@@ -156,8 +158,9 @@ class GestureRecognizerNode():
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
 
         # Run gesture recognizer using the model.
-        self.recognizer.recognize_async(mp_image, time.time_ns() // 1_000_000)
-
+        if self.test_count%25==0:
+            self.recognizer.recognize_async(mp_image, time.time_ns() // 1_000_000)
+        self.test_count += 1
         #Visualization parameters
         row_size = 50  # pixels
         left_margin = 24  # pixels
@@ -178,9 +181,13 @@ class GestureRecognizerNode():
                     font_size, text_color, font_thickness, cv2.LINE_AA)
         
         if self.recognition_result_list:
+            self.test_store = self.recognition_result_list[0]
+        
+        if self.test_store:
+
             # Draw landmarks and write the text for each hand.
             for hand_index, hand_landmarks in enumerate(
-                self.recognition_result_list[0].hand_landmarks):
+                self.test_store.hand_landmarks):
                  # Calculate the bounding box of the hand
                 x_min = min([landmark.x for landmark in hand_landmarks])
                 y_min = min([landmark.y for landmark in hand_landmarks])
@@ -193,8 +200,8 @@ class GestureRecognizerNode():
                 y_max_px = int(y_max * frame_height)
 
                 # Get gesture classification results
-                if self.recognition_result_list[0].gestures:
-                    gesture = self.recognition_result_list[0].gestures[hand_index]
+                if self.test_store.gestures:
+                    gesture = self.test_store.gestures[hand_index]
                     category_name = gesture[0].category_name
                     score = round(gesture[0].score, 2)
                     result_text = f'{category_name} ({score})'
@@ -444,10 +451,10 @@ class PoseLandmarkerNode():
 class VideoTransmitNode(Node):
     def __init__(self):
         super().__init__('video_transmit')
-        self.publisher = self.create_publisher(Image, 'video', 10)
+        self.publisher = self.create_publisher(Image, 'video', 25)
         self.bridge = CvBridge()
         self.timer = self.create_timer(
-            0.1, self.publish_video)  # Adjust the rate as needed
+            0.04, self.publish_video)  # Adjust the rate as needed
         # Replace with your video file or stream URL
         #self.cap = cv2.VideoCapture('http://195.196.36.242/mjpg/video.mjpg')
         #self.cap = cv2.VideoCapture('https://media.mammothresorts.com/mmsa/mammoth/cams/Village_Gondola_1280x720.jpg')
