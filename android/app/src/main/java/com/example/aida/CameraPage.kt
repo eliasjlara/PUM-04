@@ -26,9 +26,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
@@ -37,18 +40,17 @@ import androidx.media3.ui.PlayerView
 
 @Composable
 fun CameraPage() {
+
     // Content for Camera tab
     Box(
         modifier = Modifier
             .clip(shape)
             .fillMaxSize()
     ) {
-        Text("Camera view", Modifier.align(Alignment.Center))
-
         // Test video
-        VideoPlayerWithExoPlayer(uri = Uri.parse("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"))
+        VideoPlayerWithExoPlayer(uri = Uri.parse("http://10.0.2.2:5000/hls/playlist.m3u8"))
 
-        Joystick2(
+        Joystick(
             Modifier
                 .padding(40.dp)
                 .align(Alignment.BottomStart)
@@ -61,7 +63,6 @@ fun CameraPage() {
         ) { x: Offset ->
             Log.d("JoyStick", "$x")
         }
-
 
         Box(
             modifier = Modifier
@@ -82,9 +83,8 @@ fun CameraPage() {
     }
 }
 
-
 @Composable
-fun Joystick2(
+fun Joystick(
     modifier: Modifier = Modifier,
     joystickSize: Float,
     thumbSize: Float,
@@ -140,36 +140,58 @@ fun Joystick2(
 @OptIn(UnstableApi::class)
 @Composable
 fun VideoPlayerWithExoPlayer(uri: Uri) {
-    AndroidView(
-        factory = { context ->
-            val trackSelector = DefaultTrackSelector(context).apply {
-                // Need for now so that it doesn't change the resolution automatically
-                parameters = buildUponParameters().setMaxVideoSizeSd().build()
-            }
 
-            val exoPlayer = ExoPlayer.Builder(context)
-                .setTrackSelector(trackSelector)
-                .build().also { player ->
-                    val mediaItem = MediaItem.Builder()
-                        .setUri(uri)
-                        .setLiveConfiguration(
-                            MediaItem.LiveConfiguration.Builder()
-                                .setMaxPlaybackSpeed(1.02f) // Allow slight speed variation for live adjustment
-                                .build()
-                        )
-                        .build()
+    val context = LocalContext.current
+    val showError = remember { mutableStateOf(false) }
 
-                    player.setMediaItem(mediaItem)
-                    player.prepare()
-                    player.playWhenReady = true
+    val trackSelector = DefaultTrackSelector(context).apply {
+        // Need for now so that it doesn't change the resolution automatically
+        parameters = buildUponParameters().setMaxVideoSizeSd().build()
+    }
+    val mediaItem = MediaItem.Builder()
+        .setUri(uri)
+        .setLiveConfiguration(
+            MediaItem.LiveConfiguration.Builder()
+                .setMaxPlaybackSpeed(1.02f) // Allow slight speed variation for live adjustment
+                .build()
+        )
+        .build()
+
+    val exoPlayer = ExoPlayer.Builder(context)
+        .setTrackSelector(trackSelector)
+        .build().also { player ->
+            player.setMediaItem(mediaItem)
+            player.prepare()
+            player.playWhenReady = true
+        }
+
+    // Listener to retry connection to server
+    // I could not get this to work :((
+    exoPlayer.addListener(object : Player.Listener {
+        override fun onPlayerError(error: PlaybackException) {
+            super.onPlayerError(error)
+
+            showError.value = true
+        }
+    })
+
+    if (!showError.value) {
+        AndroidView(
+            factory = { ctx ->
+                PlayerView(ctx).apply {
+                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                    player = exoPlayer
+                    useController = false
                 }
-
-            PlayerView(context).apply {
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                player = exoPlayer
-                useController = false
+            },
+            modifier = Modifier.fillMaxSize(),
+            update = { view ->
+                view.player = exoPlayer
             }
-        },
-        modifier = Modifier.fillMaxSize()
-    )
+        )
+    } else {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Text("Can't connect to server, try restarting the app", Modifier.align(Alignment.Center))
+        }
+    }
 }
