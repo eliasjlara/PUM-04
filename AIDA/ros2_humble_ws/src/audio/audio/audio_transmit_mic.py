@@ -119,7 +119,7 @@ class AudioTransmitterNode(Node):
             self.publisher_thread.join()
         if hasattr(self, 'capturer_thread') and self.capturer_thread.is_alive():
             self.capturer_thread.join()
-
+        
     def record_audio(self):
         """
         Records audio from the microphone.
@@ -135,10 +135,10 @@ class AudioTransmitterNode(Node):
         sample_rate = self.get_parameter('sample_rate').get_parameter_value().integer_value
         channels = self.get_parameter('channels').get_parameter_value().integer_value
         duration = self.get_parameter('duration').get_parameter_value().double_value
-        print("startning recording \ n")
+        self.get_logger().info("MIC node: Starting recording")
         audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.float32)
         sd.wait()
-        print("pausing the recording\n")
+        self.get_logger().info("MIC node: Pausing the recording")
         msg = self._to_msg(audio_data, sample_rate, channels, duration)            
         self.frame_num += 1
         self.capture_queue.put(msg)
@@ -185,6 +185,7 @@ class AudioTransmitterNode(Node):
             if self.publisher_event.is_set():
                 break
             if msg != None:
+                self.get_logger().info('MIC node: Publishing message to topic')
                 print("Publishing a message \n")
                 self.publisher.publish(msg)
 
@@ -197,7 +198,7 @@ def main(args=None):
     try:
         rclpy.spin(micNode)
     except KeyboardInterrupt:
-        micNode.get_logger().info('MIC: Keyboard interrupt')
+        micNode.get_logger().info('MIC node: Keyboard interrupt')
 
     micNode.stop_workers()
 

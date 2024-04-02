@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'faster_whisper_node = speech_to_text.faster_whisper_node:main',
+            'receive_str_result = speech_to_text.receive_str_result:main',
         ],
     },
 )

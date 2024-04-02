@@ -3,27 +3,29 @@ import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData
 from faster_whisper import WhisperModel
+from std_msgs.msg import String
+
 
 class STTNode(Node):
     """
     This class represents an node that subscribes to audio data topic and converts 
-    the audio to text.
+    the audio to text. Thereafter it published the finished result as string to 
+    stt_result topic.
 
     Attributes:
         subscription: The subscription object for receiving audio data.
-        file_counter: An integer representing the current file counter for naming the output WAV files.
-
+        publisher : The publisher object for sending the finished STT result
     Methods:
-        __init__: Initializes the AudioReceiverNode object.
+        __init__: Initializes the STTNode object.
         listener_callback: The callback function for processing the received audio data.
         translate: Translates audio from numpy data to text
         _msg_to_nparray : Translates the message from topic to numpy array
-
+        publish_result : Publishes the inputed string to stt_result topic
     """
 
     def __init__(self):
         """
-        Initializes the AudioReceiverNode object.
+        Initializes the STTNode object.
 
         Args:
             None
@@ -31,16 +33,29 @@ class STTNode(Node):
         Returns:
             None
         """
+
+        # We may not need the namespace variable here
+        # Important! For all subscribers and publishers the namespace
+        # need to be the same to work
         super().__init__('audio_receiver_node', namespace='mic')
+
+        # Init publisher of finished result
+
+        # Publish the data to the topic called STT_result
+        self.publisher = self.create_publisher(String, 'stt_result', 10)
+
+
+        # Init subscriber to mic data
+        # Subscribes to the topic called mic_audio
+        
         self.subscription = self.create_subscription(
             AudioData,
             'mic_audio',
             self.listener_callback,
             10)
-        self.subscription
-        self.file_counter = 0
+        self.subscription # prevent unused variable warning
         
-        #The current model
+        #The current model for use with faster_whisper
         default_model = "base.en"
         self.model = WhisperModel(default_model)
 
@@ -69,15 +84,15 @@ class STTNode(Node):
             None
         """
 
-        # Do text pubishing here instead of just printing
-        
-        print("receiving audio data")
+        self.get_logger().info("STT node: Receiving audio data from topic")
         audio_data = self._msg_to_nparray(msg)
+        self.get_logger().info("STT node: Applying STT model to audio data")
         translation = self.translate(audio_data)
         for segment in translation:
-            print("the segment contains: ")
-            print(segment.text + "\n")
-        print("The current message is finished")
+            result = segment.text
+            self.get_logger().info("STT node: Transcription contains segment: " + result)
+            self.publish_result(result)
+        self.get_logger().info("STT node: The current transcription is finished")
 
     def _msg_to_nparray(self, msg) -> np.ndarray:
         """
@@ -94,18 +109,34 @@ class STTNode(Node):
         # we may need to reshape the data if we have several channels, 
         # not handled yet
         return audio_data
+    
+    def publish_result(self, result : str):
+        """'
+        Publishes the speech to text result to topic
+
+        Args: 
+            result: A string containing the STT result to be published to topic
+
+        Returns:
+            None 
+        """
+        msg = String()
+        msg.data = result
+        self.get_logger().info('STT node: Publishing result to stt_result topic')
+        self.publisher.publish(msg)
+        self.get_logger().info('STT node: Finished publishing result to stt_result topic')    
 
 def main(args=None):
     rclpy.init(args=args)
 
-    audio_receiver_node = STTNode()
+    stt_node = STTNode()
 
     try:
-        rclpy.spin(audio_receiver_node)
+        rclpy.spin(stt_node)
     except KeyboardInterrupt:
-        audio_receiver_node.get_logger().info('Audio Receiver: Keyboard interrupt')
+        stt_node.get_logger().info('STT node: Keyboard interrupt')
 
-    audio_receiver_node.destroy_node()
+    stt_node.destroy_node()
 
     rclpy.shutdown()
 
