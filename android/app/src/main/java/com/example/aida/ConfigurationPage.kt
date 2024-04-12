@@ -7,10 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
+
 @Composable
 fun ConfigurationPage() {
     // Content for Configuration tab
-
     Box(modifier = Modifier.fillMaxSize()) {
         Text("Configuration Page Content", Modifier.align(Alignment.Center))
     }
