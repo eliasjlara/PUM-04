@@ -2,7 +2,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData
-from faster_whisper import WhisperModel
+from speech_to_text.faster_whisper_logic import FasterWhisperLogic
 from std_msgs.msg import String
 
 
@@ -18,8 +18,11 @@ class STTNode(Node):
     Methods:
         __init__: Initializes the STTNode object.
         listener_callback: The callback function for processing the received audio data.
+        
+        
         translate: Translates audio from numpy data to text
         _msg_to_nparray : Translates the message from topic to numpy array
+        
         publish_result : Publishes the inputed string to stt_result topic
     """
 
@@ -55,23 +58,8 @@ class STTNode(Node):
             10)
         self.subscription # prevent unused variable warning
         
-        #The current model for use with faster_whisper
-        default_model = "base.en"
-        self.model = WhisperModel(default_model)
-
-    def translate(self, audio_data) -> list:
-        """
-        Translates the received audio data to text.
-
-        Args:
-            audio_data: A 1D numpy array representing the received audio data.
-        Returns:
-            A list of segments representing the translated text.
-        """
-
-        segments, _ = self.model.transcribe(audio_data, beam_size=5)
-        return list(segments)
-    
+        # Init the logic class for STT
+        self.stt_model = FasterWhisperLogic()
 
     def listener_callback(self, msg):
         """
@@ -85,30 +73,33 @@ class STTNode(Node):
         """
 
         self.get_logger().info("STT node: Receiving audio data from topic")
-        audio_data = self._msg_to_nparray(msg)
+        #TODO : Place audio conversion for message in audio_data folder
+        audio_data = self.stt_model.message_to_numpy_array(msg)
         self.get_logger().info("STT node: Applying STT model to audio data")
-        translation = self.translate(audio_data)
+        translation = self.stt_model.transcribe_audio(audio_data)
         for segment in translation:
             result = segment.text
             self.get_logger().info("STT node: Transcription contains segment: " + result)
             self.publish_result(result)
         self.get_logger().info("STT node: The current transcription is finished")
 
-    def _msg_to_nparray(self, msg) -> np.ndarray:
-        """
-        Converts an ros message from topic to an np array for use
-        to apply STT
+    # def _msg_to_nparray(self, msg) -> np.ndarray:
+    #     """
+    #     Converts an ros message from topic to an np array for use
+    #     to apply STT
 
-        Args:
-            msg: An AudioData object representing the received audio data
-        Returns: 
-            Float32 numpy array in the range [-1, 1]
-        """
+    #     Args:
+    #         msg: An AudioData object representing the received audio data
+    #     Returns: 
+    #         Float32 numpy array in the range [-1, 1]
+    #     """
         
-        audio_data = np.frombuffer(msg.data, dtype=np.float32)
-        # we may need to reshape the data if we have several channels, 
-        # not handled yet
-        return audio_data
+    #     audio_data = np.frombuffer(msg.data, dtype=np.float32)
+    #     # We should add error handling here to handle that they must be in range
+    #     # and cant be larger than 1 for example
+    #     # we may need to reshape the data if we have several channels, 
+    #     # not handled yet
+    #     return audio_data
     
     def publish_result(self, result : str):
         """'
