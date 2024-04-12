@@ -159,7 +159,7 @@ class AudioTransmitterNode(Node):
         msg.data = data.tobytes()
         msg.sample_rate = sample_rate
         msg.channels = channels
-        msg.samples = int(sample_rate * duration)
+        msg.samples = len(data)
         msg.header.frame_id = str(self.frame_num)
         return msg
 
