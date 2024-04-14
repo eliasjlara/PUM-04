@@ -3,6 +3,15 @@
 This part of the project is supposed to be placed on the Raspberry Pis on the robot AIDA. This part is using the **Humble Hawksbill** version of **ROS2**. ROS2 is a middleware software for communication between different *Nodes* using *topics* and *services*. To communicate using a topic we need at least one *publisher* and one *subscriber*. One of the main benefits of using ROS2 for communication between is that we only need to focus on the nodes publishing and subscribing to the same topic and that they are using a mutual message type. ROS2 takes care of the rest, as nodes that communicate to the same topic can even be written in different lanuages. ROS2 has main support for nodes written in **Python** and **C++**. In this project we are only using **Python** nodes. Message are built using **C-type** variables. Besides publishers and subscribers there are also other types of communication available for ROS2. In this project we are also using services for shutting down and turning on steams from hardware such as the microphone and the camera.  
 ROS2 is available for Windows, Mac and Linux. This project aims to support at least the Linux version of ROS2 as this is the operating system of AIDA and what most developers in the project are using for developing and testing the code. 
 
+## Dependancies needed for the project
+In the project we are using several dependacies which are available using **Pythons** package manager **pip**. Run these before building the project. 
+```
+pip install faster-whisper
+pip install numpy
+pip install sounddevice
+pip install mediapipe
+```
+
 ## Layout under src folder
 ### Speech to text  
 Nodes and logic for the speech to text part of AIDA.  
@@ -13,14 +22,7 @@ Messages for topic communication of audiodata.
 ### Aida interfaces  
 Setup for using services with ROS2.  
 
-## Dependancies needed for the project
-In the project we are using several dependacies which are available using **Pythons** package manager **pip**. Run these before building the project. 
-```
-pip install faster-whisper
-pip install numpy
-pip install sounddevice
-pip install mediapipe
-```
+
 
 ## Instructions for ROS2
 When starting a new terminal run the command `source /opt/ros/humble/setup.bash` or add the command to the *.bashrc* file  
