@@ -1,32 +1,41 @@
 ## Introduction
-This part of the project is using **ROS2** with the version Humble Hawksbill.
-**ROS2** is a middleware software for communication between different *Nodes* using topics and services.
+This part of the project is using **ROS2** with the version Humble Hawksbill and is supposed to be located on the robot AIDA.
+**ROS2** is a middleware software for communication between different *Nodes* using *topics* and *services*.
 To communicate using a topic we need at least one *publisher* and one *subscriber*. For example so can the publisher node be
-a *C++* node and the subscriber a *Python* node. The only things needed for the communication to work is that the nodes need to communicate 
+a **C++** node and the subscriber a **Python** node. The only things needed for the communication to work is that the nodes need to communicate 
 using the same topic (with the same namespace) and a mutual message type. Message are built using **C-style** variables.  
-ROS2 is available for Windows, Mac and Linux. This project is mostly tested using ROS2 for Linux and we are currently only using *Python* nodes.
+ROS2 is available for Windows, Mac and Linux. This project is mostly tested using ROS2 for Linux and we are currently only using **Python** nodes.
+
+## Layout under src  
+### speech_to_text  
+Nodes and logic for the speech to text part of AIDA.  
+### audio  
+Nodes and logic for recording of audio data by microphone.  \
+### audio_package
+Messages for topic communication of audiodata.
+
 
 ## Instructions
 When starting a new terminal run the command:
 `source /opt/ros/humble/setup.bash` or add the command to *.bashrc* file  
 ### Creating new packages
 **Python**
-- To create a new *Python* package run the following code in the *src* folder:
+- To create a new **Python** package run the following code in the *src* folder:
   `ros2 pkg create --build-type ament_python <package_name>`
-- To create a new *Python* node and package at the same time run the following code in the *src* folder:
+- To create a new **Python** node and package at the same time run the following code in the *src* folder:
   `ros2 pkg create --build-type ament_python --node-name <node_name> <package_name>`
 
 **C++**
-- To create a new *C++* package run the following code in the *src* folder: 
+- To create a new **C++** package run the following code in the *src* folder: 
   `ros2 pkg create --build-type ament_cmake <package_name>`
-- To create a new *C++* pnode and package at the same time run the following code in the *src* folder:
+- To create a new **C++** node and package at the same time run the following code in the *src* folder:
   `ros2 pkg create --build-type ament_cmake --node-name <node_name> <package_name>`  
 
 Thereafter run the command `colcon build` or `colcon build --packages-select <package_name>` (to only build current package) in the *ros2_humble_ws* folder to setup the package.  
 
 ### Creating new nodes
 **Python**  
-- If package is already created add a new *Python* file in the folder src/package_name/package_name
+- If package is already created add a new **Python** file in the folder *src/package_name/package_name*
 - Go to *setup.py* file and add the `node_name = package_name.file_name:main` inside the console_scripts field as such:
   ```
   entry_points={
@@ -38,7 +47,7 @@ Thereafter run the command `colcon build` or `colcon build --packages-select <pa
 - If nodes are run on different workspaces, add the dependancies in the *package.xml* file using `<exec_depend>dependancy_name</exec_depend>`  
 
 **C++**  
-- If the package is already created add a new *C++* in the folder src/package_name/package_name
+- If the package is already created add a new **C++** in the folder *src/package_name/package_name*
 - In the *CMakeLists.txt* file add the following commands:
   ```
   find_package(dependancy_name REQUIRED)
