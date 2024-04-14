@@ -14,8 +14,7 @@ Messages for topic communication of audiodata.
 Setup for using services with ROS2.  
 
 ## Instructions for ROS2
-When starting a new terminal run the command:
-`source /opt/ros/humble/setup.bash` or add the command to *.bashrc* file  
+When starting a new terminal run the command `source /opt/ros/humble/setup.bash` or add the command to the *.bashrc* file  
 ### Creating new packages
 **Python**
 - To create a new **Python** package run the following code in the *src* folder:
