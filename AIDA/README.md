@@ -8,7 +8,7 @@ ROS2 is available for Windows, Mac and Linux. This project is mostly tested usin
 
 ## Instructions
 When starting a new terminal run the command:
-`source /opt/ros/humble/setup.bash` or add to the command to *.bashrc* file  
+`source /opt/ros/humble/setup.bash` or add the command to *.bashrc* file  
 ### Creating new packages
 **Python**
 - To create a new *Python* package run the following code in the *src* folder:
