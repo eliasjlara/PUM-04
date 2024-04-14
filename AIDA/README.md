@@ -10,10 +10,11 @@ ROS2 is available for Windows, Mac and Linux. This project is mostly tested usin
 ### speech_to_text  
 Nodes and logic for the speech to text part of AIDA.  
 ### audio  
-Nodes and logic for recording of audio data by microphone.  \
+Nodes and logic for recording of audio data by microphone.  
 ### audio_package
 Messages for topic communication of audiodata.
-
+### aida_interfaces  
+Setup for using services with ROS2  
 
 ## Instructions
 When starting a new terminal run the command:
