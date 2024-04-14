@@ -13,13 +13,16 @@ pip install mediapipe
 ```
 
 ## Layout under src folder
-**Speech to text**  
+**speech_to_text**  
 Nodes and logic for the speech to text part of AIDA.  
-**Audio**  
+
+**audio**  
 Nodes and logic for recording of audio data by microphone.   
-**Audio package**  
+
+**audio_package**  
 Messages for topic communication of audiodata.  
-**Aida interfaces**  
+
+**aida_interfacess**  
 Setup for using services with ROS2.  
 
 ## Instructions for ROS2
