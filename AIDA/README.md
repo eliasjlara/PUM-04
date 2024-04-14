@@ -1,3 +1,4 @@
+# AIDA - code for robot
 ## Introduction
 This part of the project is using **ROS2** with the version Humble Hawksbill and is supposed to be located on the robot AIDA.
 **ROS2** is a middleware software for communication between different *Nodes* using *topics* and *services*.
