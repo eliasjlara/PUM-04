@@ -13,6 +13,15 @@ Messages for topic communication of audiodata.
 ### Aida interfaces  
 Setup for using services with ROS2.  
 
+## Dependancies needed for the project
+In the project we are using several dependacies which are available using **Pythons** package manager **pip**. Run these before building the project. 
+```
+pip install faster-whisper
+pip install numpy
+pip install sounddevice
+pip install mediapipe
+```
+
 ## Instructions for ROS2
 When starting a new terminal run the command `source /opt/ros/humble/setup.bash` or add the command to the *.bashrc* file  
 ### Creating new packages
