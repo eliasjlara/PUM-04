@@ -22,8 +22,29 @@ Nodes and logic for recording of audio data by microphone.
 **audio_package**  
 Messages for topic communication of audiodata.  
 
-**aida_interfacess**  
+**aida_interfaces**  
 Setup for using services with ROS2.  
+
+## Main principles for ROS2
+There are 3 main ways to communicate by *topics* in ROS2. 
+- Publisher and subscriber
+- Client and service
+<!-- - Action server and client   -->
+### Publisher and subscriber
+For most of the nodes in the project we are using publishers and subscribers. The main functionality of the publisher and subsriber are: 
+- The publishers main objective is to publish information to the topic.  
+- The subscriber lies and waits until new information is found in the topic. When new information is available, the callback function is triggered which has an argument called **msg**. This message contains the information published to the topic.  
+For more information about a basic publisher and subscriber, see [Publisher and subscriber in Python](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.html).    
+### Client and service  
+The other way to communicate between nodes is by using services. The main functionality of the service and client are: 
+- The client is the "main" node which calls for new information in the client server design pattern. This is done by sending a request to the topic. When the service publishes a response the client receives it and continues with its operation. 
+- The service lies and waits for a new request from the client. When a request is published to the topic the service starts working and publishes its result in something called a response.  
+For more information about a simple client server, see [Simple client server in Python](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.html)  
+<!-- (### Action server and client , we may need to add information about this one, but are we actually using this in our project?) -->
+<!-- This is how you make a comment in markdown-->
+
+
+
 
 ## Instructions for ROS2
 When starting a new terminal run the command `source /opt/ros/humble/setup.bash` or add the command to the *.bashrc* file  
