@@ -1,11 +1,8 @@
 # AIDA - code for robot
-## Introduction
-This part of the project is using **ROS2** with the version Humble Hawksbill and is supposed to be located on the robot AIDA.
-**ROS2** is a middleware software for communication between different *Nodes* using *topics* and *services*.
-To communicate using a topic we need at least one *publisher* and one *subscriber*. For example so can the publisher node be
-a **C++** node and the subscriber a **Python** node. The only things needed for the communication to work is that the nodes need to communicate 
-using the same topic (with the same namespace) and a mutual message type. Message are built using **C-style** variables.  
-ROS2 is available for Windows, Mac and Linux. This project is mostly tested using ROS2 for Linux and we are currently only using **Python** nodes.
+## Introductiont
+This part of the project is supposed to be placed on the Raspberry Pis on the robot AIDA. This part is using the **Humble Hawksbill** version of **ROS2**. ROS2 is a middleware software for communication between different *Nodes* using *topics* and *services*. To communicate using a topic we need at least one *publisher* and one *subscriber*. One of the main benefits of using ROS2 for communication between is that we only need to focus on the nodes publishing and subscribing to the same topic and that they are using a mutual message type. ROS2 takes care of the rest, as nodes that communicate to the same topic can even be written in different lanuages. ROS2 has main support for nodes written in **Python** and **C++**. In this project we are only using **Python** nodes. Message are built using **C-type** variables. Besides publishers and subscribers there are also other types of communication available for ROS2. In this project we are also using services for shutting down and turning on steams from hardware such as the microphone and the camera.  
+ROS2 is available for Windows, Mac and Linux. This project aims to support at least the Linux version of ROS2 as this is the operating system of AIDA and what most developers in the project are using for developing and testing the code. 
+
 
 ## Layout under src  
 ### speech_to_text  
@@ -17,7 +14,7 @@ Messages for topic communication of audiodata.
 ### aida_interfaces  
 Setup for using services with ROS2  
 
-## Instructions
+## Instructions for ROS2
 When starting a new terminal run the command:
 `source /opt/ros/humble/setup.bash` or add the command to *.bashrc* file  
 ### Creating new packages
@@ -74,6 +71,12 @@ colcon build
 source install/localsetup.bash  
 ros2 run speech_to_text faster_whisper_node
 ```
+### Tips
+>[!NOTE]
+>The topic of publisher and subscriber must be in the same namespace
+
+>[!NOTE]
+>It is easier to install ROS2 for Linux compared to Windows and Mac. Communication between different nodes in the same workspace works on VirtualBox with Ubuntu so that is an alternative for testing on computer instead of AIDA. 
 
 ## References
 For more information regarding ROS2 please visit [ROS2 Humble Hawksbill](https://docs.ros.org/en/humble/index.html)
