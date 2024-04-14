@@ -13,16 +13,14 @@ pip install mediapipe
 ```
 
 ## Layout under src folder
-### Speech to text  
+**Speech to text**  
 Nodes and logic for the speech to text part of AIDA.  
-### Audio  
+**Audio**  
 Nodes and logic for recording of audio data by microphone.   
-### Audio package  
+**Audio package**  
 Messages for topic communication of audiodata.  
-### Aida interfaces  
+**Aida interfaces**  
 Setup for using services with ROS2.  
-
-
 
 ## Instructions for ROS2
 When starting a new terminal run the command `source /opt/ros/humble/setup.bash` or add the command to the *.bashrc* file  
