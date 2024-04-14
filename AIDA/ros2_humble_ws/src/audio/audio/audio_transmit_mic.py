@@ -1,11 +1,14 @@
 import queue
 import threading
 import sounddevice as sd
+import time
+import numpy as np
+
 
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData 
-import numpy as np
+from aida_interfaces.srv import SetState
 
 
 class AudioTransmitterNode(Node):
@@ -40,7 +43,9 @@ class AudioTransmitterNode(Node):
         self.declare_parameter("sample_rate", 16000)
         self.declare_parameter("channels", 1)
         self.declare_parameter("duration", 5.0)
+        self.declare_parameter("capture_once", True)
 
+        self.init_services()
         self.initialize_publisher()
         self.initialize_capture_queue()
 
@@ -57,6 +62,20 @@ class AudioTransmitterNode(Node):
             None
         """
         super().destroy_node()
+
+
+    def init_services(self) -> None:
+        """
+        Initialzes the services for the node.
+        Uses the SetState service to start and stop the recording.
+
+        Args:
+            None
+        
+        Returns:
+            None
+        """
+        self.srv = self.create_service(SetState, 'SetState', self.set_recording)
 
     def initialize_publisher(self):
         """
@@ -75,9 +94,7 @@ class AudioTransmitterNode(Node):
 
     def initialize_capture_queue(self):
         """
-        Initializes the capture queue and workers.
-
-        This method sets up the capture queue, lock, and threads for capturing and publishing audio data.
+        This method initializes the capture queue and sets the lock for the queue.
 
         Args:
             None
@@ -88,6 +105,17 @@ class AudioTransmitterNode(Node):
         self.queue_lock = threading.Lock()
 
         self.capture_queue = queue.Queue()
+
+    def start_workers(self) -> None:
+        """
+        Starts the capture and publisher workers.
+
+        Args:
+            None
+        
+        Returns:
+            None
+        """
 
         self.capture_event = threading.Event()
         self.capturer_thread = threading.Thread(target=self.record_audio, name='capturer')
@@ -120,6 +148,27 @@ class AudioTransmitterNode(Node):
         if hasattr(self, 'capturer_thread') and self.capturer_thread.is_alive():
             self.capturer_thread.join()
         
+    def set_recording(self, request: SetState.Request, response: SetState.Response) -> SetState.Response:
+        """
+        Sets the desired state for node when request is recieved.
+
+        #TODO finish this comment
+        """
+
+        try:
+            if request.desired_state == "active":
+                self.start_workers()
+                self.get_logger().info("MIC node: Recording started, node is active.")
+            elif request.desired_state == "idle":
+                self.stop_workers()
+                self.get_logger().info("MIC node: Recording stopped, node is idle.")
+            response.message = f"Successfully set state to: {request.desired_state}"
+            response.success = True
+        except Exception as e:
+            response.message = f"Error setting state: {request.desired_state} - {e}"
+            response.success = False
+        return response
+    
     def record_audio(self):
         """
         Records audio from the microphone.
@@ -135,13 +184,18 @@ class AudioTransmitterNode(Node):
         sample_rate = self.get_parameter('sample_rate').get_parameter_value().integer_value
         channels = self.get_parameter('channels').get_parameter_value().integer_value
         duration = self.get_parameter('duration').get_parameter_value().double_value
-        self.get_logger().info("MIC node: Starting recording")
-        audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.float32)
-        sd.wait()
-        self.get_logger().info("MIC node: Pausing the recording")
-        msg = self._to_msg(audio_data, sample_rate, channels, duration)            
-        self.frame_num += 1
-        self.capture_queue.put(msg)
+        self.get_logger().info("MIC node: Recording audio with sample rate: " + str(sample_rate) + ", channels: " + str(channels) + ", duration: " + str(duration))
+        while not self.capture_event.is_set():
+            self.get_logger().info("MIC node: Starting the recording")
+            audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.float32)
+            sd.wait()
+            self.get_logger().info("MIC node: Pausing the recording")
+            msg = self._to_msg(audio_data, sample_rate, channels, duration)            
+            self.frame_num += 1
+            self.capture_queue.put(msg)
+            if self.get_parameter('capture_once').get_parameter_value().bool_value:
+                self.get_logger().info("MIC node: Capture once is activated, stopping the recording")
+                self.capture_event.set()
 
     def _to_msg(self, data, sample_rate, channels, duration):
         """
