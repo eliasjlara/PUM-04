@@ -1,11 +1,10 @@
 ## Introduction
 This part of the project is using **ROS2** with the version Humble Hawksbill.
 **ROS2** is a middleware software for communication between different *Nodes* using topics and services.
-
 To communicate using a topic we need at least one *publisher* and one *subscriber*. For example so can the publisher node be
 a *C++* node and the subscriber a *Python* node. The only things needed for the communication to work is that the nodes need to communicate 
 using the same topic (with the same namespace) and a mutual message type. Message are built using **C-style** variables.  
-ROS2 is available for Windows, Mac and Linux. This project is mostly tested using ROS2 for Linux. 
+ROS2 is available for Windows, Mac and Linux. This project is mostly tested using ROS2 for Linux and we are currently only using *Python* nodes.
 
 ## Instructions
 When starting a new terminal run the command:
