@@ -26,7 +26,7 @@ class ReceiveSTTResult(Node):
             None
         """
 
-        super().__init__('receive_stt_result', namespace='mic')
+        super().__init__('receive_stt_result', namespace='stt')
         self.subscription = self.create_subscription(
             String,
             'stt_result',

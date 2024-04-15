@@ -1,9 +1,12 @@
 import numpy as np
 import rclpy
+
 from rclpy.node import Node
 from audio_data.msg import AudioData
-from speech_to_text.faster_whisper_logic import FasterWhisperLogic
+from aida_interfaces.srv import SetState
 from std_msgs.msg import String
+from speech_to_text.faster_whisper_logic import FasterWhisperLogic
+
 
 
 class STTNode(Node):
@@ -40,12 +43,13 @@ class STTNode(Node):
         # We may not need the namespace variable here
         # Important! For all subscribers and publishers the namespace
         # need to be the same to work
-        super().__init__('audio_receiver_node', namespace='mic')
+        # super().__init__('audio_receiver_node', namespace='mic')
+        super().__init__('audio_receiver_node')
 
         # Init publisher of finished result
 
         # Publish the data to the topic called STT_result
-        self.publisher = self.create_publisher(String, 'stt_result', 10)
+        self.publisher = self.create_publisher(String, 'stt/stt_result', 10)
 
 
         # Init subscriber to mic data
@@ -53,13 +57,18 @@ class STTNode(Node):
         
         self.subscription = self.create_subscription(
             AudioData,
-            'mic_audio',
+            'mic/mic_audio',
             self.listener_callback,
             10)
         self.subscription # prevent unused variable warning
         
         # Init the logic class for STT
         self.stt_model = FasterWhisperLogic()
+
+        # Init the services for the node
+        self.init_services()
+
+        self.active = True
 
     def listener_callback(self, msg):
         """
@@ -72,16 +81,19 @@ class STTNode(Node):
             None
         """
 
-        self.get_logger().info("STT node: Receiving audio data from topic")
-        audio_data = self._message_to_numpy_array(msg)
-        self.get_logger().info("STT node: Applying STT model to audio data")
-        translation = self.stt_model.transcribe_audio(audio_data)
-        for segment in translation:
-            # The segment is the result of the transcription, strip of trailing and leading whitespaces
-            result = segment.text.strip() 
-            self.get_logger().info("STT node: Transcription contains segment: " + result)
-            self.publish_result(result)
-        self.get_logger().info("STT node: The current transcription is finished")
+        if self.active:
+            self.get_logger().info("STT node: Receiving audio data from topic")
+            audio_data = self._message_to_numpy_array(msg)
+            self.get_logger().info("STT node: Applying STT model to audio data")
+            translation = self.stt_model.transcribe_audio(audio_data)
+            for segment in translation:
+                # The segment is the result of the transcription, strip of trailing and leading whitespaces
+                result = segment.text.strip() 
+                self.get_logger().info("STT node: Transcription contains segment: " + result)
+                self.publish_result(result)
+            self.get_logger().info("STT node: The current transcription is finished")
+        else:
+            self.get_logger().info("STT node: Node is idle, no transcription is done")
 
     def _message_to_numpy_array(self, msg) -> np.ndarray:
         """ 
@@ -99,7 +111,42 @@ class STTNode(Node):
         #TODO : Add error handling
         return np.frombuffer(msg.data, dtype=np.float32)
     
+    def init_services(self) -> None:
+        """
+        Initialzes the services for the node.
+        Uses the SetState service to start and stop the recording.
+
+        Args:
+            None
+        
+        Returns:
+            None
+        """
+        self.srv = self.create_service(SetState, 'stt/SetState', self.set_state_of_node)
+
     
+    def set_state_of_node(self, request: SetState.Request, response: SetState.Response) -> SetState.Response:
+        """
+        Sets the desired state for node when request is recieved.
+
+        #TODO finish this comment
+        """
+
+        try:
+            if request.desired_state == "active":
+                self.active = True
+                self.get_logger().info("STT node: Transcription node is active.")
+            elif request.desired_state == "idle":
+                self.active = False
+                self.get_logger().info("STT node: Transcription node is idle.")
+            response.message = f"Successfully set state to: {request.desired_state}"
+            response.success = True
+        except Exception as e:
+            response.message = f"Error setting state: {request.desired_state} - {e}"
+            response.success = False
+        return response
+    
+
     def publish_result(self, result : str):
         """'
         Publishes the speech to text result to topic

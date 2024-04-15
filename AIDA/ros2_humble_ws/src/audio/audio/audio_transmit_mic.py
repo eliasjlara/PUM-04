@@ -5,6 +5,7 @@ import time
 import numpy as np
 
 
+
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData 
@@ -110,18 +111,20 @@ class AudioTransmitterNode(Node):
         """
         Starts the capture and publisher workers.
 
+        This method creates the capture and publisher events and threads.
+        It then starts the threads.
+
         Args:
             None
-        
+
         Returns:
             None
         """
-
         self.capture_event = threading.Event()
-        self.capturer_thread = threading.Thread(target=self.record_audio, name='capturer')
-
         self.publisher_event = threading.Event()
-        self.publisher_thread = threading.Thread(target=self.publish_audio, name='publisher')
+
+        self.capturer_thread = threading.Thread(target=self.record_audio)
+        self.publisher_thread = threading.Thread(target=self.publish_audio)
 
         self.capturer_thread.start()
         self.publisher_thread.start()
