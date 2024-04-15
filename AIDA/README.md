@@ -10,6 +10,7 @@ pip install faster-whisper
 pip install numpy
 pip install sounddevice
 pip install mediapipe
+pip install pytest
 ```
 
 ## Layout under src folder

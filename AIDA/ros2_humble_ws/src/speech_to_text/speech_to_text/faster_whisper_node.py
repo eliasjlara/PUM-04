@@ -73,33 +73,32 @@ class STTNode(Node):
         """
 
         self.get_logger().info("STT node: Receiving audio data from topic")
-        #TODO : Place audio conversion for message in audio_data folder
-        audio_data = self.stt_model.message_to_numpy_array(msg)
+        audio_data = self._message_to_numpy_array(msg)
         self.get_logger().info("STT node: Applying STT model to audio data")
         translation = self.stt_model.transcribe_audio(audio_data)
         for segment in translation:
-            result = segment.text
+            # The segment is the result of the transcription, strip of trailing and leading whitespaces
+            result = segment.text.strip() 
             self.get_logger().info("STT node: Transcription contains segment: " + result)
             self.publish_result(result)
         self.get_logger().info("STT node: The current transcription is finished")
 
-    # def _msg_to_nparray(self, msg) -> np.ndarray:
-    #     """
-    #     Converts an ros message from topic to an np array for use
-    #     to apply STT
-
-    #     Args:
-    #         msg: An AudioData object representing the received audio data
-    #     Returns: 
-    #         Float32 numpy array in the range [-1, 1]
-    #     """
+    def _message_to_numpy_array(self, msg) -> np.ndarray:
+        """ 
+        Converts an ros message from topic to an np array for use
+        to apply STT
         
-    #     audio_data = np.frombuffer(msg.data, dtype=np.float32)
-    #     # We should add error handling here to handle that they must be in range
-    #     # and cant be larger than 1 for example
-    #     # we may need to reshape the data if we have several channels, 
-    #     # not handled yet
-    #     return audio_data
+        Args:
+            msg: An AudioData object representing the received audio data
+        
+        Returns: 
+            Float32 numpy array in the range [-1, 1]
+        """
+        if msg.samples == 0:
+            raise ValueError("No audio data in message")
+        #TODO : Add error handling
+        return np.frombuffer(msg.data, dtype=np.float32)
+    
     
     def publish_result(self, result : str):
         """'
