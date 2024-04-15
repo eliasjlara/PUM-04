@@ -21,10 +21,11 @@ class STTNode(Node):
     Methods:
         __init__: Initializes the STTNode object.
         listener_callback: The callback function for processing the received audio data.
-        
+        init_services : Initializes the services for the node for turning on and of the transcription
+        set_state_of_node : Sets the desired state for the node when request is recieved
         
         translate: Translates audio from numpy data to text
-        _msg_to_nparray : Translates the message from topic to numpy array
+        _message_to_numpy_array : Translates the message from topic to numpy array
         
         publish_result : Publishes the inputed string to stt_result topic
     """
@@ -42,19 +43,16 @@ class STTNode(Node):
 
         # We may not need the namespace variable here
         # Important! For all subscribers and publishers the namespace
-        # need to be the same to work
-        # super().__init__('audio_receiver_node', namespace='mic')
+        # need to be the same to work properly
         super().__init__('audio_receiver_node')
 
         # Init publisher of finished result
-
         # Publish the data to the topic called STT_result
         self.publisher = self.create_publisher(String, 'stt/stt_result', 10)
 
 
         # Init subscriber to mic data
         # Subscribes to the topic called mic_audio
-        
         self.subscription = self.create_subscription(
             AudioData,
             'mic/mic_audio',
@@ -68,6 +66,8 @@ class STTNode(Node):
         # Init the services for the node
         self.init_services()
 
+        # Set the node status to active by default
+        # Trancsription is done when the node is active
         self.active = True
 
     def listener_callback(self, msg):
