@@ -102,6 +102,9 @@ colcon build
 source install/localsetup.bash  
 ros2 run speech_to_text faster_whisper_node
 ```
+
+
+To test a service request in command line use the following syntax `ros2 service call /mic/SetState aida_interfaces/srv/SetState "{desired_state: 'active'}"`
 ### Tips
 >[!NOTE]
 >The topic of publisher and subscriber must be in the same namespace
