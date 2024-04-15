@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ConfigurationPage(barHeight: Dp) {
-    // Content for Configuration tab
     Row(
         modifier = Modifier
             .padding(top = barHeight)
@@ -104,7 +103,6 @@ fun ConfigurationPage(barHeight: Dp) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            var test by remember { mutableStateOf("") }
             Text(text = "SSH Terminal", modifier = Modifier.align(Alignment.Start))
         }
     }

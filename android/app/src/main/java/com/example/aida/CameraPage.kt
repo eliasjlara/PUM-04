@@ -112,8 +112,8 @@ fun CameraPage(
                 .padding(bottom = 40.dp, start = 40.dp)
                 .align(Alignment.BottomStart)
                 .zIndex(3f),
-            joystickSize = 130F, // Size of the joystick base
-            thumbSize = 45f, // Size of the joystick thumb
+            joystickSize = 130F,
+            thumbSize = 45f,
         ) { x: Offset ->
             Log.d("JoyStick", "$x")
         }
@@ -300,19 +300,17 @@ fun Joystick(
                 }
             }
     ) {
-        // Background joystick image
         Image(
             painter = painterResource(id = R.drawable.joystick_outline),
             contentDescription = "Joystick background",
             modifier = Modifier.matchParentSize()
         )
 
-        // Thumb image, positioned according to thumbPosition
         Image(
             painter = painterResource(id = R.drawable.joystick_thumb),
             contentDescription = "Joystick thumb",
             modifier = Modifier
-                .size(thumbSize.dp) // Set the size of the thumb image
+                .size(thumbSize.dp)
                 .offset {
                     // Calculate offset to position the thumb image correctly
                     val offsetX = (thumbPosition.x - thumbSize / 2).dp
