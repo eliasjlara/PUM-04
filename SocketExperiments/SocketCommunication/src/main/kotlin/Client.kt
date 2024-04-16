@@ -8,29 +8,19 @@ import javax.swing.ImageIcon
 import javax.swing.JLabel
 
 class Client {
+    val frame = JFrame("Image Display")
+    private val label = JLabel()
+
     private fun displayImageFromByteArray(imageData: ByteArray) {
-        try {
-            // Read the image from the byte array
-            val image = ImageIO.read(imageData.inputStream())
+        // Read the image from the byte array
+        val image = ImageIO.read(imageData.inputStream())
 
-            // Create a JFrame to display the image
-            val frame = JFrame("Image Display")
-            frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        label.icon = ImageIcon(image)
+        frame.contentPane.add(label)
 
-            // Create a JLabel to hold the image
-            val label = JLabel()
-            label.icon = ImageIcon(image)
-
-            // Add the JLabel to the frame
-            frame.contentPane.add(label)
-            frame.setSize(image.width, image.height)
-
-            // Pack the frame and set it visible
-            frame.pack()
-            frame.isVisible = true
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
+        // Pack the frame and set it visible
+        frame.pack()
+        frame.isVisible = true
     }
     fun start() {
         val ip = "localhost"
@@ -42,8 +32,7 @@ class Client {
             socket.getInputStream().read(frameBufferSize.array())
 
             val frameSize = frameBufferSize.int
-
-            //val frameBuffer = ByteArray(frameSize)
+            //socket.getOutputStream().write("ack\n".toByteArray())
             val frameBuffer = ByteBuffer.allocate(frameSize)
             var bytesRead = 0
 
@@ -58,5 +47,7 @@ class Client {
 }
 fun main(args: Array<String>) {
     val client : Client = Client()
+    client.frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+
     client.start()
 }
