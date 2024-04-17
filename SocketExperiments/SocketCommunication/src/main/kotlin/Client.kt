@@ -7,11 +7,12 @@ import javax.swing.JFrame
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 
-class Client {
+class Client (ip : String = "localhost", port : Int = 12345) {
     val frame = JFrame("Image Display")
     private val label = JLabel()
+    private val socket : Socket = Socket(ip, port)
 
-    private fun displayImageFromByteArray(imageData: ByteArray) {
+    fun displayImageFromByteArray(imageData: ByteArray) {
         // Read the image from the byte array
         val image = ImageIO.read(imageData.inputStream())
 
@@ -22,32 +23,46 @@ class Client {
         frame.pack()
         frame.isVisible = true
     }
-    fun start() {
-        val ip = "localhost"
-        val port = 12345
-        val socket = Socket(ip, port)
-        println("Connected to server")
-        while (true){
-            val frameBufferSize = ByteBuffer.allocate(4)
-            socket.getInputStream().read(frameBufferSize.array())
+    private fun sendResponse(response: String = "ack\n") {
+        socket.getOutputStream().write(response.toByteArray())
+    }
 
-            val frameSize = frameBufferSize.int
-            //socket.getOutputStream().write("ack\n".toByteArray())
-            val frameBuffer = ByteBuffer.allocate(frameSize)
-            var bytesRead = 0
+    fun getFrameSize() : Int {
+        val frameBufferSize = ByteBuffer.allocate(4)
+        socket.getInputStream().read(frameBufferSize.array())
+        return frameBufferSize.int
+    }
 
-            while (bytesRead < frameSize){
-                bytesRead += socket.getInputStream().read(frameBuffer.array(), bytesRead, frameSize - bytesRead)
-            }
-            displayImageFromByteArray(frameBuffer.array())
+    fun getFrame(frameSize: Int) : ByteArray {
+        val frameBuffer = ByteBuffer.allocate(frameSize)
+        var bytesRead = 0
 
+        while (bytesRead < frameSize) {
+            bytesRead += socket.getInputStream().read(frameBuffer.array(), bytesRead, frameSize - bytesRead)
         }
+        return frameBuffer.array()
+    }
+
+    fun fetch() : ByteArray{
+        val frameSize = getFrameSize()
+        sendResponse()
+        return getFrame(frameSize)
+    }
+
+    fun stop() {
         socket.close()
+    }
+
+    fun receiveImage() {
+        val imageData = fetch()
+        displayImageFromByteArray(imageData)
     }
 }
 fun main(args: Array<String>) {
-    val client : Client = Client()
+    val client = Client()
     client.frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-
-    client.start()
+    while (true){
+        client.receiveImage()
+    }
+    client.stop()
 }
