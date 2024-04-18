@@ -2,13 +2,13 @@ import queue
 import threading
 import time
 import numpy as np
+import multiprocessing
 
-from server import SocketServer
+from aida_api.server import SocketServer
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from rclpy.sensor_msgs.msg import Image
-from rclpy.sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import Image
 from aida_interfaces.srv import SetState
 # from lidar_data.msg import LiDAR
 
@@ -27,37 +27,39 @@ class InterfaceNode(Node):
     def __init__(self):
         super().__init__('api_node')
 
-        self.init_server()
 
+        self.start_server()
         self.init_clients()
         # self.init_pubs()
         self.init_subs()
         self.init_queues()
+    
 
     def start_camera(self):
         req = SetState.Request()
-        req.state = "active"
+        req.desired_state = "active"
         self.future = self.camera_client.call_async(req)
         rclpy.spin_until_future_complete(self, self.future)
         print(self.future.result())
 
     def start_microphone(self):
+        print("Starting microphone...")
         req = SetState.Request()
-        req.state = "active"
+        req.desired_state = "active"
         self.future = self.mic_client.call_async(req)
-        rclpy.spin_until_future_complete(self, self.future)
+        # rclpy.spin_until_future_complete(self, self.future)
         print(self.future.result())
 
     def stop_camera(self):
         req = SetState.Request()
-        req.state = "idle"
+        req.desired_state = "idle"
         self.future = self.camera_client.call_async(req)
         rclpy.spin_until_future_complete(self, self.future)
         print(self.future.result())
 
     def stop_microphone(self):
         req = SetState.Request()
-        req.state = "idle"
+        req.desired_state = "idle"
         self.future = self.mic_client.call_async(req)
         rclpy.spin_until_future_complete(self, self.future)
         print(self.future.result())
@@ -74,11 +76,11 @@ class InterfaceNode(Node):
     #     self.lidar_queue.put(lidar_data)
     #     self.lidar_queue_lock.release()
 
-    def tts_callback(self, msg) -> None:
-        stt_data = np.frombuffer(msg.data, dtype=np.uint8)
-        self.stt_queue_lock.acquire()
-        self.stt_queue.put(stt_data)
-        self.stt_queue_lock.release()
+    def stt_callback(self, msg) -> None:
+        print("Received STT message:", msg.data)
+        # self.stt_queue_lock.acquire()
+        self.stt_queue.put(msg.data)
+        # self.stt_queue_lock.release()
 
     def destroy_node(self):
         super().destroy_node()
@@ -118,7 +120,12 @@ class InterfaceNode(Node):
         # self.joystick_queue_lock = threading.Lock()
         # self.joystick_queue = queue.Queue()
 
-    # def start_workers(self) -> None:
+    def start_workers(self) -> None:
+        pass
+    #     # Create a thread for the STT subscriber
+    #     self.stt_subscriber_event = threading.Event()
+    #     self.stt_subscriber_event.clear()
+    #     self.stt_subscriber_thread = threading.Thread(target=self._stt, name='stt_subscriber')
 
         # self.joystick_publisher_event = threading.Event()
         # self.joystick_publisher_event.clear()
@@ -127,7 +134,14 @@ class InterfaceNode(Node):
         # self.joystick_publisher_thread.start()
 
 
-    # def stop_workers(self):
+    def stop_workers(self):
+        pass
+
+    #     if hasattr(self, 'stt_subscriber_event') and self.stt_subscriber_event != None:
+    #         self.stt_subscriber_event.set()
+    #     if hasattr(self, 'stt_subscriber_thread') and self.stt_subscriber_thread.is_alive():
+    #         self.stt_subscriber_thread.join()
+
 
         # if hasattr(self, 'joystick_publisher_event') and self.joystick_publisher_event != None:
         #     self.joystick_publisher_event.set()
@@ -177,9 +191,11 @@ class InterfaceNode(Node):
     #     return data
     
     def get_stt(self):
-        self.stt_queue_lock.acquire()
+        # return "q"
+        print("Getting STT message from queue...")
+        # self.stt_queue_lock.acquire()
         data = self.stt_queue.get()
-        self.stt_queue_lock.release()
+        # self.stt_queue_lock.release()
         return data
     
     # def set_joystick(self, jstk: list):
@@ -188,15 +204,10 @@ class InterfaceNode(Node):
     #     self.joystick_queue.put(jstk_msg)
     #     self.joystick_queue_lock.release()
 
-    def init_server(self):
-        server = SocketServer('localhost', 9000, self)  # Adjust host and port as needed
-        try:
-            server.start()
-        except KeyboardInterrupt:
-            print('Server shutting down...')
-        finally:
-            server.shutdown()
-            print('Server stopped')
+    def start_server(self):
+        self.server = SocketServer('localhost', 6660, self)
+        self.server_thread = threading.Thread(target=self.server.start)
+        self.server_thread.start()
 
 
 def main(args=None):
@@ -204,16 +215,26 @@ def main(args=None):
 
     api = InterfaceNode()
 
+    # server = SocketServer('localhost', 5000, api)  # Adjust host and port as needed
+    # server_process = multiprocessing.Process(target=server.start)
+
+
     try:
+        # server_process.start()
         rclpy.spin(api)
     except KeyboardInterrupt:
         api.get_logger().info('Keyboard interrupt')
+    finally:
+        api.stop_workers()
+        api.server.shutdown()
+        api.destroy_node()
 
-    api.stop_workers()
 
-    api.destroy_node()
+        rclpy.shutdown()
 
-    rclpy.shutdown()
+        # server.shutdown()
+        # server_process.join()
+
 
 
 if __name__ == '__main__':

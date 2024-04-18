@@ -5,7 +5,7 @@ import cv2
 
 # Constants
 HEADER_FORMAT = "!HI"
-MESSAGE_HEADER_SIZE = struct.sizeof(HEADER_FORMAT)
+MESSAGE_HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 VIDEO_STREAM_ID = 0  # We'll keep things simple with a single stream
 
 # Message Type Enums (make sure these match your client-side definitions)
@@ -95,7 +95,8 @@ class SocketServer:
         elif message_type == MessageType.IMAGE_ANALYSIS:
             self.handle_image_analysis(data)
         elif message_type == MessageType.MIC:
-            self.handle_mic(data)
+            instr = struct.unpack(msg_formats.get(MessageType.MIC), data)[0]
+            self.handle_mic(instr)
         elif message_type == MessageType.STT:
             self.handle_stt(data)
         elif message_type == MessageType.LIDAR:
@@ -165,6 +166,7 @@ class SocketServer:
         
         stt_res = stt_res.encode('utf-8')
         
+        print(f"Sending STT result: {stt_res}")
         # Send STT response
         client.sendall(struct.pack(HEADER_FORMAT, MessageType.TEXT, len(stt_res)))
         client.sendall(stt_res)

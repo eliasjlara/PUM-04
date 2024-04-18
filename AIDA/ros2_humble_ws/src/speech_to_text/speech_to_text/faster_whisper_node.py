@@ -5,7 +5,7 @@ from rclpy.node import Node
 from audio_data.msg import AudioData
 from aida_interfaces.srv import SetState
 from std_msgs.msg import String
-from speech_to_text.faster_whisper_logic import FasterWhisperLogic
+from speech_to_text.whisper_logic import SpeechToText
 
 
 
@@ -61,7 +61,7 @@ class STTNode(Node):
         self.subscription # prevent unused variable warning
         
         # Init the logic class for STT
-        self.stt_model = FasterWhisperLogic()
+        self.stt_model = SpeechToText()
 
         # Init the services for the node
         self.init_services()
@@ -85,12 +85,10 @@ class STTNode(Node):
             self.get_logger().info("STT node: Receiving audio data from topic")
             audio_data = self._message_to_numpy_array(msg)
             self.get_logger().info("STT node: Applying STT model to audio data")
-            translation = self.stt_model.transcribe_audio(audio_data)
-            for segment in translation:
-                # The segment is the result of the transcription, strip of trailing and leading whitespaces
-                result = segment.text.strip() 
-                self.get_logger().info("STT node: Transcription contains segment: " + result)
-                self.publish_result(result)
+            result = self.stt_model.transcribe_audio(audio_data)
+            # The segment is the result of the transcription, strip of trailing and leading whitespaces
+            self.get_logger().info("STT node: Transcription contains segment: " + result)
+            self.publish_result(result)
             self.get_logger().info("STT node: The current transcription is finished")
         else:
             self.get_logger().info("STT node: Node is idle, no transcription is done")

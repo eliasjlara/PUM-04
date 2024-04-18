@@ -1,4 +1,4 @@
-from faster_whisper import WhisperModel
+# from faster_whisper import WhisperModel
 import numpy as np
 
 class FasterWhisperLogic():
@@ -17,7 +17,8 @@ class FasterWhisperLogic():
         if model is None:
             model = "base.en"
 
-        self.model = WhisperModel(model)
+        # self.model = WhisperModel(model)
+        self.model = None
     
     def transcribe_audio(self, audio_data : np.ndarray) -> list:
         """
