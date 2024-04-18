@@ -1,3 +1,9 @@
 ros2_humble_ws/install
 ros2_humble_ws/log
 ros2_humble_ws/build
+ros2_humble_ws/src/speech_to_text/.pytest_cache
+ros2_humble_ws/src/speech_to_text/speech_to_text/__pycache__
+ros2_humble_ws/src/speech_to_text/test/__pycache__
+ros2_humble_ws/src/speech_to_text/install
+ros2_humble_ws/src/speech_to_text/log
+ros2_humble_ws/src/speech_to_text/build
