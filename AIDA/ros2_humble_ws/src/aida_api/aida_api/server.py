@@ -24,10 +24,7 @@ class MessageType:
     VIDEO_FRAME = 10
     LIDAR_DATA = 11
     AUDIO = 12
-    VIDEO_CONFIG = 13
     JOYSTICK_MOVE = 14
-
-"!Hi"
 
 msg_formats = {
     MessageType.CAMERA: '!H',
@@ -41,7 +38,6 @@ msg_formats = {
     MessageType.VIDEO_FRAME: '!HII',
     MessageType.LIDAR_DATA: '!H',
     MessageType.AUDIO: '!H',
-    MessageType.VIDEO_CONFIG: '!H',
     MessageType.JOYSTICK_MOVE: '!H'
 }
 
@@ -81,10 +77,11 @@ class SocketServer:
                 data = client.recv(MESSAGE_HEADER_SIZE) 
                 if not data: 
                     break
-                message_type, payload_length = struct.unpack('!HI', data)
+                message_type, payload_length = struct.unpack(HEADER_FORMAT, data)
                 if payload_length > 0:
                     payload = client.recv(payload_length)
                 else:
+                    # We do not require to receive a payload if the length is zero.
                     payload = b'\0x00'
                 self.handle_message(client, message_type, payload)
             except ConnectionError:
@@ -94,7 +91,7 @@ class SocketServer:
     def handle_message(self, client, message_type, data):
         if message_type == MessageType.CAMERA:
             instr = struct.unpack(msg_formats.get(MessageType.CAMERA), data)[0]
-            self.handle_camera(instr)
+            # self.handle_camera(instr)
         elif message_type == MessageType.IMAGE_ANALYSIS:
             self.handle_image_analysis(data)
         elif message_type == MessageType.MIC:
@@ -106,34 +103,33 @@ class SocketServer:
         elif message_type == MessageType.REQ_VIDEO_FEED:
             self.handle_req_video_feed(client)
         elif message_type == MessageType.REQ_STT:
-            self.handle_req_stt(data)
+            self.handle_req_stt(client)
         elif message_type == MessageType.TEXT:
             self.handle_text(data)
-        elif message_type == MessageType.VIDEO_FRAME:
-            self.handle_video_frame(data)
-        elif message_type == MessageType.LIDAR_DATA:
-            self.handle_lidar_data(data)
-        elif message_type == MessageType.AUDIO:
-            self.handle_audio(data)
-        elif message_type == MessageType.VIDEO_CONFIG:
-            self.handle_video_config(data)
         elif message_type == MessageType.JOYSTICK_MOVE:
             self.handle_joystick_move(data)
 
 
     def handle_camera(self, data):
-        # Implement logic to handle camera message
         if data == Instruction.ON:
-            self.video_capture = cv2.VideoCapture(0)
-            self.active_video = True
-            return self.video_capture.isOpened()
+            self.ros.start_camera()
         elif data == Instruction.OFF:
-            if self.video_capture:
-                self.video_capture.release()
-                self.video_capture = None
-                self.active_video = False  
+            self.ros.stop_camera()
         else:
             print('Unknown camera instruction:', data)
+
+    # def handle_camera(self, data):
+    #     if data == Instruction.ON:
+    #         self.video_capture = cv2.VideoCapture(0)
+    #         self.active_video = True
+    #         return self.video_capture.isOpened()
+    #     elif data == Instruction.OFF:
+    #         if self.video_capture:
+    #             self.video_capture.release()
+    #             self.video_capture = None
+    #             self.active_video = False  
+    #     else:
+    #         print('Unknown camera instruction:', data)
 
     def handle_image_analysis(self, data):
         # Implement logic to handle image analysis message
@@ -142,8 +138,11 @@ class SocketServer:
     def handle_mic(self, data):
         # Implement logic to handle mic message
         if data == Instruction.ON:
-            self.active_audio = True
-            
+            self.ros.start_microphone()
+        elif data == Instruction.OFF:
+            self.ros.stop_microphone() # You will probably not do this because the mic is always on a certain duration
+        else:
+            print('Unknown mic instruction:', data)
 
     def handle_stt(self, data):
         # Implement logic to handle STT message
@@ -159,32 +158,23 @@ class SocketServer:
         thread.start()
         self.io_threads.append(thread)
 
-    def handle_req_stt(self, data):
-        # Implement logic to handle request for STT
-        pass
+    def handle_req_stt(self, client):
+        stt_res = self.ros.get_stt()
+        if not stt_res:
+            stt_res = '-- No speech detected --'
+        
+        stt_res = stt_res.encode('utf-8')
+        
+        # Send STT response
+        client.sendall(struct.pack(HEADER_FORMAT, MessageType.TEXT, len(stt_res)))
+        client.sendall(stt_res)
 
     def handle_text(self, text):
-        # Implement logic to handle text message
-        print(text)
-
-    def handle_video_frame(self, data):
-        # Implement logic to handle video frame message
-        pass
-
-    def handle_lidar_data(self, data):
-        # Implement logic to handle lidar data message
-        pass
-
-    def handle_audio(self, data):
-        # Implement logic to handle audio message
-        pass
+        # Echo text message to console
+        print("Client says:", text)
 
     def handle_joystick_move(self, data):
         # Implement logic to handle joystick move command
-        pass
-
-    def handle_video_config(self, data):
-        # Implement logic to handle video configuration message
         pass
 
     def send_video_stream(self, conn):
@@ -199,18 +189,21 @@ class SocketServer:
         frame_bytes = cv2.imencode(".jpg", frame)[1].tobytes()  # Encode as JPEG 
         frame_size = len(frame_bytes)
         # Send video frame header
-        conn.sendall(struct.pack("!HI", MessageType.VIDEO_FRAME, len(frame_bytes)))
+        conn.sendall(struct.pack(HEADER_FORMAT, MessageType.VIDEO_FRAME, len(frame_bytes)))
         # Send video frame data
         conn.sendall(frame_bytes)
 
     def get_video_frame(self):
-        # Capture a video frame
-        if self.video_capture:
-            ret, frame = self.video_capture.read()
-        else:
-            print('No video capture device available')
-            frame = None
-        return frame
+        return self.ros.get_video_frame()
+
+    # def get_video_frame(self):
+    #     # Capture a video frame
+    #     if self.video_capture:
+    #         ret, frame = self.video_capture.read()
+    #     else:
+    #         print('No video capture device available')
+    #         frame = None
+    #     return frame
 
 
 
