@@ -2,14 +2,14 @@ import queue
 import threading
 import time
 import numpy as np
-import multiprocessing
 
-from aida_api.server import SocketServer
+from aida_api.socket_server import SocketServer
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from aida_interfaces.srv import SetState
+from aida_interfaces.msg import Joystick
 # from lidar_data.msg import LiDAR
 
 
@@ -17,6 +17,9 @@ VIDEO_TOPIC = 'camera/image_raw'
 LIDAR_TOPIC = 'lidar'
 STT_TOPIC = 'stt/stt_result'
 JOYSTICK_TOPIC = 'joystick/pos'
+
+CAMERA_CONTROL_SERVICE = 'camera/SetState'
+MIC_CONTROL_SERVICE = 'mic/SetState'
 
 
 class InterfaceNode(Node):
@@ -30,7 +33,7 @@ class InterfaceNode(Node):
 
         self.start_server()
         self.init_clients()
-        # self.init_pubs()
+        self.init_pubs()
         self.init_subs()
         self.init_queues()
     
@@ -78,20 +81,20 @@ class InterfaceNode(Node):
 
     def stt_callback(self, msg) -> None:
         print("Received STT message:", msg.data)
-        # self.stt_queue_lock.acquire()
+        self.stt_queue_lock.acquire()
         self.stt_queue.put(msg.data)
-        # self.stt_queue_lock.release()
+        self.stt_queue_lock.release()
 
     def destroy_node(self):
         super().destroy_node()
 
     def init_clients(self) -> None:
-        self.camera_client = self.create_client(SetState, 'camera/SetState')
-        self.mic_client = self.create_client(SetState, 'mic/SetState')
+        self.camera_client = self.create_client(SetState, CAMERA_CONTROL_SERVICE)
+        self.mic_client = self.create_client(SetState, MIC_CONTROL_SERVICE)
         # self.lidar_client = self.create_client(SetState, 'lidar/SetState')
 
-    # def init_pubs(self):
-    #     self.joystick = self.create_publisher(Joystick, JOYSTICK_TOPIC, 10)
+    def init_pubs(self):
+        self.joystick = self.create_publisher(Joystick, JOYSTICK_TOPIC, 10)
 
     def init_subs(self) -> None:
         self.video_sub = self.create_subscription(
@@ -117,66 +120,54 @@ class InterfaceNode(Node):
         # self.lidar_queue = queue.Queue()
         self.stt_queue_lock = threading.Lock()
         self.stt_queue = queue.Queue()
-        # self.joystick_queue_lock = threading.Lock()
-        # self.joystick_queue = queue.Queue()
+        self.joystick_queue_lock = threading.Lock()
+        self.joystick_queue = queue.Queue()
 
     def start_workers(self) -> None:
-        pass
-    #     # Create a thread for the STT subscriber
-    #     self.stt_subscriber_event = threading.Event()
-    #     self.stt_subscriber_event.clear()
-    #     self.stt_subscriber_thread = threading.Thread(target=self._stt, name='stt_subscriber')
 
-        # self.joystick_publisher_event = threading.Event()
-        # self.joystick_publisher_event.clear()
-        # self.joystick_publisher_thread = threading.Thread(target=self.publish_joystick, name='joystick_publisher')
+        self.joystick_publisher_event = threading.Event()
+        self.joystick_publisher_event.clear()
+        self.joystick_publisher_thread = threading.Thread(target=self.publish_joystick, name='joystick_publisher')
 
-        # self.joystick_publisher_thread.start()
+        self.joystick_publisher_thread.start()
 
 
     def stop_workers(self):
-        pass
 
-    #     if hasattr(self, 'stt_subscriber_event') and self.stt_subscriber_event != None:
-    #         self.stt_subscriber_event.set()
-    #     if hasattr(self, 'stt_subscriber_thread') and self.stt_subscriber_thread.is_alive():
-    #         self.stt_subscriber_thread.join()
-
-
-        # if hasattr(self, 'joystick_publisher_event') and self.joystick_publisher_event != None:
-        #     self.joystick_publisher_event.set()
-        # if hasattr(self, 'joystick_publisher_thread') and self.joystick_publisher_thread.is_alive():
-        #     self.joystick_publisher_thread.join()
+        if hasattr(self, 'joystick_publisher_event') and self.joystick_publisher_event != None:
+            self.joystick_publisher_event.set()
+        if hasattr(self, 'joystick_publisher_thread') and self.joystick_publisher_thread.is_alive():
+            self.joystick_publisher_thread.join()
 
 
-    # def _to_joystick_msg(self, data):
-    #     """
-    #     Converts audio data to a ROS2 message.
+    def _to_joystick_msg(self, data):
+        """
+        Converts joystick data to a ROS2 compatible Joystick message.
 
-    #     This method converts the audio data, sample rate, channels, and duration into a ROS2 message format.
-    #     """
-    #     msg = Joystick()
-    #     msg.x = data[0].tobytes()
-    #     msg.y = data[1].tobytes()
-    #     return msg
+        This method packs the joystick x and y into the message format.
+        """
+        msg = Joystick()
+        msg.x = data[0].tobytes()
+        msg.y = data[1].tobytes()
+        return msg
 
-    # def publish_joystick(self):
-    #     """
-    #     Publishes joystick data.
+    def publish_joystick(self):
+        """
+        Publishes joystick data.
 
-    #     This method continuously publishes joystick data from the joystick queue.
-    #     """
-    #     while True:
-    #         if self.joystick_publisher_event.is_set():
-    #             break
-    #         try:
-    #             msg = self.capture_queue.get(block=True, timeout=2)
-    #         except queue.Empty:
-    #             msg = None
-    #         if self.joystick_publisher_event.is_set():
-    #             break
-    #         if msg != None:
-    #             self.joystick_publisher.publish(msg)
+        This method continuously publishes joystick data from the joystick queue.
+        """
+        while True:
+            if self.joystick_publisher_event.is_set():
+                break
+            try:
+                msg = self.capture_queue.get(block=True, timeout=2)
+            except queue.Empty:
+                msg = None
+            if self.joystick_publisher_event.is_set():
+                break
+            if msg != None:
+                self.joystick_publisher.publish(msg)
 
     def get_video_frame(self):
         self.video_queue_lock.acquire()
@@ -191,18 +182,17 @@ class InterfaceNode(Node):
     #     return data
     
     def get_stt(self):
-        # return "q"
         print("Getting STT message from queue...")
-        # self.stt_queue_lock.acquire()
+        self.stt_queue_lock.acquire()
         data = self.stt_queue.get()
-        # self.stt_queue_lock.release()
+        self.stt_queue_lock.release()
         return data
     
-    # def set_joystick(self, jstk: list):
-    #     jstk_msg = self._to_joystick_msg(jstk)
-    #     self.joystick_queue_lock.acquire()
-    #     self.joystick_queue.put(jstk_msg)
-    #     self.joystick_queue_lock.release()
+    def set_joystick(self, jstk: list):
+        jstk_msg = self._to_joystick_msg(jstk)
+        self.joystick_queue_lock.acquire()
+        self.joystick_queue.put(jstk_msg)
+        self.joystick_queue_lock.release()
 
     def start_server(self):
         self.server = SocketServer('localhost', 6660, self)
@@ -215,12 +205,7 @@ def main(args=None):
 
     api = InterfaceNode()
 
-    # server = SocketServer('localhost', 5000, api)  # Adjust host and port as needed
-    # server_process = multiprocessing.Process(target=server.start)
-
-
     try:
-        # server_process.start()
         rclpy.spin(api)
     except KeyboardInterrupt:
         api.get_logger().info('Keyboard interrupt')
@@ -229,11 +214,7 @@ def main(args=None):
         api.server.shutdown()
         api.destroy_node()
 
-
         rclpy.shutdown()
-
-        # server.shutdown()
-        # server_process.join()
 
 
 
