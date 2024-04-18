@@ -38,7 +38,7 @@ msg_formats = {
     MessageType.VIDEO_FRAME: '!HII',
     MessageType.LIDAR_DATA: '!H',
     MessageType.AUDIO: '!H',
-    MessageType.JOYSTICK_MOVE: '!H'
+    MessageType.JOYSTICK_MOVE: '!ii'
 }
 
 
@@ -176,8 +176,8 @@ class SocketServer:
         print("Client says:", text)
 
     def handle_joystick_move(self, data):
-        # Implement logic to handle joystick move command
-        pass
+        data = struct.unpack(msg_formats.get(MessageType.JOYSTICK_MOVE), data)
+        self.ros.set_steering(data)
 
     def send_video_stream(self, conn):
         while True:  # Video streaming loop

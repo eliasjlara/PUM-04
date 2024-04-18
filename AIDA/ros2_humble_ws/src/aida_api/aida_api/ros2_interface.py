@@ -188,7 +188,7 @@ class InterfaceNode(Node):
         self.stt_queue_lock.release()
         return data
     
-    def set_joystick(self, jstk: list):
+    def set_steering(self, jstk: list):
         jstk_msg = self._to_joystick_msg(jstk)
         self.joystick_queue_lock.acquire()
         self.joystick_queue.put(jstk_msg)
