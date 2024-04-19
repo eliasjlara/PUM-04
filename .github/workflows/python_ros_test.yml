@@ -22,7 +22,7 @@ jobs:
     - name: Setup ROS2
       uses: ros-tooling/setup-ros@0.7.1
       with: 
-        required-ros-distribution: humble
+        required-ros-distributions: humble
  
     - name: Checkout code
       uses: actions/checkout@v3
