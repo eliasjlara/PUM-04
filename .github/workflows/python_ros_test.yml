@@ -13,41 +13,31 @@ on:
     
 
 jobs:
-  
-
-  build-and-test:
-    
+  build_docker:
     runs-on: ubuntu-22.04
+    container:
+      image: ubuntu:jammy
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4.0.0
+    - uses: ros-tooling/setup-ros@v0.7
       with:
-        path: AIDA/ros2_humble_ws
+        required-ros-distributions: humble
+    - run: "source /opt/ros/humble/setup.bash && ros2 run --help"
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-
     - name: Install python dependencies
       run: | 
         pip install faster-whisper
         pip install numpy==1.24.3
         pip install sounddevice
         pip install librosa
-  
-    - name: Install ros2
-      run: |
-        sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list
-        sudo apt update
-        sudo apt install -y python3-colcon-common-extensions python3-rosdep
-        sudo rosdep init
-        rosdep update
-        rosdep install -y --rosdistro humble --from-paths . --ignore-src
-        source /opt/ros/humble/setup.bash
-        colcon build --packages-skip-regex '.*'
+    - name: Running tests for ROS2
+      uses: ros-tooling/action-ros-ci@v0.2
+      with:
+        package-name: audio_package speech_to_text
+        target-ros2-distro: humble
+        use_ros2_testing: true
     
-    - name: Build project
-      run: | 
-        source install/setup.bash
-        colcon build --event-handlers console_cohesion+ --cmake-args
+
+ 
