@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
     steps:
     - name: Setup ROS2
-      uses: ros-tooling/setup-ros@0.7
+      uses: ros-tooling/setup-ros@0.0.15
       with: 
         required-ros-distribution: humble
  
