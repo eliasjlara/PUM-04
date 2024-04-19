@@ -21,6 +21,7 @@ jobs:
     - uses: ros-tooling/setup-ros@v0.7
       with:
         required-ros-distributions: humble
+        
     - run: "source /opt/ros/humble/setup.bash && ros2 run --help"
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -37,7 +38,10 @@ jobs:
       with:
         package-name: audio_package speech_to_text
         target-ros2-distro: humble
-        use_ros2_testing: true
+        no-symlink-install: true
+        #vcs-repo-file-url: "https://github.com/eliasjlara/PUM-04/tree/aida/AIDA/ros2_humble_ws"
+        # use_ros2_testing: true
+        
     
 
  
