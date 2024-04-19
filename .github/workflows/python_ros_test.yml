@@ -70,4 +70,9 @@ jobs:
           rosdep update
           cd ros_ws
           rosdep install --from-paths src -y --ignore-src
-          colcon build --packages-select AIDA
+          colcon build
+
+      - name: Run Colcon tests
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon test
