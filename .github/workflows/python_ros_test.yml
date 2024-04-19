@@ -37,23 +37,16 @@ jobs:
         pip install faster-whisper
         pip install librosa
         pip install sounddevice
-    #- name: Run build and tests
-    #  uses: ros-tooling/action-ros-ci@0.3.7
-    #  with:
-    #      package-name: speech_to_text 
-    #      target-ros2-distro: humble
-
-
-    - name: run builds and tests
-      run: |
-        colcon build
-        source install/localsetup.bash
-        colcon test
+    - name: Run build and tests
+      uses: ros-tooling/action-ros-ci@0.3.7
+      with:
+          package-name: speech_to_text audio_data audio aida_interfaces
+          target-ros2-distro: humble
     
-    #- name: Upload logs
-    #  uses: actions/upload-artifact@v1
-    #  with: 
-    #    name: colcon-logs
+    - name: Upload logs
+      uses: actions/upload-artifact@v1
+      with: 
+        name: colcon-logs
         path: ros_ws/log
       if: always()
   
