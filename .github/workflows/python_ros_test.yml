@@ -38,6 +38,7 @@ jobs:
     - name: Run build and test
       run: |
         colcon build --symlink-install
+        source opt/ros/humble/setup.bash
         colcon test
         
       
