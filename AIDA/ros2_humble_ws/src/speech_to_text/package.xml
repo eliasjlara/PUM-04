@@ -4,7 +4,7 @@
   <name>speech_to_text</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="--">alex</maintainer>
+  <maintainer email="18600349+thulevall@users.noreply.github.com">alex</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>
