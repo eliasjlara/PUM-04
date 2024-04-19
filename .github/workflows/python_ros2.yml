@@ -1,4 +1,4 @@
-name: project_legion_build
+name: Python tests for ros2
 
 on:
   # Triggered whenever push to the master branch
