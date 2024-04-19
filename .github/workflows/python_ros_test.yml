@@ -54,6 +54,8 @@ jobs:
           pip install faster-whisper
           pip install numpy
           pip install sounddevice
+          pip install rosidl_adapter
+
 
   
         # We want to use GitHub CI checkout version 3 for checking out the branch
