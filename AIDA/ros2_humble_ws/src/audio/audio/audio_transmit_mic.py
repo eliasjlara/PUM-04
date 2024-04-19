@@ -4,8 +4,6 @@ import sounddevice as sd
 import time
 import numpy as np
 
-
-
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData 
