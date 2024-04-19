@@ -47,6 +47,14 @@ jobs:
           cd ros_ws
           colcon build
           source install/setup.bash
+
+      - name: Install Python dependencies
+        run: |
+          pip install librosa
+          pip install faster-whisper
+          pip install numpy
+          pip install sounddevice
+
   
         # We want to use GitHub CI checkout version 3 for checking out the branch
       - uses: actions/checkout@v3
