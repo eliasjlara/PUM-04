@@ -36,9 +36,15 @@ jobs:
         pip install librosa
     - name: Setup workspace
       uses: ichiro-its/ros2-ws-action/setup@v1.0.0
+      with: 
+        distro: humble
     
     - name: Build workspace
       uses: ichiro-its/ros2-ws-action/build@v1.0.0
+      with: 
+        distro: humble
     
     - name: Test workspace
       uses: ichiro-its/ros2-ws-action/test@v1.0.0
+      with: 
+        distro: humble
