@@ -54,7 +54,7 @@ jobs:
           pip install faster-whisper
           pip install numpy
           pip install sounddevice
-          pip install rosidl_adapter
+      
 
 
   
