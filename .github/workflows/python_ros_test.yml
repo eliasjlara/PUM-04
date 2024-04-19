@@ -35,12 +35,18 @@ jobs:
         pip install faster-whisper
         pip install numpy==1.24.3
         
-    - name: Run Tests
-      uses: ros-tooling/action-ros-ci@0.3.7
-      with:
-        target-ros2-distro: humble
-        package-name: |
-          aida_interfaces
-          speech_to_text
-          audio_data
-          audio
+    - name: Run build and test
+      run: |
+        colcon build
+        source install/localsetup.bash
+        colcon test
+        
+      
+      #uses: ros-tooling/action-ros-ci@0.3.7
+      #with:
+        #target-ros2-distro: humble
+        #package-name: |
+          #aida_interfaces
+          #speech_to_text
+          #audio_data
+          #audio
