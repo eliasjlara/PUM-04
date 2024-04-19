@@ -33,7 +33,11 @@ jobs:
         pip install faster-whisper
         pip install librosa
         pip install sounddevice
-        pip install empy
+        sudo pip install empy  # Install empy globally
+
+    - name: Ensure Python Path
+      run: |
+        echo "PYTHONPATH=$(python -m site --user-site)" >> $GITHUB_ENV
         
     - name: Set up Python
       uses: actions/setup-python@v3
