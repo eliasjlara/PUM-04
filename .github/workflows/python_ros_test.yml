@@ -40,10 +40,3 @@ jobs:
           speech_to_text
           audio_data
           audio
-
-    - name: Upload Logs
-      uses: actions/upload-artifact@v1
-      with:
-        name: colcon-logs
-        path: ros_ws/log
-      if: always()
