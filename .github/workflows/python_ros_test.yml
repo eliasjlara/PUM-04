@@ -26,17 +26,20 @@ jobs:
  
     - name: Checkout code
       uses: actions/checkout@v3
-  
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.10'
+
     - name: Install python dependancies
       run: | 
         pip install numpy
         pip install faster-whisper
         pip install librosa
         pip install sounddevice
+        pip install empy
+        
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+        
     - name: Run build and tests
       uses: ros-tooling/action-ros-ci@0.3.7
       with:
