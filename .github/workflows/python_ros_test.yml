@@ -23,7 +23,7 @@ jobs:
         required-ros-distributions: humble
         
     - run: | 
-        source /opt/ros/humble/setup.bash
+        echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
     #- run: "source /opt/ros/humble/setup.bash && ros2 run --help"
     - name: Set up Python
       uses: actions/setup-python@v4
