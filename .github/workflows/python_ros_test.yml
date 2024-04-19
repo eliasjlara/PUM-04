@@ -19,7 +19,10 @@ jobs:
     strategy: 
       fail-fast: false
     steps:
-  
+    - name: Setup ROS2
+      uses: ros-tooling/setup-ros@0.7
+      with: 
+        required-ros-distribution: humble
  
     - name: Checkout code
       uses: actions/checkout@v3
