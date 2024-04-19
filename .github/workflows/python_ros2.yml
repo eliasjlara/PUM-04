@@ -1,0 +1,61 @@
+name: Python and ROS 2 Tests
+
+on:
+  push:
+    branches:
+      - main  # Adjust to your main branch name
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Test
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'  # Choose the Python version you need
+
+    - name: Install ROS 2 dependencies
+      run: |
+       sudo apt install software-properties-common
+        sudo add-apt-repository universe
+
+        sudo apt update && sudo apt install curl -y gnupg2 lsb-release
+        sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+        sudo apt update
+        sudo apt install -y python3-humble-desktop
+        sudo apt install -y python3-colcon-extensions
+        echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+
+    - name: Install Python dependencies
+      run: |
+        pip install numpy
+        pip install faster-whisper
+        pip install librosa
+        pip install sounddevice
+        
+
+    - name: Build ROS 2 packages
+      run: |
+        mkdir -p ros2_ws/src
+        cp -r * ros2_ws/src/
+        cd ros2_ws
+        . /opt/ros/foxy/setup.sh
+        colcon build
+        
+    - name: Run ROS 2 Tests
+      run: |
+        . ros2_ws/install/localsetup.sh
+        colcon test
+
+    # You can add more steps as needed, such as linting, code coverage, etc.
