@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,29 +36,38 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aida.ui.theme.AIDATheme
+import com.example.aida.ui.theme.TopBarColor
 import kotlinx.coroutines.launch
 
-
+/**
+ * MainActivity for application. Displays a top bar that contains a menu
+ * and different widgets as well as the main application. The main switches
+ * between a camera/lidar feed and configuration page
+ *
+ * TODO: Fetch real data for camera feed
+ * TODO: Fetch real data for lidar feed
+ * TODO: Use classes for camera and configuration page?
+ * TODO: Decide on what widgets in top bar should do
+ *
+ * @author Elias
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             AIDATheme {
-
-                var state by remember { mutableStateOf(0) }
-
+                var topBarTitle by remember { mutableStateOf("AIDA Remote Control Beta") }
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                var state by remember { mutableIntStateOf(0) }
                 val scope = rememberCoroutineScope()
 
-                var topBarTitle by remember { mutableStateOf("AIDA Remote Control Beta") }
-
+                // Setup menu
                 ModalNavigationDrawer(
                     drawerState = drawerState,
                     drawerContent = {
@@ -111,14 +121,13 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.background
                     ) {
                         val configuration = LocalConfiguration.current
-
                         val screenHeight = configuration.screenHeightDp.dp
                         val screenWidth = configuration.screenWidthDp.dp
-
+                        // Dynamically set bar height depending on phone/tablet
                         val barHeight = if (screenHeight / 8 < 50.dp) screenHeight / 8 else 50.dp
 
                         TopBar(
-                            onConfigurationClicked = {
+                            onMenuClicked = {
                                 scope.launch {
                                     drawerState.apply {
                                         if (isClosed) open() else close()
@@ -144,20 +153,33 @@ class MainActivity : ComponentActivity() {
 
 }
 
+
+/**
+ * Function for the top bar, contains both UI and logic, however some
+ * widgets need to be decided on what they should do.
+ *
+ * @param onMenuClicked records if the menu button has been pressed
+ * @param onCameraClicked records if the camera on button has been pressed
+ * @param barHeight used to determine the size of the top bar
+ * @param topBarTitle used when want to dynamically change the title
+ * @author Elias
+ */
 @Composable
 fun TopBar(
-    onConfigurationClicked: () -> Unit,
+    onMenuClicked: () -> Unit,
     onCameraClicked: () -> Unit,
     screenWidth: Dp,
     barHeight: Dp,
     topBarTitle: String,
 ) {
+    val barPadding = 15.dp
+
     Row(
         modifier = Modifier
             .height(barHeight)
             .width(screenWidth)
-            .background(Color(0xFFD9D9D9).copy(alpha = 0.6f))
-            .padding(start = 15.dp, end = 15.dp),
+            .background(TopBarColor.copy(alpha = 0.6f))
+            .padding(start = barPadding, end = barPadding),
         horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -169,7 +191,7 @@ fun TopBar(
                 painter = painterResource(id = R.drawable.configuration_button),
                 contentDescription = "configuration",
                 Modifier
-                    .clickable(onClick = onConfigurationClicked)
+                    .clickable(onClick = onMenuClicked)
                     .scale(1.2f)
             )
         }

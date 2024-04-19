@@ -24,6 +24,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 
+/**
+ * The configuration page contains information on how to connect to AIDA
+ * It's still in early development and might therefore change, currently
+ * there is no logic and only an UI component
+ *
+ * @param barHeight used to ensure that the content is padded correctly
+ * @author Elias
+ */
 @Composable
 fun ConfigurationPage(barHeight: Dp) {
     Row(
@@ -31,16 +39,21 @@ fun ConfigurationPage(barHeight: Dp) {
             .padding(top = barHeight)
             .fillMaxSize(),
     ) {
+        val paddingTop = 20.dp
+        val paddingSides = 30.dp
+        val rowSpacing = 10.dp
+
+        // First column for SSH Connection Data
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
-                .padding(top = 20.dp, start = 30.dp, end = 30.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+                .padding(top = paddingTop, start = paddingSides, end = paddingSides),
+            verticalArrangement = Arrangement.spacedBy(rowSpacing),
             horizontalAlignment = Alignment.Start
         ) {
             Text(text = "SSH Connection Data", modifier = Modifier.align(Alignment.Start))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(rowSpacing)
             ) {
                 var ip by remember { mutableStateOf("") }
                 var port by remember { mutableStateOf("") }
@@ -59,7 +72,7 @@ fun ConfigurationPage(barHeight: Dp) {
                 )
             }
             Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(rowSpacing)
             ) {
                 var username by remember { mutableStateOf("") }
                 var password by remember { mutableStateOf("") }
@@ -96,11 +109,12 @@ fun ConfigurationPage(barHeight: Dp) {
             color = Color.Gray
         )
 
+        // Second column for the SSH Terminal
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
-                .padding(top = 10.dp, start = 20.dp, end = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+                .padding(top = paddingTop, start = paddingSides, end = paddingSides),
+            verticalArrangement = Arrangement.spacedBy(rowSpacing),
             horizontalAlignment = Alignment.Start
         ) {
             Text(text = "SSH Terminal", modifier = Modifier.align(Alignment.Start))

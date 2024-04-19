@@ -60,6 +60,17 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.delay
 
+/**
+ * The camera page displays both the camera feed and the lidar. Logic
+ * for switching between camera feed and lidar feed is currently implemented
+ * but the correct data is not fetched. Therefore, placeholder pictures
+ * is currently in use.
+ *
+ * @param screenHeight used to calculate space for page, might refactor
+ * @param barHeight used to ensure that the content is padded correctly
+ * @param screenWidth used to calculate space for page, might refactor
+ * @author Elias
+ */
 @OptIn(UnstableApi::class)
 @Composable
 fun CameraPage(
@@ -67,6 +78,8 @@ fun CameraPage(
     barHeight: Dp,
     screenWidth: Dp,
 ) {
+    val widgetPadding = 40.dp
+
     Box(
         modifier = Modifier
             .padding(top = barHeight)
@@ -76,7 +89,7 @@ fun CameraPage(
         var isLidarExpanded by remember { mutableStateOf(false) }
         var isVoiceRecording by remember { mutableStateOf(false) }
 
-        Background(isLidarExpanded = isLidarExpanded, screenWidth = screenWidth)
+        CameraFeed(isLidarExpanded = isLidarExpanded, screenWidth = screenWidth)
 
         Lidar(modifier = Modifier
             .align(Alignment.TopEnd)
@@ -87,6 +100,7 @@ fun CameraPage(
             onToggleLidar = { isLidarExpanded = !isLidarExpanded }
         )
 
+        // Displays the text from recorded AIDA instructions, i.e. speech to text
         VoiceCommandBox(
             modifier = Modifier
                 .padding(top = 3.dp, bottom = screenHeight - screenHeight / 4)
@@ -97,10 +111,8 @@ fun CameraPage(
             onToggleVoice = { isVoiceRecording = false }
         )
 
-        //VideoPlayerWithExoPlayer(uri = Uri.parse("http://10.0.2.2:5000/hls/playlist.m3u8"))
-
         RecordVoiceButton(modifier = Modifier
-            .padding(bottom = 40.dp, end = 40.dp)
+            .padding(bottom = widgetPadding, end = widgetPadding)
             .zIndex(3f)
             .size(120.dp)
             .clickable { isVoiceRecording = !isVoiceRecording }
@@ -109,7 +121,7 @@ fun CameraPage(
 
         Joystick(
             Modifier
-                .padding(bottom = 40.dp, start = 40.dp)
+                .padding(bottom = widgetPadding, start = widgetPadding)
                 .align(Alignment.BottomStart)
                 .zIndex(3f),
             joystickSize = 130F,
@@ -120,6 +132,127 @@ fun CameraPage(
     }
 }
 
+/**
+ * Displays the camera feed. Size is switched depending on whether the
+ * lidar is expanded. Placeholder picture for camera feed currently in
+ * use since logic is not implemented
+ *
+ * @param isLidarExpanded check if lidar is expanded.
+ * @author Elias
+ */
+@Composable
+fun CameraFeed(
+    screenWidth: Dp,
+    isLidarExpanded: Boolean
+) {
+    val imageSize by animateDpAsState(
+        targetValue = if (isLidarExpanded) screenWidth / 2 else screenWidth,
+        animationSpec = tween(durationMillis = 300), label = "animate camera feed"
+    )
+
+    Image(
+        painter = painterResource(id = R.drawable.aida_preview_image),
+        contentDescription = "aida preview image",
+        modifier = Modifier
+            .width(imageSize)
+            .fillMaxHeight()
+            .border(3.dp, Color.Gray, shape)
+            .clip(shape)
+            .zIndex(1f),
+        contentScale = ContentScale.Crop
+    )
+}
+
+/**
+ * Displays the lidar feed. Logic for resizing and it's animation is
+ * implemented. However, the lidar data is not being fetched and therefore
+ * a placeholder is in use
+ *
+ * @param modifier contains UI information that needs the scope from parent
+ * @param isLidarExpanded check if lidar is expanded, i.e. takes up half
+ * the screen
+ * @param onToggleLidar check for press on lidar map. Changes the size of
+ * the lidar display between small in the top right corner, and large and
+ * taking up half the screen
+ * @author Elias
+ */
+@Composable
+fun Lidar(
+    modifier: Modifier = Modifier,
+    screenWidth: Dp,
+    screenHeight: Dp,
+    isLidarExpanded: Boolean,
+    onToggleLidar: () -> Unit
+) {
+    var visible by remember { mutableStateOf(true) }
+
+    // Values used for animation
+    val lidarWidth by animateDpAsState(
+        targetValue = if (isLidarExpanded) screenWidth / 2 else screenWidth / 8,
+        animationSpec = tween(durationMillis = 300), label = "animate lidar"
+    )
+    val lidarHeight by animateDpAsState(
+        targetValue = if (isLidarExpanded) screenHeight else screenWidth / 8,
+        animationSpec = tween(durationMillis = 300), label = "animate lidar"
+    )
+    val paddingSize by animateDpAsState(
+        targetValue = if (isLidarExpanded) 0.dp else 10.dp,
+        animationSpec = tween(durationMillis = 300), label = "animate padding"
+    )
+    val expandButtonSize = if (screenHeight / 8 < 50.dp) 20.dp else 35.dp
+
+    Box(
+        modifier = modifier
+            .padding(paddingSize)
+            .width(lidarWidth)
+            .height(lidarHeight)
+            .clickable {
+                onToggleLidar()
+                visible = false
+            },
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.lidar_small),
+            contentDescription = "lidar map",
+            modifier = Modifier
+                .fillMaxSize()
+                .border(3.dp, Color.Gray, shape)
+                .clip(shape),
+            contentScale = ContentScale.FillBounds
+        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .padding(2.dp)
+                .size(expandButtonSize)
+                .align(if (isLidarExpanded) Alignment.TopEnd else Alignment.BottomStart)
+                .rotate(if (isLidarExpanded) 180f else 0f)
+                .alpha(if (visible) 1f else 0f),
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.lidar_expand),
+                contentDescription = "lidar expand",
+            )
+        }
+    }
+    LaunchedEffect(isLidarExpanded) {
+        delay(300)
+        visible = true
+    }
+}
+
+/**
+ * Displays the speech to text words, in a box, upon button press on
+ * the RecordVoiceButton
+ *
+ * @param modifier contains UI information that needs the scope from parent
+ * @param isVoiceRecording if voice is recording, display the box
+ * @param onToggleVoice update isVoiceRecording, needed since isVoiceRecording
+ * toggled both here, when the speech ends, and when the record button is pressed
+ * @author Elias
+ */
 @Composable
 fun VoiceCommandBox(
     modifier: Modifier = Modifier,
@@ -171,96 +304,12 @@ fun VoiceCommandBox(
     }
 }
 
-@Composable
-fun Background(
-    screenWidth: Dp,
-    isLidarExpanded: Boolean
-) {
-    val imageSize by animateDpAsState(
-        targetValue = if (isLidarExpanded) screenWidth / 2 else screenWidth,
-        animationSpec = tween(durationMillis = 300), label = "animate lidar"
-    )
-
-    Image(
-        painter = painterResource(id = R.drawable.aida_preview_image),
-        contentDescription = "aida preview image",
-        modifier = Modifier
-            .width(imageSize)
-            .fillMaxHeight()
-            .border(3.dp, Color.Gray, shape)
-            .clip(shape)
-            .zIndex(1f),
-        contentScale = ContentScale.Crop
-    )
-}
-
-@Composable
-fun Lidar(
-    modifier: Modifier = Modifier,
-    screenWidth: Dp,
-    screenHeight: Dp,
-    isLidarExpanded: Boolean,
-    onToggleLidar: () -> Unit
-) {
-    var visible by remember { mutableStateOf(true) }
-
-    val lidarWidth by animateDpAsState(
-        targetValue = if (isLidarExpanded) screenWidth / 2 else screenWidth / 8,
-        animationSpec = tween(durationMillis = 300), label = "animate lidar"
-    )
-    val lidarHeight by animateDpAsState(
-        targetValue = if (isLidarExpanded) screenHeight else screenWidth / 8,
-        animationSpec = tween(durationMillis = 300), label = "animate lidar"
-    )
-    val paddingSize by animateDpAsState(
-        targetValue = if (isLidarExpanded) 0.dp else 10.dp,
-        animationSpec = tween(durationMillis = 300), label = "animate padding"
-    )
-
-    val expandButtonSize = if (screenHeight / 8 < 50.dp) 20.dp else 35.dp
-
-    Box(
-        modifier = modifier
-            .padding(paddingSize)
-            .width(lidarWidth)
-            .height(lidarHeight)
-            .clickable {
-                onToggleLidar()
-                visible = false
-            },
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.lidar_small),
-            contentDescription = "lidar map",
-            modifier = Modifier
-                .fillMaxSize()
-                .border(3.dp, Color.Gray, shape)
-                .clip(shape),
-            contentScale = ContentScale.FillBounds
-        )
-        AnimatedVisibility(
-            visible = visible,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier
-                .padding(2.dp)
-                .size(expandButtonSize)
-                .align(if (isLidarExpanded) Alignment.TopEnd else Alignment.BottomStart)
-                .rotate(if (isLidarExpanded) 180f else 0f)
-                .alpha(if (visible) 1f else 0f),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.lidar_expand),
-                contentDescription = "lidar expand",
-            )
-        }
-    }
-    LaunchedEffect(isLidarExpanded) {
-        delay(300)
-        visible = true
-    }
-}
-
+/**
+ * Displays the record speech button. Used for speech to text
+ *
+ * @param modifier contains UI information that needs the scope from parent
+ * @author Elias
+ */
 @Composable
 fun RecordVoiceButton(modifier: Modifier = Modifier) {
     Image(
@@ -270,6 +319,13 @@ fun RecordVoiceButton(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * Displays and handles logic for the joystick
+ *
+ * @param modifier contains UI information that needs the scope from parent
+ * @param onJoystickMoved records movement from the joystick
+ * @author Elias
+ */
 @Composable
 fun Joystick(
     modifier: Modifier = Modifier,
@@ -321,6 +377,11 @@ fun Joystick(
     }
 }
 
+/**
+ * Old function for video player, currently not in use.
+ *
+ * @author Elias
+ */
 @OptIn(UnstableApi::class)
 @Composable
 fun VideoPlayerWithExoPlayer(uri: Uri) {
