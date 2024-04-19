@@ -14,10 +14,11 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ${{ matrix.os }}
+    #runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
     strategy:
-      matrix:
-        os: [ubuntu-latest]
+      #matrix:
+        #os: [ubuntu-latest]
       fail-fast: false
     steps:
     - name: Setup ROS 2
@@ -29,8 +30,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install python3-pip
+        pip install pytest
         pip install sounddevice
         pip install faster-whisper
+        pip install numpy==1.24.3
         
     - name: Run Tests
       uses: ros-tooling/action-ros-ci@0.3.7
