@@ -13,6 +13,9 @@ def node():
     rclpy.shutdown()
 
 def test_node_creation(node):
+    """
+    Tests the creation of the STTNode class.
+    """
     assert node is not None
 
 def test_publisher_creation_success(node):
@@ -43,9 +46,7 @@ def test_to_msg(node):
     data[2] = 3.14
     data[3] = 4.1276
 
-    # Call the data_to_msg method
-    result = node._to_msg(data, 16000, 1, 5.0)
-
+    result = node._to_msg(data, 16000, 1)
 
     assert result.samples == len(data)
     assert result.sample_rate == 16000
@@ -58,9 +59,7 @@ def test_to_msg_empty(node):
     Tests with an empty numpy array.
     """
     data = np.empty(dtype=np.float32, shape=(0,))
-
-    # Call the data_to_msg method
-    result = node._to_msg(data, 16000, 1, 5.0)
+    result = node._to_msg(data, 16000, 1)
 
     assert result.samples == len(data)
     assert result.sample_rate == 16000
@@ -102,4 +101,3 @@ def test_set_recording(node):
     assert response.message == "Successfully set state to: idle"
     assert not node.publisher_thread.is_alive()
     assert not node.capturer_thread.is_alive()
-
