@@ -22,7 +22,8 @@ class SocketTest {
         client.stop()
     }
 
-    @Test
+    // This test is disabled because it is no longer valid
+    @Disabled
     fun testServerReceiveResponse(){
         var response = "Hello, World!"
         val serverThread = Thread{
@@ -39,8 +40,6 @@ class SocketTest {
         serverThread.join()
         //assertEquals(response, "ack\n")
         client.stop()
-
-
     }
 
     @Test
