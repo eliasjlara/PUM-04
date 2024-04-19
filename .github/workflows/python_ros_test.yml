@@ -25,11 +25,21 @@ jobs:
       with:
         required-ros-distributions: humble
 
+    - name: Install Python dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install python3-pip
+        pip install sounddevice
+        
     - name: Run Tests
       uses: ros-tooling/action-ros-ci@0.3.7
       with:
         target-ros2-distro: humble
-        package-name: aida_interfaces speech_to_text audio_data audio
+        package-name: |
+          aida_interfaces
+          speech_to_text
+          audio_data
+          audio
 
     - name: Upload Logs
       uses: actions/upload-artifact@v1
