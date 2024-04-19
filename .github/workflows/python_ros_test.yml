@@ -30,7 +30,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install python3-pip
         pip install sounddevice
-        pip install audio_data
         pip install faster-whisper
         
     - name: Run Tests
