@@ -14,67 +14,41 @@ on:
 
 
 jobs:
-  build:
-    # Create a container of the latest Ubuntu, other values could be
-    # ubuntu-latest, ubuntu-22.04, etc.
+  build_docker:
     runs-on: ubuntu-22.04
-    
+    container:
+      image: ubuntu:jammy
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-  
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.10'  # Choose the Python version you need
-        # Install some system pacakges
-      - name: Install ROS 2 Humble packages
-        run: |
-          sudo apt update
-          sudo apt install -y software-properties-common
-          sudo add-apt-repository universe
-          sudo apt update && sudo apt install -y curl
-          sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-          sudo apt update
-          sudo apt install -y ros-humble-ros-base python3-colcon-common-extensions
-          sudo apt install -y lcov
-  
-      - name: Setup Workspace
-        run: |
-          source /opt/ros/humble/setup.bash
-          mkdir -p ros_ws/src/AIDA
-          cd ros_ws
-          colcon build
-          source install/setup.bash
-
-      - name: Install Python dependencies
-        run: |
-          pip install librosa
-          pip install faster-whisper
-          pip install numpy
-          pip install sounddevice
-      
+    - uses: ros-tooling/setup-ros@v0.7
+      with:
+        required-ros-distributions: humble
+    - run: "source /opt/ros/humble/setup.bash && ros2 run --help"
 
 
+    - name: Checkout code
+      uses: actions/checkout@v2
   
-        # We want to use GitHub CI checkout version 3 for checking out the branch
-      - uses: actions/checkout@v3
-        with:
-          path: ros_ws/src/AIDA
-  
-        # Build for test coverage
-      - name: Configure CMake flags and build exectables
-        run: |
-          source /opt/ros/humble/setup.bash
-          sudo apt install python3-rosdep
-          sudo rosdep init
-          rosdep update
-          cd ros_ws
-          rosdep install --from-paths src -y --ignore-src
-          colcon build
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    - name: Install python dependancies
+      run: | 
+        pip install numpy
+        pip install faster-whisper
+        pip install librosa
+        pip install sounddevice
+    - name: Run build and tests
+      uses: ros-tooling/action-ros-ci@0.0.13
+      with:
+        package-name: speech_to_text 
 
-      - name: Run Colcon tests
-        run: |
-          source /opt/ros/humble/setup.bash
-          colcon test
+    - name: Upload logs
+      uses: actions/upload-artifact@v1
+      with: 
+        name: colcon-logs
+        path: ros_ws/log
+      if: always()
+  
+
+  
