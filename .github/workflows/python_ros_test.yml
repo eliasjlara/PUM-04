@@ -35,12 +35,18 @@ jobs:
         pip install numpy==1.24.3
         pip install sounddevice
         pip install librosa
+    - name: Checkout 
+    - uses: actions/checkout@v4.0.0
+      with:
+          path: home
+
     - name: Running tests for ROS2
       uses: ros-tooling/action-ros-ci@v0.2
       with:
         package-name: audio_package speech_to_text aida_interfaces audio
         target-ros2-distro: humble
         vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+        package_paths: home/AIDA/ros2_humble_ws/src
         
       
         
