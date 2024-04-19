@@ -13,40 +13,32 @@ on:
     
 
 jobs:
-  build-and-test:
-    #runs-on: ${{ matrix.os }}
-    runs-on: ubuntu-22.04
-    strategy:
-      #matrix:
-        #os: [ubuntu-latest]
-      fail-fast: false
-    steps:
-    - name: Setup ROS 2
-      uses: ros-tooling/setup-ros@0.7.1
-      with:
-        required-ros-distributions: humble
+  
 
-    - name: Install Python dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install python3-pip
-        pip install pytest
-        pip install sounddevice
+  build-and-test:
+    
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4.0.0
+      with:
+        path: AIDA/ros2_humble_ws
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install python dependencies
+      run: | 
         pip install faster-whisper
         pip install numpy==1.24.3
-        
-    - name: Run build and test
-      run: |
-        colcon build
-        source opt/ros/humble/setup.bash
-        colcon test
-        
-      
-      #uses: ros-tooling/action-ros-ci@0.3.7
-      #with:
-        #target-ros2-distro: humble
-        #package-name: |
-          #aida_interfaces
-          #speech_to_text
-          #audio_data
-          #audio
+        pip install sounddevice
+        pip install librosa
+    - name: Setup workspace
+      uses: ichiro-its/ros2-ws-action/setup@v1.0.0
+    
+    - name: Build workspace
+      uses: ichiro-its/ros2-ws-action/build@v1.0.0
+    
+    - name: Test workspace
+      uses: ichiro-its/ros2-ws-action/test@v1.0.0
