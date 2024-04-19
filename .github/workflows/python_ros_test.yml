@@ -37,8 +37,7 @@ jobs:
         
     - name: Run build and test
       run: |
-        colcon build
-        source install/localsetup.bash
+        colcon build --symlink-install
         colcon test
         
       
