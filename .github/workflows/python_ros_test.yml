@@ -21,10 +21,10 @@ jobs:
     - uses: ros-tooling/setup-ros@v0.7
       with:
         required-ros-distributions: humble
-        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+        
     #- run: | 
         #source /opt/ros/humble/setup.bash
-    - run: "source /opt/ros/humble/setup.bash && ros2 run --help"
+    #- run: "source /opt/ros/humble/setup.bash && ros2 run --help"
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -38,8 +38,11 @@ jobs:
     - name: Running tests for ROS2
       uses: ros-tooling/action-ros-ci@v0.2
       with:
-        package-name: audio_package speech_to_text
+        package-name: audio_package speech_to_text aida_interfaces audio
         target-ros2-distro: humble
+        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+      
+        
         
         # use_ros2_testing: true
         
