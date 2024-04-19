@@ -49,5 +49,5 @@ jobs:
     
     - name: Build project
       run: | 
-        source install/localsetup.bash
+        source install/setup.bash
         colcon build --event-handlers console_cohesion+ --cmake-args
