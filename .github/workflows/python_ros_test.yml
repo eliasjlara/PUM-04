@@ -33,7 +33,7 @@ jobs:
         pip install faster-whisper
         pip install librosa
         pip install sounddevice
-        sudo pip install empy  # Install empy globally
+        sudo apt-get install python3-empy
 
     - name: Ensure Python Path
       run: |
