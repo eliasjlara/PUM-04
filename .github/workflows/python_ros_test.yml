@@ -34,17 +34,20 @@ jobs:
         pip install numpy==1.24.3
         pip install sounddevice
         pip install librosa
-    - name: Setup workspace
-      uses: ichiro-its/ros2-ws-action/setup@v1.0.0
-      with: 
-        distro: humble
+  
+    - name: Install ros2
+      run: |
+        sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list
+        sudo apt update
+        sudo apt install -y python3-colcon-common-extensions python3-rosdep
+        sudo rosdep init
+        rosdep update
+        rosdep install -y --rosdistro humble --from-paths . --ignore-src
+        source /opt/ros/humble/setup.bash
+        colcon build --packages-skip-regex '.*'
     
-    - name: Build workspace
-      uses: ichiro-its/ros2-ws-action/build@v1.0.0
-      with: 
-        distro: humble
-    
-    - name: Test workspace
-      uses: ichiro-its/ros2-ws-action/test@v1.0.0
-      with: 
-        distro: humble
+    - name: Build project
+      run: | 
+        source install/localsetup.bash
+        colcon build --event-handlers console_cohesion+ --cmake-args
