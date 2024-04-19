@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main  # Adjust to your main branch name
+      - alexanderortengren-patch-1
 
   pull_request:
     branches:
