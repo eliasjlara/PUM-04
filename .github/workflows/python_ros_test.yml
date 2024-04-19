@@ -19,30 +19,28 @@ jobs:
     strategy: 
       fail-fast: false
     steps:
-    - name: Setup ROS2
-      uses: ros-tooling/setup-ros@0.7.1
-      with: 
-        required-ros-distributions: humble
  
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Install python dependancies
-      run: | 
-        pip install numpy
-        pip install faster-whisper
-        pip install librosa
-        pip install sounddevice
-        sudo apt-get install python3-empy
-
-    - name: Ensure Python Path
-      run: |
-        echo "PYTHONPATH=$(python -m site --user-site)" >> $GITHUB_ENV
-        
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.10'
+
+    - name: Install Python dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-empy
+        pip install numpy
+        pip install faster-whisper
+        pip install librosa
+        pip install sounddevice
+
+    - name: Setup ROS2
+      uses: ros-tooling/setup-ros@0.7.1
+      with: 
+        required-ros-distributions: humble
         
     - name: Run build and tests
       uses: ros-tooling/action-ros-ci@0.3.7
