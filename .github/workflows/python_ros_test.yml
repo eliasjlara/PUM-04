@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
     steps:
     - name: Setup ROS2
-      uses: ros-tooling/setup-ros@0.0.15
+      uses: ros-tooling/setup-ros@0.7.1
       with: 
         required-ros-distribution: humble
  
@@ -38,7 +38,7 @@ jobs:
         pip install librosa
         pip install sounddevice
     - name: Run build and tests
-      uses: ros-tooling/action-ros-ci@0.0.13
+      uses: ros-tooling/action-ros-ci@0.3.7
       with:
           package-name: speech_to_text 
   
