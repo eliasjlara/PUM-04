@@ -5,13 +5,13 @@ import numpy as np
 import subprocess
 from cv_bridge import CvBridge
 
-from aida_api.socket_server import SocketServer
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from aida_interfaces.srv import SetState
 from aida_interfaces.msg import Joystick
+
 # from lidar_data.msg import LiDAR
 import socket
 import struct
@@ -25,21 +25,22 @@ VIDEO_STREAM_ID = 0  # We'll keep things simple with a single stream
 
 
 # ROS2 Constants
-VIDEO_TOPIC = 'image'
-LIDAR_TOPIC = 'lidar'
-STT_TOPIC = 'stt/stt_result'
-JOYSTICK_TOPIC = 'joystick/pos'
+VIDEO_TOPIC = "image"
+LIDAR_TOPIC = "lidar"
+STT_TOPIC = "stt/stt_result"
+JOYSTICK_TOPIC = "joystick/pos"
 
-CAMERA_CONTROL_SERVICE = 'camera/SetState'
-MIC_CONTROL_SERVICE = 'mic/SetState'
+CAMERA_CONTROL_SERVICE = "camera/SetState"
+MIC_CONTROL_SERVICE = "mic/SetState"
 
 STREAM_FREQUENCY = 30
+
 
 # Message Type Enums (make sure these match your client-side definitions)
 class MessageType:
     CAMERA = 1
     IMAGE_ANALYSIS = 2
-    MIC = 3 # Not used
+    MIC = 3  # Not used
     STT = 4
     LIDAR = 5
 
@@ -53,25 +54,26 @@ class MessageType:
     AUDIO = 12
     JOYSTICK_MOVE = 14
 
+
 msg_formats = {
-    MessageType.CAMERA: '!H',
-    MessageType.IMAGE_ANALYSIS: '!H',
-    MessageType.MIC: '!H',
-    MessageType.STT: '!H',
-    MessageType.LIDAR: '!H',
-    MessageType.REQ_VIDEO_FEED: '!H',
-    MessageType.REQ_STT: '!H',
-    MessageType.TEXT: '!H',
-    MessageType.VIDEO_FRAME: '!HII',
-    MessageType.LIDAR_DATA: '!H',
-    MessageType.AUDIO: '!H',
-    MessageType.JOYSTICK_MOVE: '!ii'
+    MessageType.CAMERA: "!H",
+    MessageType.IMAGE_ANALYSIS: "!H",
+    MessageType.MIC: "!H",
+    MessageType.STT: "!H",
+    MessageType.LIDAR: "!H",
+    MessageType.REQ_VIDEO_FEED: "!H",
+    MessageType.REQ_STT: "!H",
+    MessageType.TEXT: "!H",
+    MessageType.VIDEO_FRAME: "!HII",
+    MessageType.LIDAR_DATA: "!H",
+    MessageType.AUDIO: "!H",
+    MessageType.JOYSTICK_MOVE: "!ii",
 }
+
 
 class Instruction:
     ON = 1
     OFF = 2
-
 
 
 class InterfaceNode(Node):
@@ -79,25 +81,29 @@ class InterfaceNode(Node):
     A ROS2 node for communicating with AIDA.
     """
 
-    def __init__(self, host='localhost', port=6660):
-        super().__init__('api_node')
+    def __init__(self, start_socket=True, host="localhost", port=6660):
+        super().__init__("api_node")
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((host, port))
+        self.server_up = False
         self.bridge = CvBridge()
+        self.host = host
+        self.port = port
 
         self.init_clients()
         self.init_pubs()
         self.init_subs()
         self.init_queues()
-        self.start_workers()
-    
+        self.start_workers(start_socket=start_socket)
 
     def start_camera(self):
         # Start up a standard ros camera node
         print("Starting camera...")
         # Execute the command
-        subprocess.Popen(["ros2", "run", "image_tools", "cam2image"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.Popen(
+            ["ros2", "run", "image_tools", "cam2image"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         print("Camera started")
 
     def start_microphone(self):
@@ -126,7 +132,7 @@ class InterfaceNode(Node):
         # print("Received video message")
         # image = np.frombuffer(msg.data, dtype=np.uint8)
         # self.video_queue_lock.acquire()
-        cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+        cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.video_queue.put(cv_image)
         # print("Video frame added to queue: ", self.video_queue.qsize())
         # self.video_queue_lock.release()
@@ -152,19 +158,15 @@ class InterfaceNode(Node):
         # self.lidar_client = self.create_client(SetState, 'lidar/SetState')
 
     def init_pubs(self):
-        self.joystick = self.create_publisher(Joystick, JOYSTICK_TOPIC, 10)
+        self.joystick_pub = self.create_publisher(Joystick, JOYSTICK_TOPIC, 10)
 
     def init_subs(self) -> None:
         self.video_sub = self.create_subscription(
-            Image,
-            VIDEO_TOPIC,
-            self.video_callback,
-            10)
+            Image, VIDEO_TOPIC, self.video_callback, 10
+        )
         self.stt_sub = self.create_subscription(
-            String,
-            STT_TOPIC,
-            self.stt_callback,
-            10)
+            String, STT_TOPIC, self.stt_callback, 10
+        )
         # self.lidar_sub = self.create_subscription(
         #     LiDAR,
         #     LIDAR_TOPIC,
@@ -181,32 +183,43 @@ class InterfaceNode(Node):
         self.joystick_queue_lock = threading.Lock()
         self.joystick_queue = queue.Queue()
 
-    def start_workers(self) -> None:
+    def start_workers(self, start_socket=True) -> None:
 
         self.joystick_publisher_event = threading.Event()
         self.joystick_publisher_event.clear()
-        self.joystick_publisher_thread = threading.Thread(target=self.publish_joystick, name='joystick_publisher')
-
-        self.server_event = threading.Event()
-        self.server_event.clear()
-        self.server_thread = threading.Thread(target=self.start_server, name='server_thread')
-
+        self.joystick_publisher_thread = threading.Thread(
+            target=self.publish_joystick, name="joystick_publisher"
+        )
         self.joystick_publisher_thread.start()
-        self.server_thread.start()
+
+        if start_socket:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.bind((self.host, self.port))
+            self.server_event = threading.Event()
+            self.server_event.clear()
+            self.server_thread = threading.Thread(
+                target=self.start_server, name="server_thread"
+            )
+            self.server_thread.start()
 
 
     def stop_workers(self):
 
-        if hasattr(self, 'joystick_publisher_event') and self.joystick_publisher_event != None:
+        if (
+            hasattr(self, "joystick_publisher_event")
+            and self.joystick_publisher_event != None
+        ):
             self.joystick_publisher_event.set()
-        if hasattr(self, 'joystick_publisher_thread') and self.joystick_publisher_thread.is_alive():
+        if (
+            hasattr(self, "joystick_publisher_thread")
+            and self.joystick_publisher_thread.is_alive()
+        ):
             self.joystick_publisher_thread.join()
 
-        if hasattr(self, 'server_event') and self.server_event != None:
+        if hasattr(self, "server_event") and self.server_event != None:
             self.server_event.set()
-        if hasattr(self, 'server_thread') and self.server_thread.is_alive():
+        if hasattr(self, "server_thread") and self.server_thread.is_alive():
             self.server_thread.join()
-
 
     def _to_joystick_msg(self, data):
         """
@@ -237,20 +250,18 @@ class InterfaceNode(Node):
             if msg != None:
                 self.joystick_publisher.publish(msg)
 
-    
     # def get_lidar(self):
     #     self.lidar_queue_lock.acquire()
     #     data = self.lidar_queue.get()
     #     self.lidar_queue_lock.release()
     #     return data
-    
 
     def start_server(self):
         self.socket.listen()
-        print('Server listening...')
+        print("Server listening...")
         while not self.server_event.is_set():
             client, addr = self.socket.accept()
-            print(f'Connected by {addr}')
+            print(f"Connected by {addr}")
             thread = threading.Thread(target=self.handle_client, args=(client, addr))
             thread.start()
         self.socket.close()
@@ -258,19 +269,19 @@ class InterfaceNode(Node):
     def handle_client(self, client, addr):
         while not self.server_event.is_set():
             try:
-                data = client.recv(MESSAGE_HEADER_SIZE) 
-                if not data: 
+                data = client.recv(MESSAGE_HEADER_SIZE)
+                if not data:
                     break
                 message_type, payload_length = struct.unpack(HEADER_FORMAT, data)
                 if payload_length > 0:
                     payload = client.recv(payload_length)
                 else:
                     # We do not require to receive a payload if the length is zero.
-                    payload = b'\0x00'
+                    payload = b"\0x00"
                 print(f"Received message type: {message_type}")
                 self.handle_message(client, message_type, payload)
             except ConnectionError:
-                print(f'Client {addr} disconnected')
+                print(f"Client {addr} disconnected")
                 break
 
     def handle_message(self, client, message_type, data):
@@ -301,7 +312,7 @@ class InterfaceNode(Node):
         elif data == Instruction.OFF:
             self.stop_camera()
         else:
-            print('Unknown camera instruction:', data)
+            print("Unknown camera instruction:", data)
 
     def handle_image_analysis(self, data):
         # Implement logic to handle image analysis message
@@ -311,9 +322,9 @@ class InterfaceNode(Node):
         if data == Instruction.ON:
             self.start_microphone()
         elif data == Instruction.OFF:
-            self.stop_microphone() # You will probably not do this because the mic is always on a certain duration
+            self.stop_microphone()  # You will probably not do this because the mic is always on a certain duration
         else:
-            print('Unknown mic instruction:', data)
+            print("Unknown mic instruction:", data)
 
     def handle_stt(self, data):
         # Implement logic to handle STT message
@@ -336,8 +347,8 @@ class InterfaceNode(Node):
         except queue.Empty:
             stt_res = ""
         self.stt_queue_lock.release()
-        stt_res = stt_res.encode('utf-8')
-        
+        stt_res = stt_res.encode("utf-8")
+
         print(f"Sending STT result: {stt_res}")
         # Send STT response
         client.sendall(struct.pack(HEADER_FORMAT, MessageType.TEXT, len(stt_res)))
@@ -356,7 +367,7 @@ class InterfaceNode(Node):
 
     def send_video_stream(self, conn):
         while True:  # Video streaming loop
-            time.sleep(1/STREAM_FREQUENCY)
+            time.sleep(1 / STREAM_FREQUENCY)
             self.video_queue_lock.acquire()
             try:
                 frame = self.video_queue.get(block=False)
@@ -366,14 +377,16 @@ class InterfaceNode(Node):
             if frame is None:
                 print("Video queue empty. Requesting too frequently or feed offline.")
             else:
-                # cv_image = cv2.resize(frame, (960, 540)) 
+                # cv_image = cv2.resize(frame, (960, 540))
                 # print("Forwarding video frame from queue...")
                 self.send_video_frame(conn, frame)
 
     def send_video_frame(self, conn, frame):
-        frame_bytes = cv2.imencode(".jpg", frame)[1].tobytes()  # Encode as JPEG 
+        frame_bytes = cv2.imencode(".jpg", frame)[1].tobytes()  # Encode as JPEG
         # Send video frame header
-        conn.sendall(struct.pack(HEADER_FORMAT, MessageType.VIDEO_FRAME, len(frame_bytes)))
+        conn.sendall(
+            struct.pack(HEADER_FORMAT, MessageType.VIDEO_FRAME, len(frame_bytes))
+        )
         # Send video frame data
         conn.sendall(frame_bytes)
 
@@ -386,7 +399,7 @@ def main(args=None):
     try:
         rclpy.spin(api)
     except KeyboardInterrupt:
-        api.get_logger().info('Keyboard interrupt')
+        api.get_logger().info("Keyboard interrupt")
     finally:
         api.stop_workers()
         api.server.shutdown()
@@ -395,6 +408,5 @@ def main(args=None):
         rclpy.shutdown()
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
