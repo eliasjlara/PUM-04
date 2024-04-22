@@ -1,6 +1,6 @@
-package org.example
+package com.example.aida.socketcommunication
 
-enum class MessageType(val value: Int) {
+enum class MessageType(val value: Short) {
     CAMERA(1),
     IMAGE_ANALYSIS(2),
     MIC(3),

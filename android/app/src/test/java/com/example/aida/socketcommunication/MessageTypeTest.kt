@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.example.MessageType
+import com.example.aida.socketcommunicaion.MessageType
 class MessageTypeTest {
     @Test
     fun testMessageType(){
