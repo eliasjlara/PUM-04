@@ -81,7 +81,7 @@ class InterfaceNode(Node):
     A ROS2 node for communicating with AIDA.
     """
 
-    def __init__(self, start_socket=True, host="localhost", port=6660):
+    def __init__(self, start_workers=True, host="localhost", port=6660):
         super().__init__("api_node")
 
         self.server_up = False
@@ -93,12 +93,13 @@ class InterfaceNode(Node):
         self.init_pubs()
         self.init_subs()
         self.init_queues()
-        self.start_workers(start_socket=start_socket)
+        if start_workers:
+            self.start_workers()
 
     def start_camera(self):
         # Start up a standard ros camera node
         print("Starting camera...")
-        # Execute the command
+        # Execute the command. Temporary and to be replaced with the actual ROS2 node for camera.
         subprocess.Popen(
             ["ros2", "run", "image_tools", "cam2image"],
             stdout=subprocess.DEVNULL,
@@ -201,7 +202,6 @@ class InterfaceNode(Node):
                 target=self.start_server, name="server_thread"
             )
             self.server_thread.start()
-
 
     def stop_workers(self):
 
