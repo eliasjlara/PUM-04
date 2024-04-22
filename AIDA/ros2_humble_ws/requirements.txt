@@ -1,6 +1,4 @@
 numpy
 opencv-python
-rclpy
 sounddevice
-time
 whisper
