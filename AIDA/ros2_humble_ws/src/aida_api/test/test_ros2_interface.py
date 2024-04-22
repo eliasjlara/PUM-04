@@ -11,7 +11,7 @@ from cv_bridge import CvBridge
 @pytest.fixture(scope="function")
 def interface_node():
     rclpy.init()
-    node = InterfaceNode(start_workers=False)
+    node = InterfaceNode()
     yield node
     node.destroy_node()
     rclpy.shutdown()   

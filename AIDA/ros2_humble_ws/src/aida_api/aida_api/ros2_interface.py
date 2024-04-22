@@ -81,7 +81,7 @@ class InterfaceNode(Node):
     A ROS2 node for communicating with AIDA.
     """
 
-    def __init__(self, start_workers=True, host="localhost", port=6660):
+    def __init__(self, host="localhost", port=6660):
         super().__init__("api_node")
 
         self.server_up = False
@@ -93,8 +93,6 @@ class InterfaceNode(Node):
         self.init_pubs()
         self.init_subs()
         self.init_queues()
-        if start_workers:
-            self.start_workers()
 
     def start_camera(self):
         # Start up a standard ros camera node
@@ -395,6 +393,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     api = InterfaceNode()
+    api.start_workers()
 
     try:
         rclpy.spin(api)
