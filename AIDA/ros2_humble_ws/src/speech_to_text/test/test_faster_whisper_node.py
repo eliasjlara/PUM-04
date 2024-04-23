@@ -1,103 +1,120 @@
-# from speech_to_text.faster_whisper_node import STTNode
-# import numpy as np
-# import rclpy
-# from rclpy.node import Node
-# import pytest
+from speech_to_text.faster_whisper_node import STTNode
+from audio_data.msg import AudioData
+from aida_interfaces.srv import SetState
+import numpy as np
+import rclpy
+import pytest
+import librosa
+from pathlib import Path
+import os
 
-# def test_msg_to_np():
-#     rclpy.init()
+
+@pytest.fixture
+def node():
+    rclpy.init()
+    yield STTNode()
+    rclpy.shutdown()
+
+def test_node_creation(node):
+    assert node is not None
+
+def test_publisher_creation_success(node):
+    """
+    Tests the creation of the publisher in the STTNode class.
+    """
+    assert node.publisher is not None
+    created_topic = node.get_topic_names_and_types()
+    assert ('/stt/stt_result', ['std_msgs/msg/String']) in created_topic
+
+def test_service_creation_success(node):
+    """
+    Tests the creation of the service in the STTNode class.
+    """
+    assert node.srv is not None
+    created_service = node.get_service_names_and_types()
+    assert ('/stt/SetState', ['aida_interfaces/srv/SetState']) in created_service
+
+def test_message_to_numpy_array(node):
+    """
+    Tests the message_to_numpy_array method in the FasterWhisperLogic class.
+    Tests with a numpy array with 4 elements.
+    """
+
+    data = np.ndarray(shape=(4,), dtype=np.float32)
+    data[0] = 1.32
+    data[1] = 2.44
+    data[2] = 3.14
+    data[3] = 4.1276
+    msg = AudioData()
+    msg.data = data.tobytes()
+    msg.samples = len(data)    
     
-#     stt = STTNode()
-#     #data = np.ndarray([1.32, 2.44, 3.14, 4.1276], dtype=np.float32, shape=(4,))
-#     data = np.ndarray(shape=(4,), dtype=np.float32)
-#     data[0] = 1.32
-#     data[1] = 2.44
-#     data[2] = 3.14
-#     data[3] = 4.1276
+    # Call the message_to_numpy_array method
+    result = node._message_to_numpy_array(msg)
 
-#     msg = AudioData()
+    assert np.array_equal(result, data)
 
-#     msg.data = data.tobytes()
-
-#     assert np.array_equal(stt._msg_to_nparray(msg), data)
-
-#     stt.destroy_node()
-#     rclpy.shutdown()
-
-# def test_msg_to_np_empty():
-#     rclpy.init()
-#     stt = STTNode()
-#     data = np.ndarray(dtype=np.float32)
-#     msg = AudioData()
-#     msg.data = data.tobytes()
-#     assert np.array_equal(stt._msg_to_nparray(msg), data)
-
-#     stt.destroy_node()
-#     rclpy.shutdown()
-
-
-# def test_translate():
-#     rclpy.init()
-#     stt = STTNode()
-#     stt.destroy_node()
-#     rclpy.shutdown()
-
-# def test_message_to_numpy_array():
-#     """
-#     Tests the message_to_numpy_array method in the FasterWhisperLogic class.
-#     Tests with a numpy array with 4 elements.
-#     """
-#     # Create a FasterWhisperLogic object
+def test_message_to_numpy_array_empty(node):
+    """
+    Tests the message_to_numpy_array method in the FasterWhisperLogic class.
+    Tests with an empty numpy array.
+    """
+    data = np.empty(dtype=np.float32, shape=(0,))
     
-#     rclpy.init()
-#     stt = STTNode()   
+    #data = np.ndarray(dtype=np.float32, shape=(0))
+    
+    msg = AudioData()
+    msg.data = data.tobytes()
+    msg.samples = len(data)
+    # Call the message_to_numpy_array method
+    with pytest.raises(ValueError) as exec_info:
+        result = node._message_to_numpy_array(msg)
+    assert exec_info.type == ValueError
 
-#     data = np.ndarray(shape=(4,), dtype=np.float32)
-#     data[0] = 1.32
-#     data[1] = 2.44
-#     data[2] = 3.14
-#     data[3] = 4.1276
+def test_transcribe_audio(node):
+    """
+    Tests the translate method for the Node.
+    Tests with a audio file faster_whisper was trained on.
+    """
 
-#     #Create a AudioData object
-#     class AudioData():
-#         def __init__(self ,data=None):
-#             self.data = data.tobytes()
-#             self.samples = len(data)
+    current_path = Path(os.path.dirname(os.path.realpath(__file__)))
+    audio_path = current_path / "test_resource" / "jfk.wav"
 
-#     msg = AudioData(data)
-   
+    audio_data, _ = librosa.load(audio_path, sr=16000)
+    
+    # Call the transcribe_audio method
+    result = node.translate(audio_data)
+    assert result ==  "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country."
 
-#     # Call the message_to_numpy_array method
-#     result = stt._message_to_numpy_array(msg)
-#     stt.destroy_node()
-#     rclpy.shutdown()
+def test_set_state_of_node_idle(node):
+    """
+    Tests the set_state_of_node method in the Node.
+    Tests with a request to stop trancription.
+    """
+    request = SetState.Request()
+    request.desired_state = "idle"
+    response = SetState.Response()
+    node.set_state_of_node(request, response)
+    
+    assert node.active == False
+    assert response.success == True
+    assert response.message == "Successfully set state to: idle"
+    # Reset back to default state 
+    node.active = True
 
-#     assert np.array_equal(result, data)
+def test_set_state_of_node_active(node):
+    """
+    Tests the set_state_of_node method in the Node.
 
-# def test_message_to_numpy_array_empty():
-#     """
-#     Tests the message_to_numpy_array method in the FasterWhisperLogic class.
-#     Tests with an empty numpy array.
-#     """
-#     # Create a FasterWhisperLogic object
-#     rclpy.init()
-#     stt = STTNode()
+    Tests with a request to start the transcription.
+    """
 
-#     data = np.ndarray(dtype=np.float32, shape=(0))
-#     #data.shape(0)
-
-#     #Create a AudioData object
-#     class AudioData():
-#         def __init__(self ,data=None):
-#             self.data = data.tobytes()
-#             self.samples = len(data)
-
-#     msg = AudioData(data)
-
-#     # Call the message_to_numpy_array method
-#     with pytest.raises(ValueError) as exec_info:
-#         result = stt._message_to_numpy_array(msg)
-#     assert exec_info.type == ValueError
-
-#     stt.destroy_node()
-#     rclpy.shutdown()
+    request = SetState.Request()
+    request.desired_state = "active"
+    response = SetState.Response()
+    node.set_state_of_node(request, response)
+    assert node.active == True
+    assert response.success == True
+    assert response.message == "Successfully set state to: active"
+    # Reset back to default state
+    node.active = True

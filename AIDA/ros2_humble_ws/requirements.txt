@@ -1,0 +1,5 @@
+numpy
+opencv-python
+sounddevice
+whisper
+faster-whisper
