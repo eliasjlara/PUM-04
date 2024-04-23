@@ -48,6 +48,7 @@ jobs:
 
       - name: Test
         run: |
+          ls
           source /opt/ros/humble/setup.bash
           colcon test
         #source install/localsetup.bash
