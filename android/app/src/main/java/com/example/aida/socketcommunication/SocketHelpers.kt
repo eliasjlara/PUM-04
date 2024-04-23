@@ -6,9 +6,6 @@ import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JLabel
 
-
-
-
 fun getByteArrayFromPath(path: String): ByteArray {
     return File(path).readBytes()
 }
