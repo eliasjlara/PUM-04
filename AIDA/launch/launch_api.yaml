@@ -1,0 +1,7 @@
+launch:
+
+- node:
+    pkg: "aida_api"
+    exec: "ros2_interface"
+    name: "api"
+    namespace: ""

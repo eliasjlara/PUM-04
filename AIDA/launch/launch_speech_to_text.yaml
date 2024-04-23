@@ -1,0 +1,13 @@
+launch:
+
+- node:
+    pkg: "audio"
+    exec: "audio_transmit_mic"
+    name: "mic"
+    namespace: "audio"
+
+- node:
+    pkg: "speech_to_text"
+    exec: "faster_whisper_node"
+    name: "speech_to_text"
+    namespace: "audio"
