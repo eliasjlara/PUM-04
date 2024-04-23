@@ -20,10 +20,10 @@ jobs:
       image: osrf/ros:humble-desktop
     steps:
       
-      #- name: Install pip
-      #  run: | 
-      #    sudo apt update
-      #    sudo apt install python3-pip -y
+      - name: Install pip
+        run: | 
+          apt update
+          apt install python3-pip -y
 
       - name: Install dependencies
         run: |
