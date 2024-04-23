@@ -36,8 +36,8 @@ jobs:
           pip install librosa
 
       
-      - name: Checkout repository
-        uses: actions/checkout@v4.0.0
+      
+      - uses: actions/checkout@v4.0.0
         
       - name: Build
         run: |
