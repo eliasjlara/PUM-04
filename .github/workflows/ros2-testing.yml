@@ -24,11 +24,13 @@ jobs:
         run: | 
           apt update
           apt install python3-pip -y
-
-      - name: Install dependencies
-        run: |
           pip install -r requirements.txt
         working-directory: ./AIDA/ros2_humble_ws/
+
+      #- name: Install dependencies
+      #  run: |
+      #    pip install -r requirements.txt
+      #  working-directory: ./AIDA/ros2_humble_ws/
          
           #pip install faster-whisper
           #pip install sounddevice
