@@ -44,7 +44,15 @@ jobs:
           source /opt/ros/humble/setup.bash
           colcon build
         shell: bash
-        working-directory: .//AIDA/ros2_humble_ws/
+        working-directory: ./AIDA/ros2_humble_ws/
+
+      - name: Test
+        run: |
+          source /opt/ros/humble/setup.bash
+          source install/localsetup.bash
+        shell: bash
+        working-directory: ./AIDA/ros2_humble_ws/
+        
         
         #sudo apt update
         #sudo apt install python3-pip
