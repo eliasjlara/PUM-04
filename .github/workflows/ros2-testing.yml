@@ -19,14 +19,11 @@ jobs:
       #image: ubuntu:jammy
       image: osrf/ros:humble-desktop
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.10'  # Choose the Python version you need
-      - name: Install pip
-        run: | 
-          sudo apt update
-          sudo apt install python3-pip -y
+      
+      #- name: Install pip
+      #  run: | 
+      #    sudo apt update
+      #    sudo apt install python3-pip -y
 
       - name: Install dependencies
         run: |
