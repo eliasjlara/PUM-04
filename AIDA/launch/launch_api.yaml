@@ -5,3 +5,4 @@ launch:
     exec: "ros2_interface"
     name: "api"
     namespace: ""
+    output: "screen"
