@@ -1,5 +1,5 @@
 package com.example.aida.socketcommunication
-
+/*
 import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.ImageIcon
@@ -10,10 +10,6 @@ fun getByteArrayFromPath(path: String): ByteArray {
     return File(path).readBytes()
 }
 
-/**
- * This function gets the file from the path and reads the bytes from file
- * The file must be located in the resources folder of the project
- */
 //fun getByteArrayFromPath(path: String): ByteArray {
 
 //}
@@ -37,4 +33,4 @@ class ImagePainter(){
         frame.pack()
         frame.isVisible = true
     }
-}
+}*/

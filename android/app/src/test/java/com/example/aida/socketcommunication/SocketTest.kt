@@ -1,8 +1,8 @@
-import com.example.aida.socketcommunicaion.MessageType
-import com.example.aida.socketcommunicaion.STTClient
-import org.junit.jupiter.api.Assertions.assertEquals
-import com.example.aida.socketcommunicaion.Server
-import org.junit.jupiter.api.*
+import com.example.aida.socketcommunication.MessageType
+import com.example.aida.socketcommunication.STTClient
+import com.example.aida.socketcommunication.Server
+import junit.framework.Assert.assertEquals
+import org.junit.Test
 import java.lang.Thread.sleep
 
 class SocketTest {

@@ -1,8 +1,6 @@
 package com.example.aida.socketcommunication
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import javax.swing.JFrame
-import javax.swing.JLabel
 
 /**
  * Client class that connects to server to receive
@@ -10,16 +8,15 @@ import javax.swing.JLabel
  */
 
 class VideoClient (ip : String = "localhost", port : Int = 12345) : AbstractClient(ip, port){
-    val frame = JFrame("Image Display")
-    private val label = JLabel()
     /**
      * Receives the message and shows it using helper method
      * in SocketHelpers.kt
      */
+    /*
     fun receiveImage(imagePainter: ImagePainter) {
         val imageData = fetch()
         imagePainter.displayImageFromByteArray(imageData)
-    }
+    }*/
 
     /**
      * Sends a request to start the camera to the server
@@ -55,14 +52,15 @@ class VideoClient (ip : String = "localhost", port : Int = 12345) : AbstractClie
 fun main(args: Array<String>) {
     //val client = Client("192.168.37.50", 9000)
     val videoClient = VideoClient()
-    val imagePainter = ImagePainter()
-    imagePainter.setDefaultCloseOperation()
+    //val imagePainter = ImagePainter()
+    //imagePainter.setDefaultCloseOperation()
 
     videoClient.sendStartCamera()
     videoClient.sendGetVideo()
-    videoClient.frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+    //videoClient.frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
     while (true){
-        videoClient.receiveImage(imagePainter)
+        //videoClient.receiveImage(imagePainter)
+        videoClient.fetch()
     }
     videoClient.stop()
 }
