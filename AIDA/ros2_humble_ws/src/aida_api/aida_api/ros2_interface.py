@@ -89,6 +89,8 @@ class InterfaceNode(Node):
         self.host = host
         self.port = port
 
+        self.latest_frame = None
+
         self.init_clients()
         self.init_pubs()
         self.init_subs()
@@ -132,11 +134,12 @@ class InterfaceNode(Node):
     def video_callback(self, msg) -> None:
         # print("Received video message")
         # image = np.frombuffer(msg.data, dtype=np.uint8)
-        # self.video_queue_lock.acquire()
+        self.video_queue_lock.acquire()
         cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        self.video_queue.put(cv_image)
+        self.latest_frame = cv_image
+        #self.video_queue.put(cv_image)
         # print("Video frame added to queue: ", self.video_queue.qsize())
-        # self.video_queue_lock.release()
+        self.video_queue_lock.release()
 
     # def lidar_callback(self, msg) -> None:
     #     lidar_data = np.frombuffer(msg.data, dtype=np.uint8)
@@ -176,7 +179,7 @@ class InterfaceNode(Node):
 
     def init_queues(self):
         self.video_queue_lock = threading.Lock()
-        self.video_queue = queue.Queue()
+        self.video_queue = queue.LifoQueue()
         # self.lidar_queue_lock = threading.Lock()
         # self.lidar_queue = queue.Queue()
         self.stt_queue_lock = threading.Lock()
@@ -370,7 +373,8 @@ class InterfaceNode(Node):
             time.sleep(1 / STREAM_FREQUENCY)
             self.video_queue_lock.acquire()
             try:
-                frame = self.video_queue.get(block=False)
+                frame = self.latest_frame
+                #frame = self.video_queue.get(block=False)
             except queue.Empty:
                 frame = None
             self.video_queue_lock.release()
