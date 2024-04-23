@@ -20,23 +20,22 @@ jobs:
       image: osrf/ros:humble-desktop
     steps:
       
-      #- name: Install pip
-      #  run: | 
-      #    apt update
-      #    apt install python3-pip -y
-      #    pip install -r requirements.txt
-      #  working-directory: ./AIDA/ros2_humble_ws/
-
-      #- name: Install dependencies
-      #  run: |
+      - name: Install pip
+        run: | 
+          apt update
+          apt install python3-pip -y
+          
+      - name: Install dependencies
+        run: |
+          pip install faster-whisper
+          pip install sounddevice
+          pip install pytest
+          pip install librosa
+          pip install numpy==1.24.3
       #    pip install -r requirements.txt
       #  working-directory: ./AIDA/ros2_humble_ws/
          
-          #pip install faster-whisper
-          #pip install sounddevice
-          #pip install pytest
-          #pip install librosa
-          #pip install numpy==1.24.3
+          
 
       
       
@@ -45,11 +44,11 @@ jobs:
         #with:
           #path: workspace
 
-      - name: Install dependencies
-        run: | 
-          apt update
-          apt install python3-pip -y
-          pip install -r requirements.txt
+      #- name: Install dependencies
+        #run: | 
+          #apt update
+          #apt install python3-pip -y
+          #pip install -r requirements.txt
         #working-directory: ./AIDA/ros2_humble_ws/
         
       - name: Build
