@@ -7,7 +7,7 @@ import java.nio.ByteOrder
  * video data
  */
 
-class VideoClient (ip : String = "localhost", port : Int = 12345) : AbstractClient(ip, port){
+class VideoClient (ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) : AbstractClient(ip, port, timeToTimeout){
     /**
      * Receives the message and shows it using helper method
      * in SocketHelpers.kt

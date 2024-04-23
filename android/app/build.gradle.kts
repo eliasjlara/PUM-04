@@ -78,6 +78,8 @@ dependencies {
     implementation ("androidx.media3:media3-exoplayer:1.3.1")
     implementation ("androidx.media3:media3-exoplayer-hls:1.3.1")
 
-    implementation ("androidx.compose.material:material-icons-core:1.6.5")
-    implementation ("androidx.compose.material:material-icons-extended:1.6.5")
+    implementation ("androidx.compose.material:material-icons-core:1.6.6")
+    implementation ("androidx.compose.material:material-icons-extended:1.6.6")
+
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.6")
 }

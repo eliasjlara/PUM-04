@@ -7,7 +7,7 @@ import java.nio.ByteOrder
  * Client class that connects to server and sends messages
  * to get STT data
  */
-class STTClient (ip : String = "localhost", port : Int = 12345) : AbstractClient(ip, port){
+class STTClient (ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) : AbstractClient(ip, port, timeToTimeout){
     /**
      * Send message to server requesting to turn on STT-transcription
      */

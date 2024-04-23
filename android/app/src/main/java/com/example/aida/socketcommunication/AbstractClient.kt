@@ -1,5 +1,6 @@
 package com.example.aida.socketcommunication
 
+import java.net.InetSocketAddress
 import java.net.Socket
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -8,9 +9,14 @@ import java.nio.ByteOrder
  * Abstract class for client that connects to server located on AIDA.
  * The client can send and receive messages over socket
  */
-abstract class AbstractClient(ip : String = "localhost", port : Int = 12345) {
-    val socket : Socket = Socket(ip, port)
+abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) {
+    val socket: Socket
 
+    init {
+        socket = Socket().apply {
+            connect(InetSocketAddress(ip, port), timeToTimeout)
+        }
+    }
     /**
      * Get the header of the message sent over socket
      * @return Pair with id of the message and size of message

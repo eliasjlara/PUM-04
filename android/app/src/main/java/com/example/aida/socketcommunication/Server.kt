@@ -1,9 +1,9 @@
 package com.example.aida.socketcommunication
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStreamReader
 import java.net.ServerSocket
 import java.nio.ByteBuffer
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.nio.ByteOrder
 
 /**
@@ -71,13 +71,13 @@ class Server (port: Int = 12345) {
 }
 fun main(args: Array<String>) {
     val server: Server = Server()
-    val path = "C:\\Users\\Programmer\\IdeaProjects\\PUM-04\\SocketExperiments\\SocketCommunication\\src\\main\\kotlin\\socketbild.jpeg"
+    val path = "/Users/eliaslara/Desktop/PUM-04/android/app/src/main/java/com/example/aida/socketcommunication/socketbild.jpeg"
     val file = File(path)
     val message = file.readBytes()
     server.receiveMessage()
     server.receiveMessage()
-    while (true) {
 
+    while (true) {
         server.sendData(MessageType.CAMERA.value,message)
     }
     server.closeConnection()

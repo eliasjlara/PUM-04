@@ -1,5 +1,6 @@
 package com.example.aida
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,6 +28,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,14 +38,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.aida.socketcommunication.VideoClient
 import com.example.aida.ui.theme.AIDATheme
 import com.example.aida.ui.theme.TopBarColor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * MainActivity for application. Displays a top bar that contains a menu
@@ -61,6 +69,47 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val imageBitmap = remember { mutableStateOf<ImageBitmap?>(null) }
+            var fetchingCameraFeed by remember { mutableStateOf<Boolean>(true) }
+            var sttAvailable by remember { mutableStateOf<Boolean>(false) }
+            var lidarAvailable by remember { mutableStateOf<ConnectionStages>(ConnectionStages.CONNECTING) }
+            val speechViewModel = SpeechViewModel()
+
+            LaunchedEffect(Unit) {
+                withContext(Dispatchers.IO) {
+                    try {
+                        val videoClient = VideoClient(
+                            ip = "192.168.37.50",
+                            port = 6660,
+                            timeToTimeout = 10000
+                        )
+                        videoClient.sendStartCamera()
+                        videoClient.sendGetVideo()
+
+                        while (true) {
+                            val byteArray = videoClient.fetch()
+                            imageBitmap.value =
+                                BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                                    ?.asImageBitmap()
+                        }
+                    } catch (e: Exception) {
+                        println("Network Custom Exception: $e")
+                        fetchingCameraFeed = false
+                    }
+                    delay(2000)
+                    lidarAvailable = ConnectionStages.CONNECTION_FAILED
+                    try {
+                        speechViewModel.initializeSTTClient(
+                            ip = "192.168.37.50",
+                            port = 6660,
+                            timeToTimeout = 5000
+                        )
+                        sttAvailable = true
+                    } catch (e: Exception) {
+                        print("Speech Exception: $e")
+                    }
+                }
+            }
             AIDATheme {
                 var topBarTitle by remember { mutableStateOf("AIDA Remote Control Beta") }
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -141,7 +190,17 @@ class MainActivity : ComponentActivity() {
                         )
 
                         when (state) {
-                            0 -> CameraPage(screenHeight, barHeight, screenWidth)
+                            0 -> CameraPage(
+                                screenHeight,
+                                barHeight,
+                                screenWidth,
+                                imageBitmap.value,
+                                fetchingCameraFeed,
+                                speechViewModel,
+                                sttAvailable,
+                                lidarAvailable
+                            )
+
                             1 -> ConfigurationPage(barHeight)
                         }
                     }
@@ -227,13 +286,13 @@ fun TopBar(
             )
             Spacer(Modifier.weight(1f))
             Text(
-                text = "Battery: " + (1..100).random() + "%",
+                text = "Battery: " + 69 + "%",
                 fontSize = 16.sp
             )
             Spacer(Modifier.weight(1f))
 
             Text(
-                text = "Lag: " + (30..100).random() + "ms",
+                text = "Lag: " + 12 + "ms",
                 fontSize = 16.sp
             )
         }
