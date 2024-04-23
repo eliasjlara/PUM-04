@@ -32,7 +32,7 @@ def interface_node():
 #     interface_node.stop_microphone()
 #     # Add your assertions here to verify the behavior of the stop_microphone method
 
-def test_video_callback(interface_node):
+#def test_video_callback(interface_node):
     # Create a mock Image message
     #msg = Image()
     #img = cv2.imread("resource/test_image.webp")
