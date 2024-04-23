@@ -23,8 +23,8 @@ jobs:
       - run: "source /opt/ros/humble/setup.bash && ros2 run --help"
         shell: bash 
 
-      - name: Checkout repository
-        uses: actions/checkout@v4.0.0
+      #- name: Checkout repository
+      #  uses: actions/checkout@v4.0.0
       #- name: Set working directory
         #working-directory: ./AIDA/ros2_humble_ws
         #run: "source install/localsetup.bash"
