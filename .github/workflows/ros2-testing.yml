@@ -81,5 +81,8 @@ jobs:
         with:
           path: workspace
 
-      - name: Build and test workspace
-        uses: ichiro-its/ros2-ws-action@v1.0.0
+      - name: Build workspace
+        uses: ichiro-its/ros2-ws-action/build@v1.0.0
+
+      - name: Test workspace
+        uses: ichiro-its/ros2-ws-action/test@v1.0.0
