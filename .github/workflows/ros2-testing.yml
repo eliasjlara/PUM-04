@@ -11,9 +11,9 @@ on:
 
 
 jobs:
-  #build_docker:
-  build_and_test:
-    name: Build and test
+  build_docker:
+  #build_and_test:
+   # name: Build and test
     runs-on: ubuntu-22.04
     #container:
       #image: ubuntu:jammy
@@ -34,6 +34,20 @@ jobs:
           pip install sounddevice
           pip install pytest
           pip install librosa
+
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4.0.0
+
+      #- name: Install ros2
+
+      - name: Build
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon build
+        shell: bash
+        working-directory: ./AIDA/ros2_humble_ws/
+        
         #sudo apt update
         #sudo apt install python3-pip
         #pip install -r requirements.txt  # Adjust based on your requirements file
@@ -78,22 +92,6 @@ jobs:
       #    colcon test
       #  shell: bash
       #  working-directory: ./AIDA/ros2_humble_ws/ 
-      - name: Checkout
-        uses: actions/checkout@v4.0.0
-        with:
-          path: workspace
-      - name: Setup workspace
-        uses: ichiro-its/ros2-ws-action/setup@v1.0.0
-        with:
-          distro: humble
       
-      - name: Build workspace
-        uses: ichiro-its/ros2-ws-action/build@v1.0.0
-        with: 
-          distro: humble
-      
-      - name: Test workspace
-        uses: ichiro-its/ros2-ws-action/test@v1.0.0
-        with: 
           distro: humble
       
