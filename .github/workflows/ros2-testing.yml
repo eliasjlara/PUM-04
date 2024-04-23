@@ -67,7 +67,6 @@ jobs:
 
       - name: Build ROS 2 packages
         run: | 
-          source /opt/ros/humble/setup.bash
           colcon build
         shell: bash
         working-directory: ./AIDA/ros2_humble_ws/ 
