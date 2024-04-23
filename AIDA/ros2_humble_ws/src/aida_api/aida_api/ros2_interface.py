@@ -394,7 +394,7 @@ class InterfaceNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    api = InterfaceNode()
+    api = InterfaceNode(host="0.0.0.0")
 
     try:
         rclpy.spin(api)
