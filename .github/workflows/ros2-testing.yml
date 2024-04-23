@@ -27,10 +27,15 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install python3-pip
-          pip install -r requirements.txt  # Adjust based on your requirements file
-        working-directory: ./AIDA/ros2_humble_ws/
+          pip install faster-whisper
+          pip install numpy==1.25.3
+          pip install sounddevice
+          pip install pytest
+          pip install librosa
+        #sudo apt update
+        #sudo apt install python3-pip
+        #pip install -r requirements.txt  # Adjust based on your requirements file
+        #working-directory: ./AIDA/ros2_humble_ws/
   
         #
       #- uses: ros-tooling/setup-ros@v0.7
