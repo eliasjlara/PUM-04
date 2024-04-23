@@ -61,7 +61,7 @@ jobs:
       - name: Test
         run: |
           source /opt/ros/humble/setup.bash
-          source install/local_setup.bash
+          source ../../install/local_setup.bash
           python3 -m pytest
         #colcon test
         #colcon test-result --all --verbose
