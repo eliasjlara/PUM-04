@@ -14,14 +14,34 @@ jobs:
   build_docker:
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:jammy
+      #image: ubuntu:jammy
+      image: ros:humble-desktop
     steps:
-      
-      - uses: ros-tooling/setup-ros@v0.7
+      - name: Checkout code
+        uses: actions/checkout@v4.0.0
+  
+      - name: Set up Python
+        uses: actions/setup-python@v3
         with:
-          required-ros-distributions: humble
-      - run: "source /opt/ros/humble/setup.bash && ros2 run --help"
-        shell: bash 
+          python-version: '3.10'  # Choose the Python version you need
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install python3-pip
+          pip install -r requirements.txt  # Adjust based on your requirements file
+  
+        #
+      #- uses: ros-tooling/setup-ros@v0.7
+      #  with:
+      #    required-ros-distributions: humble
+      #- run: "source /opt/ros/humble/setup.bash && ros2 run --help"
+      #  shell: bash 
+      - name: Source environment
+        run: "echo source /opt/ros/humble/setup.bash >> ~/.bashrc"
+        shell: bash
+        working-directory: ./AIDA/ros2_humble_ws/
+        
 
       #- name: Checkout repository
       #  uses: actions/checkout@v4.0.0
@@ -30,16 +50,21 @@ jobs:
         #run: "source install/localsetup.bash"
         #shell: bash
       
-      - uses: ros-tooling/action-ros-ci@0.3.7
-        with:
-          package-name: aida_interfaces audio_package speech_to_text audio
-          target-ros2-distro: humble
+      #- uses: ros-tooling/action-ros-ci@0.3.7
+      #  with:
+      #    package-name: aida_interfaces audio_package speech_to_text audio
+      #    target-ros2-distro: humble
 
-      #- name: Build ROS 2 packages
-      #  run: colcon build
-      #  #run: "source install/localsetup.bash"
-      #  shell: bash
+      - name: Build ROS 2 packages
+        run: | 
+          colcon build
+        shell: bash
+        working-directory: ./AIDA/ros2_humble_ws/ 
 
-      #- name: Run tests
-      #  run: colcon test
+      - name: Run tests
+        run: | 
+          "source install/localsetup.bash"
+          colcon test
+        shell: bash
+        working-directory: ./AIDA/ros2_humble_ws/ 
         
