@@ -48,12 +48,12 @@ jobs:
 
       - name: Test
         run: |
-          ls
+          pwd
           source /opt/ros/humble/setup.bash
           colcon test
         #source install/localsetup.bash
         shell: bash
-        working-directory: ./AIDA/ros2_humble_ws/
+        #working-directory: ./AIDA/ros2_humble_ws/
         
         
         #sudo apt update
