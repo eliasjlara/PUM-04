@@ -15,9 +15,9 @@ jobs:
   #build_and_test:
    # name: Build and test
     runs-on: ubuntu-22.04
-    #container:
+    container:
       #image: ubuntu:jammy
-      #image: osrf/ros:humble-desktop
+      image: osrf/ros:humble-desktop
     steps:
       - name: Set up Python
         uses: actions/setup-python@v3
