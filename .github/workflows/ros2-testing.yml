@@ -11,8 +11,6 @@ on:
 
 
 jobs:
-
-
   build_docker:
     runs-on: ubuntu-22.04
     container:
@@ -23,5 +21,16 @@ jobs:
         with:
           required-ros-distributions: humble
       - run: "source /opt/ros/humble/setup.bash && ros2 run --help"
+        shell: bash 
+
+      - name: Checkout repository
+        uses: actions/checkout@v4.0.0
+
+      - name: Build ROS 2 packages
+        run: colcon build
+        #run: "source install/localsetup.bash"
         shell: bash
-    
+
+      - name: Run tests
+        run: colcon test
+        
