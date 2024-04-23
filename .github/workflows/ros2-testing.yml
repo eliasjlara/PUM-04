@@ -12,11 +12,8 @@ on:
 
 jobs:
   build_docker:
-  #build_and_test:
-   # name: Build and test
     runs-on: ubuntu-22.04
     container:
-      #image: ubuntu:jammy
       image: osrf/ros:humble-desktop
     steps:
       
@@ -37,22 +34,9 @@ jobs:
       - name: Install Pyaudio
         run: |
           apt-get install portaudio19-dev -y
-         
           
-
-      
-      
       - name: Checkout
         uses: actions/checkout@v4.0.0
-        #with:
-          #path: workspace
-
-      #- name: Install dependencies
-        #run: | 
-          #apt update
-          #apt install python3-pip -y
-          #pip install -r requirements.txt
-        #working-directory: ./AIDA/ros2_humble_ws/
         
       - name: Build
         run: |
@@ -65,56 +49,6 @@ jobs:
         run: |
           source /opt/ros/humble/setup.bash
           source ../../install/local_setup.bash
-          python3 -m pytest
-        #colcon test
-        #colcon test-result --all --verbose
-        #source install/localsetup.bash
+          colcon test
         shell: bash
         working-directory: ./AIDA/ros2_humble_ws/src/audio
-        
-        
-        #sudo apt update
-        #sudo apt install python3-pip
-        #pip install -r requirements.txt  # Adjust based on your requirements file
-        #working-directory: ./AIDA/ros2_humble_ws/
-  
-        #
-      #- uses: ros-tooling/setup-ros@v0.7
-      #  with:
-      #    required-ros-distributions: humble
-      #- run: "source /opt/ros/humble/setup.bash && ros2 run --help"
-      #  shell: bash 
-      #- name: Source environment
-        #run: "echo source /opt/ros/humble/setup.bash >> ~/.bashrc"
-      #  run: "source /opt/ros/humble/setup.bash"
-      #  shell: bash
-        #working-directory: ./AIDA/ros2_humble_ws/
-        
-
-      #- name: Checkout repository
-      #  uses: actions/checkout@v4.0.0
-      #- name: Set working directory
-        #working-directory: ./AIDA/ros2_humble_ws
-        #run: "source install/localsetup.bash"
-        #shell: bash
-      
-      #- uses: ros-tooling/action-ros-ci@0.3.7
-      #  with:
-      #    package-name: aida_interfaces audio_package speech_to_text audio
-      #    target-ros2-distro: humble
-      #
-      #- name: Build ROS 2 packages
-      #  run: | 
-      #    source /opt/ros/humble/setup.bash
-      #    colcon build
-      #  shell: bash
-      #  working-directory: ./AIDA/ros2_humble_ws/ 
-
-      #- name: Run tests
-      #  run: | 
-      #    source /opt/ros/humble/setup.bash
-      #    source install/localsetup.bash
-      #    colcon test
-      #  shell: bash
-      #  working-directory: ./AIDA/ros2_humble_ws/ 
-      
