@@ -36,7 +36,7 @@ jobs:
       #  working-directory: ./AIDA/ros2_humble_ws/
       - name: Install Pyaudio
         run: |
-          apt-get install portaudio19-dev
+          apt-get install portaudio19-dev -y
          
           
 
