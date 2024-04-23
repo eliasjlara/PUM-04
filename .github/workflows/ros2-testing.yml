@@ -52,6 +52,7 @@ jobs:
           source /opt/ros/humble/setup.bash
           source install/local_setup.bash
           colcon test
+          colcon test-result --all --verbose
         #source install/localsetup.bash
         shell: bash
         working-directory: ./AIDA/ros2_humble_ws/
