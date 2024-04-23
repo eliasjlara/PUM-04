@@ -341,7 +341,7 @@ fun Lidar(
     ) {
         if (lidarAvailable == ConnectionStages.CONNECTION_SUCCEEDED) {
             Image(
-                painter = painterResource(id = R.drawable.tvstatic),
+                painter = painterResource(id = R.drawable.lidar_small),
                 contentDescription = "lidar map",
                 modifier = Modifier
                     .fillMaxSize()
