@@ -1,0 +1,40 @@
+name: Ros2 automatic testing
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  build_docker:
+    runs-on: ubuntu-22.04
+    container:
+      image: osrf/ros:humble-desktop
+    steps:
+      
+      - name: Install pip
+        run: | 
+          apt update
+          apt install python3-pip -y
+          
+      - name: Checkout
+        uses: actions/checkout@v4.0.0
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          apt-get install portaudio19-dev -y
+        working-directory: ./AIDA/ros2_humble_ws/
+        
+      - name: Build
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon build
+        shell: bash
+        working-directory: ./AIDA/ros2_humble_ws/
+
+      - name: Test
+        run: |
+          source /opt/ros/humble/setup.bash
+          source ./install/local_setup.bash
+          colcon test
+        shell: bash
+        working-directory: ./AIDA/ros2_humble_ws/
