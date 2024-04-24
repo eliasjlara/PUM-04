@@ -90,7 +90,7 @@ class STTNode(Node):
             #for segment in translation:
                 # The segment is the result of the transcription, strip of trailing and leading whitespaces
             #    result = segment.text.strip() 
-            #    self.get_logger().info("STT node: Transcription contains segment: " + result)
+            self.get_logger().info("STT node: Transcription contains segment: " + translation)
             #    self.publish_result(result)
             self.publish_result(translation)
             self.get_logger().info("STT node: The current transcription is finished")
