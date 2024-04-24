@@ -126,7 +126,10 @@ class STTNode(Node):
         """
         segments, _ = self.stt_model.transcribe(audio_data, beam_size=5)
         list_of_segments = list(segments)
-        return list_of_segments[0].text.strip()
+        if len(list_of_segments) == 0:
+            return ""
+        else:
+            return list_of_segments[0].text.strip()
 
     def destroy_node(self):
         """
