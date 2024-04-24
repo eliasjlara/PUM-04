@@ -1,0 +1,44 @@
+# Base image
+# For ARM64/v8
+FROM arm64v8/ros:humble-ros-base
+# For x86_64
+# FROM ros:humble-ros-base
+
+# Set working directory (the parent directory of your workspace)
+WORKDIR /app
+
+# Install additional ROS dependencies your project might need.
+RUN apt-get update && apt-get upgrade -y
+
+# Install pip
+RUN /bin/bash -c "apt-get install python3-pip -y"
+
+# Install Python sounddevice dependencies
+RUN apt-get install -y libportaudio2
+
+# Install additional ROS packages
+RUN apt-get install -y ros-humble-image-tools && \
+    apt-get install -y ros-humble-cv-bridge
+
+# Install Git (necessary for cloning)
+RUN apt-get install -y git
+
+# ARG CACHEBUST=1 
+# Clone the repository, and move to the desired branch
+RUN git clone https://github.com/eliasjlara/PUM-04.git && (cd /app/PUM-04 ; git checkout docker)
+
+# Change directory to the workspace location
+WORKDIR /app/PUM-04/AIDA/ros2_humble_ws
+
+# Install Python dependencies from requirements.txt
+RUN /bin/bash -c "pip3 install -r requirements.txt"
+
+# Build the colcon workspace (with sourcing)
+# RUN /bin/bash -c "echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc"
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build && source install/local_setup.bash"
+
+# Change directory to the launch location
+WORKDIR /app/PUM-04/AIDA/launch
+
+# CMD [ "/bin/bash", "-c", "source /opt/ros/humble/setup.bash", "&&", "/bin/bash", "-c", "source /app/PUM-04/AIDA/ros2_humble_ws/install/local_setup.bash"] 
+#, "&&", "ros2",  "launch launch_all.yaml"]
