@@ -1,13 +1,8 @@
 name: Ros2 automatic testing
 on: 
-  push:
-    branches:
-      - main
-      - automatic-testing
   pull_request:
     branches:
       - main
-      - automatic-testing
 jobs:
   build_docker:
     runs-on: ubuntu-22.04
