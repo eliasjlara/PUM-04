@@ -35,7 +35,6 @@ jobs:
         run: |
           source /opt/ros/humble/setup.bash
           source ../../install/local_setup.bash
-          pytest
-          
+          python3 -m pytest
         shell: bash
         working-directory: ./AIDA/ros2_humble_ws/src/speech_to_text
