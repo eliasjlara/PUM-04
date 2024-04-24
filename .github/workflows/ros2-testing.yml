@@ -42,6 +42,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           apt-get install portaudio19-dev -y
+        working-directory: ./AIDA/ros2_humble_ws/
         
       - name: Build
         run: |
