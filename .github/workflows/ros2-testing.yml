@@ -34,8 +34,8 @@ jobs:
       - name: Test
         run: |
           source /opt/ros/humble/setup.bash
-          source ./install/local_setup.bash
-          colcon test
-          colcon test-result --all --verbose
+          source ../../install/local_setup.bash
+          pytest
+          
         shell: bash
-        working-directory: ./AIDA/ros2_humble_ws/
+        working-directory: ./AIDA/ros2_humble_ws/src/speech_to_text
