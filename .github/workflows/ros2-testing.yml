@@ -22,21 +22,26 @@ jobs:
           apt update
           apt install python3-pip -y
           
-      - name: Install dependencies
-        run: |
-          pip install faster-whisper
-          pip install sounddevice
-          pip install pytest
-          pip install librosa
-          pip install numpy==1.24.3
+      #- name: Install dependencies
+        #run: |
+          #pip install faster-whisper
+          #pip install sounddevice
+          #pip install pytest
+          #pip install librosa
+          #pip install numpy==1.24.3
       #    pip install -r requirements.txt
       #  working-directory: ./AIDA/ros2_humble_ws/
-      - name: Install Pyaudio
-        run: |
-          apt-get install portaudio19-dev -y
+      #- name: Install Pyaudio
+     #   run: |
+     #     apt-get install portaudio19-dev -y
           
       - name: Checkout
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v4.0.0'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          apt-get install portaudio19-dev -y
         
       - name: Build
         run: |
