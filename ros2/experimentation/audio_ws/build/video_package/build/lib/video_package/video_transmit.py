@@ -16,7 +16,6 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.framework.formats import landmark_pb2
-#endregion
 
 class GestureRecognizerNode():
     def __init__(self, cap):
@@ -224,9 +223,6 @@ class GestureRecognizerNode():
                                                 z=landmark.z) for landmark in
                 hand_landmarks
                 ])
-                for landmark in hand_landmarks:
-                    print(f"Landmark coordinates: X={landmark.x}, Y={landmark.y}, Z={landmark.z}")
-                
                 self.mp_drawing.draw_landmarks(
                 current_frame,
                 hand_landmarks_proto,
@@ -239,7 +235,8 @@ class GestureRecognizerNode():
         recognition_frame = current_frame
         return recognition_frame
 
-#region MediaPipe Pose Landmarking
+
+
 class PoseLandmarkerNode():
     def __init__(self, cap):
         
@@ -441,8 +438,6 @@ class PoseLandmarkerNode():
         return current_frame
               
 
-#endregion
-
 
 class VideoTransmitNode(Node):
     def __init__(self):
@@ -456,11 +451,13 @@ class VideoTransmitNode(Node):
         #self.cap = cv2.VideoCapture('https://media.mammothresorts.com/mmsa/mammoth/cams/Village_Gondola_1280x720.jpg')
         #self.cap = cv2.VideoCapture('https://rr5---sn-5hneknek.googlevideo.com/videoplayback?expire=1711896499&ei=UyMJZvL0J924v_IPpqqe4Ak&ip=155.4.149.196&id=o-AJkOJvKJpZgGu2GUT914-YPCpthOnCYXZ5zdjo5HcpU2&itag=22&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&spc=UWF9f0qJHXLl2Ln2_HUDrYJqtysKXLOIC2DiVWyEYHsupKA&vprv=1&svpuc=1&mime=video%2Fmp4&ns=K-O66OL5NmmrkK4PCX2ZcroQ&rqh=1&cnr=14&ratebypass=yes&dur=110.341&lmt=1587657090139165&fexp=51141541&c=WEB&sefc=1&txp=6316222&n=LYcmuM4GWabtsdlw&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AJfQdSswRQIhAMzm0uYpfJT7tA-IFSjRGKNfqVHJjrgQGxByMzzEuJhoAiAVWdtjJnPFAEyMqmqAWivs3EgpfLXNTTos76rBtpe0xg%3D%3D&cm2rm=sn-c5ioiv45c-hhme7s,sn-c5ioiv45c-5gol7e,sn-5golr7e&req_id=54a3154540e1a3ee&redirect_counter=3&cms_redirect=yes&cmsv=e&mh=gx&mm=34&mn=sn-5hneknek&ms=ltu&mt=1711874663&mv=m&mvi=5&pl=20&lsparams=mh,mm,mn,ms,mv,mvi,pl&lsig=ALClDIEwRQIgAWilUnYEyMVImp3k15p3mVFWroDHizwRVY3OmYq9rbUCIQDCS2bRGCQNLzdC84dMQ0bkBWmBV40mXtxyvkvqEb_tvQ%3D%3D')
         #self.cap = cv2.VideoCapture("1person.mp4")
-        self.cap = cv2.VideoCapture("https://rr6---sn-c5ioiv45c-hhme.googlevideo.com/videoplayback?expire=1712072149&ei=ddELZtOVB7mPv_IPvKGD6As&ip=155.4.149.196&id=o-AMlBBnvBj8JhJ3BoXsuJbVzK-P2LUMsVkjrHTejw7gVh&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&mh=ty&mm=31%2C29&mn=sn-c5ioiv45c-hhme%2Csn-c5ioiv45c-5goe&ms=au%2Crdu&mv=m&mvi=6&pl=20&initcwndbps=3033750&spc=UWF9fy_N0DhZ5zwflagqPelj-qXroPHRa8FyNLq5KbjFDgQ&vprv=1&svpuc=1&mime=video%2Fmp4&ns=psJAQiT_19MKdHE0cheaDEYQ&cnr=14&ratebypass=yes&dur=264.312&lmt=1658394672193702&mt=1712050153&fvip=7&fexp=51141541&c=WEB&sefc=1&txp=5318224&n=djmBWPBzNAIJaYx1&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AJfQdSswRQIhAODBIEQh133LkwHrjkuI6ZTq9UUyGkwL-XX4hPdsI_iPAiBn7jkvTxO8gn8OvxKEaKnS10oHSDQNss9j1C0hzo2TRw%3D%3D&lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&lsig=ALClDIEwRQIhAPPqDSYvbJrF8tzXqHB9iXH21xIdOQZXcEvLRcp0lD_jAiBUd4Zbrr-sW8sLjw4EHaydOd-9Ste5_fdVtQT35jyIaQ%3D%3D")
+        #self.cap = cv2.VideoCapture("https://rr6---sn-c5ioiv45c-hhme.googlevideo.com/videoplayback?expire=1712072149&ei=ddELZtOVB7mPv_IPvKGD6As&ip=155.4.149.196&id=o-AMlBBnvBj8JhJ3BoXsuJbVzK-P2LUMsVkjrHTejw7gVh&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&mh=ty&mm=31%2C29&mn=sn-c5ioiv45c-hhme%2Csn-c5ioiv45c-5goe&ms=au%2Crdu&mv=m&mvi=6&pl=20&initcwndbps=3033750&spc=UWF9fy_N0DhZ5zwflagqPelj-qXroPHRa8FyNLq5KbjFDgQ&vprv=1&svpuc=1&mime=video%2Fmp4&ns=psJAQiT_19MKdHE0cheaDEYQ&cnr=14&ratebypass=yes&dur=264.312&lmt=1658394672193702&mt=1712050153&fvip=7&fexp=51141541&c=WEB&sefc=1&txp=5318224&n=djmBWPBzNAIJaYx1&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AJfQdSswRQIhAODBIEQh133LkwHrjkuI6ZTq9UUyGkwL-XX4hPdsI_iPAiBn7jkvTxO8gn8OvxKEaKnS10oHSDQNss9j1C0hzo2TRw%3D%3D&lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&lsig=ALClDIEwRQIhAPPqDSYvbJrF8tzXqHB9iXH21xIdOQZXcEvLRcp0lD_jAiBUd4Zbrr-sW8sLjw4EHaydOd-9Ste5_fdVtQT35jyIaQ%3D%3D")
+        #self.cap = cv2.VideoCapture('https://videos.pexels.com/video-files/854370/854370-sd_640_360_30fps.mp4')
+        self.cap = cv2.VideoCapture('https://videos.pexels.com/video-files/8173035/8173035-hd_1920_1080_30fps.mp4')
 
         # Initialize the PoseLandmarkerNode with the video capture
-        #self.pose_landmarker = PoseLandmarkerNode(self.cap)
-        self.gesture_recognizer = GestureRecognizerNode(self.cap)
+        self.pose_landmarker = PoseLandmarkerNode(self.cap)
+        #self.gesture_recognizer = GestureRecognizerNode(self.cap)
 
     def publish_video(self):
         #region Test remove
@@ -473,17 +470,18 @@ class VideoTransmitNode(Node):
             self.publisher.publish(msg)
         
         #endregion
-        frame = self.gesture_recognizer.apply_gesture_detection()
+        #frame = self.gesture_recognizer.apply_gesture_detection()
+        frame = self.pose_landmarker.apply_pose_landmarking()
         #success, frame = self.cap.read()
 
 
         #region Test for local video analysis
-        """
+        
         imS = cv2.resize(frame, (960, 540)) 
         # updating video window 
         cv2.imshow('video', imS) # Creating (or updating if called once before) a window to display the video data
         cv2.waitKey(1)
-        """
+        
         #end region
 
 
@@ -503,10 +501,10 @@ def main(args=None):
         node.get_logger().info('Video Transmitter: Keyboard interrupt')
 
     # Call cleanup functions when Ctrl+C is pressed
-    #node.pose_landmarker.detector.close()
-    #node.cap.release()
+    node.pose_landmarker.detector.close()
+    node.cap.release()
     #cv2.destroyAllWindows()
-    node.gesture_recognizer.recognizer.close()
+    #node.gesture_recognizer.recognizer.close()
     node.cap.release()
     cv2.destroyAllWindows()
     # Node cleanup
