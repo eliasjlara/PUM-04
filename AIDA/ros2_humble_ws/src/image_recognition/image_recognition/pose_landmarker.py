@@ -12,7 +12,7 @@ from mediapipe.framework.formats import landmark_pb2
 
 
 class PoseLandmarker():
-    def __init__(self, cap):
+    def __init__(self):
         
         
         self.mp_pose = mp.solutions.pose
@@ -25,7 +25,7 @@ class PoseLandmarker():
         self.DETECTION_RESULT = None
 
         # Test
-        self.cap = cap
+        #self.cap = cap
         self.detector = None
         self.output_segmentation_masks = False
 
@@ -120,9 +120,10 @@ class PoseLandmarker():
 
         # Start capturing video input from the camera
         #self.cap = cv2.VideoCapture(camera_id) Moved
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-
+        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self.width = width
+        self.height = height
         # Visualization parameters
         fps_avg_frame_count = 10
 
@@ -151,12 +152,14 @@ class PoseLandmarker():
             result_callback=save_result)
         self.detector = vision.PoseLandmarker.create_from_options(options)
     
-    def apply_pose_landmarking(self) -> np.ndarray:
-        success, image = self.cap.read()
-        if not success:
-            sys.exit(
-                'ERROR: Unable to read from webcam. Please verify your webcam settings.'
-            )
+    def apply_pose_landmarking(self, image) -> np.ndarray:
+        # success, image = self.cap.read()
+        # if not success:
+        #     sys.exit(
+        #         'ERROR: Unable to read from webcam. Please verify your webcam settings.'
+        #     )
+
+        image = cv2.resize(image, (self.width, self.height))
 
         # Convert the image from BGR to RGB as required by the TFLite model.
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
