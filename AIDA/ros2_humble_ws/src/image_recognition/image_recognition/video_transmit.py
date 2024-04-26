@@ -18,8 +18,10 @@ from pose_landmarker import PoseLandmarker
 class VideoTransmitNode(Node):
     def __init__(self):
         super().__init__('video_transmit')
-        self.publisher = self.create_publisher(Image, 'video', 10)
+        self.publisher = self.create_publisher(Image, 'processed_video', 10)
+        self.subscriber = self.create_subscription(Image, 'video', self.callback, 10)
         self.bridge = CvBridge()
+
         self.timer = self.create_timer(
             0.1, self.publish_video)  # Adjust the rate as needed
         # Replace with your video file or stream URL
@@ -31,8 +33,22 @@ class VideoTransmitNode(Node):
         #self.cap = cv2.VideoCapture("https://rr6---sn-c5ioiv45c-hhme.googlevideo.com/videoplayback?expire=1712072149&ei=ddELZtOVB7mPv_IPvKGD6As&ip=155.4.149.196&id=o-AMlBBnvBj8JhJ3BoXsuJbVzK-P2LUMsVkjrHTejw7gVh&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&mh=ty&mm=31%2C29&mn=sn-c5ioiv45c-hhme%2Csn-c5ioiv45c-5goe&ms=au%2Crdu&mv=m&mvi=6&pl=20&initcwndbps=3033750&spc=UWF9fy_N0DhZ5zwflagqPelj-qXroPHRa8FyNLq5KbjFDgQ&vprv=1&svpuc=1&mime=video%2Fmp4&ns=psJAQiT_19MKdHE0cheaDEYQ&cnr=14&ratebypass=yes&dur=264.312&lmt=1658394672193702&mt=1712050153&fvip=7&fexp=51141541&c=WEB&sefc=1&txp=5318224&n=djmBWPBzNAIJaYx1&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AJfQdSswRQIhAODBIEQh133LkwHrjkuI6ZTq9UUyGkwL-XX4hPdsI_iPAiBn7jkvTxO8gn8OvxKEaKnS10oHSDQNss9j1C0hzo2TRw%3D%3D&lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&lsig=ALClDIEwRQIhAPPqDSYvbJrF8tzXqHB9iXH21xIdOQZXcEvLRcp0lD_jAiBUd4Zbrr-sW8sLjw4EHaydOd-9Ste5_fdVtQT35jyIaQ%3D%3D")
 
         # Initialize the PoseLandmarkerNode with the video capture
-        #self.pose_landmarker = PoseLandmarker(self.cap)
-        self.gesture_recognizer = GestureRecognizer(self.cap)
+        self.pose_landmarker = PoseLandmarker(self.cap) # XXX
+        #self.gesture_recognizer = GestureRecognizer(self.cap)
+
+    def callback(self, msg):
+        # received video data
+        # converting video data
+
+        self.cap = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+        self.pose_landmarker = PoseLandmarker(self.cap)
+
+        #imS = cv2.resize(cv_image, (960, 540)) 
+        # updating video window 
+        #cv2.imshow('video', imS) # Creating (or updating if called once before) a window to display the video data
+        #cv2.waitKey(1)
+
+        self.publish_video()
 
     def publish_video(self):
         #region Test remove
@@ -46,7 +62,7 @@ class VideoTransmitNode(Node):
         
         #endregion
         #frame = self.gesture_recognizer.apply_gesture_detection()
-        frame = self.pose_landmarker.apply_pose_landmarking()
+        frame = self.pose_landmarker.apply_pose_landmarking() # XXX
         #success, frame = self.cap.read()
 
 
@@ -76,7 +92,7 @@ def main(args=None):
         node.get_logger().info('Video Transmitter: Keyboard interrupt')
 
     # Call cleanup functions when Ctrl+C is pressed
-    node.pose_landmarker.detector.close()
+    node.pose_landmarker.detector.close() # XXX
     #node.cap.release()
     #cv2.destroyAllWindows()
     #node.gesture_recognizer.recognizer.close()
