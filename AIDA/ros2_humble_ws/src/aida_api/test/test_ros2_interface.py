@@ -35,7 +35,7 @@ def interface_node():
 def test_video_callback(interface_node):
     # Create a mock Image message
     msg = Image()
-    img = cv2.imread("resource/test_image.webp")
+    img = cv2.imread("resource/test_picture.jpeg")
     cvbridge = CvBridge()
     msg = cvbridge.cv2_to_imgmsg(img, "bgr8")
     interface_node.video_callback(msg)
