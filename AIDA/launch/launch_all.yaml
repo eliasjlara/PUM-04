@@ -1,0 +1,19 @@
+launch:
+
+- node:
+    pkg: "audio"
+    exec: "audio_transmit_mic"
+    name: "ros2_mic_node"
+    namespace: "mic"
+
+- node:
+    pkg: "speech_to_text"
+    exec: "faster_whisper_node"
+    name: "speech_to_text"
+    namespace: ""
+
+- node:
+    pkg: "aida_api"
+    exec: "ros2_interface"
+    name: "api"
+    namespace: ""

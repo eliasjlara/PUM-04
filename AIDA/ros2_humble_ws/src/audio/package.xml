@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>speech_to_text</name>
+  <name>audio</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="18600349+thulavall@users.noreply.github.com">albin</maintainer>
+  <maintainer email="8600349+thulavall@users.noreply.github.com">albin</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>
