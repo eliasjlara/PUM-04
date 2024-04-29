@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -20,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -33,7 +35,14 @@ import androidx.compose.ui.unit.dp
  * @author Elias
  */
 @Composable
-fun ConfigurationPage(barHeight: Dp) {
+fun ConfigurationPage(
+    barHeight: Dp,
+    ipAddress: String,
+    onIpAddressChange: (String) -> Unit,
+    port: Int,
+    onPortChange: (Int) -> Unit,
+    onButtonPress: () -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(top = barHeight)
@@ -51,23 +60,38 @@ fun ConfigurationPage(barHeight: Dp) {
             verticalArrangement = Arrangement.spacedBy(rowSpacing),
             horizontalAlignment = Alignment.Start
         ) {
+            var ipInput   by remember { mutableStateOf(ipAddress) }
+            var portInput by remember { mutableStateOf(port.toString()) }
+
             Text(text = "SSH Connection Data", modifier = Modifier.align(Alignment.Start))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(rowSpacing)
             ) {
-                var ip by remember { mutableStateOf("") }
-                var port by remember { mutableStateOf("") }
-
                 TextField(
-                    value = ip,
-                    onValueChange = { ip = it },
+                    value = ipInput,
+                    onValueChange = { newValue ->
+                        // Check that the address is correctly formatted
+                        if (newValue.matches(Regex("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\$"))) {
+                            // Check each segment is within 0-255
+                            ipInput = newValue
+                        }
+                    },
                     label = { Text("IP-address") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
                 TextField(
-                    value = port,
-                    onValueChange = { port = it },
+                    value = portInput,
+                    onValueChange = { newValue ->
+                        // Ensure the input is 0 to 4 characters
+                        if (newValue.matches(Regex("^[0-9]{1,4}\$"))) {
+                            portInput = newValue
+                        }
+                    },
                     label = { Text("Port") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -91,7 +115,11 @@ fun ConfigurationPage(barHeight: Dp) {
                 )
             }
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    onIpAddressChange(ipInput)
+                    onPortChange(portInput.toInt())
+                    onButtonPress()
+                },
                 modifier = Modifier
                     .padding(20.dp)
                     .align(Alignment.CenterHorizontally)

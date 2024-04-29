@@ -96,10 +96,12 @@ fun CameraPage(
     barHeight: Dp,
     screenWidth: Dp,
     imageBitmap: ImageBitmap?,
-    fetchingCameraFeedString: Boolean,
+    cameraFeedConnectionStage: ConnectionStages,
     viewModel: SpeechViewModel,
-    sttAvailable: Boolean,
-    lidarAvailable: ConnectionStages
+    sttConnectionStage: ConnectionStages,
+    lidarConnectionStage: ConnectionStages,
+    ipAddress: String,
+    port: Int
 ) {
     val widgetPadding = 40.dp
 
@@ -117,7 +119,9 @@ fun CameraPage(
             isLidarExpanded = isLidarExpanded,
             screenWidth = screenWidth,
             imageBitmap = imageBitmap,
-            fetchingCameraFeedString = fetchingCameraFeedString
+            cameraFeedConnectionStage = cameraFeedConnectionStage,
+            ipAddress = ipAddress,
+            port = port
         )
 
         Lidar(
@@ -128,7 +132,7 @@ fun CameraPage(
             screenHeight = screenHeight,
             isLidarExpanded = isLidarExpanded,
             onToggleLidar = { isLidarExpanded = !isLidarExpanded },
-            lidarAvailable = lidarAvailable
+            lidarConnectionStage = lidarConnectionStage
         )
 
         var triggerEffect by remember { mutableStateOf(false) }
@@ -151,14 +155,16 @@ fun CameraPage(
             onToggleVoice = { isVoiceRecording = false },
             voiceCommandString = voiceCommand
         )
+        // TODO: Change sttConnection to Joystick
         Joystick(
             Modifier
                 .padding(bottom = widgetPadding, start = widgetPadding)
                 .align(Alignment.BottomStart)
                 .zIndex(3f)
-                .alpha(if (sttAvailable) 1.0f else 0.3f),
+                .alpha(if (sttConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED) 1.0f else 0.3f),
             joystickSize = 130F,
             thumbSize = 45f,
+            enabled = (sttConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED)
         ) { x: Offset ->
             Log.d("JoyStick", "$x")
         }
@@ -168,10 +174,10 @@ fun CameraPage(
                 .zIndex(3f)
                 .size(120.dp)
                 .align(Alignment.BottomEnd)
-                .alpha(if (sttAvailable) 1.0f else 0.3f)
+                .alpha(if (sttConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED) 1.0f else 0.3f)
                 .clip(CircleShape)
                 .clickable(
-                    enabled = sttAvailable,
+                    enabled = sttConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED,
                     onClick = {
                         isVoiceRecording = !isVoiceRecording
                         triggerEffect = !triggerEffect
@@ -193,7 +199,9 @@ fun CameraFeed(
     screenWidth: Dp,
     isLidarExpanded: Boolean,
     imageBitmap: ImageBitmap?,
-    fetchingCameraFeedString: Boolean
+    cameraFeedConnectionStage: ConnectionStages,
+    ipAddress: String,
+    port: Int
 ) {
     val imageSize by animateDpAsState(
         targetValue = if (isLidarExpanded) screenWidth / 2 else screenWidth,
@@ -239,8 +247,8 @@ fun CameraFeed(
                 ), label = ""
             )
 
-            LaunchedEffect(fetchingCameraFeedString) {
-                while (fetchingCameraFeedString) {
+            LaunchedEffect(cameraFeedConnectionStage) {
+                while (cameraFeedConnectionStage == ConnectionStages.CONNECTING) {
                     if (loadingText == "Connecting to camera feed...") {
                         loadingText = "Connecting to camera feed"
                         targetRotationDegrees += 180f
@@ -249,7 +257,7 @@ fun CameraFeed(
                 }
             }
             Icon(
-                imageVector = if (fetchingCameraFeedString) Icons.Filled.HourglassTop else Icons.Filled.VideocamOff,
+                imageVector = if (cameraFeedConnectionStage == ConnectionStages.CONNECTING) Icons.Filled.HourglassTop else Icons.Filled.VideocamOff,
                 contentDescription = "Video feed icon",
                 modifier = Modifier
                     .size(60.dp)
@@ -257,7 +265,7 @@ fun CameraFeed(
                 tint = Color.LightGray
             )
             Text(
-                text = if (fetchingCameraFeedString) loadingText else "Camera feed not available",
+                text = if (cameraFeedConnectionStage == ConnectionStages.CONNECTING) loadingText else "Camera feed not available",
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 style = typography.headlineSmall,
@@ -265,8 +273,12 @@ fun CameraFeed(
                 modifier = Modifier.padding(5.dp)
             )
             Text(
-                text = (if (fetchingCameraFeedString) "The camera feed is currently fetching from AIDA\nPlease wait until a connection is made"
-                else "Could not connect to AIDA, please try again"),
+                text = (if (cameraFeedConnectionStage == ConnectionStages.CONNECTING)
+                    "The camera feed is currently fetching from AIDA\n" +
+                            "Please wait until a connection is made"
+                else
+                    "Could not connect to AIDA, please try again\n" +
+                            "You are trying to connect to: $ipAddress:$port"),
                 textAlign = TextAlign.Center,
                 color = Color.LightGray
             )
@@ -294,13 +306,13 @@ fun Lidar(
     screenHeight: Dp,
     isLidarExpanded: Boolean,
     onToggleLidar: () -> Unit,
-    lidarAvailable: ConnectionStages
+    lidarConnectionStage: ConnectionStages
 ) {
     var visible by remember { mutableStateOf(true) }
     var loadingText by remember { mutableStateOf("Connecting to\nlidar feed") }
 
-    LaunchedEffect(lidarAvailable) {
-        while (lidarAvailable == ConnectionStages.CONNECTING) {
+    LaunchedEffect(lidarConnectionStage) {
+        while (lidarConnectionStage == ConnectionStages.CONNECTING) {
             if (loadingText == "Connecting to\nlidar feed...") {
                 loadingText = "Connecting to\nlidar feed"
             } else loadingText += "."
@@ -332,14 +344,14 @@ fun Lidar(
             .width(lidarWidth)
             .height(lidarHeight)
             .clickable(
-                enabled = lidarAvailable == ConnectionStages.CONNECTION_SUCCEEDED,
+                enabled = lidarConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED,
                 onClick = {
                     onToggleLidar()
                     visible = false
                 }
             ),
     ) {
-        if (lidarAvailable == ConnectionStages.CONNECTION_SUCCEEDED) {
+        if (lidarConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED) {
             Image(
                 painter = painterResource(id = R.drawable.lidar_small),
                 contentDescription = "lidar map",
@@ -366,7 +378,7 @@ fun Lidar(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = if (lidarAvailable == ConnectionStages.CONNECTION_FAILED) Icons.Filled.SensorsOff else Icons.Filled.Sensors,
+                    imageVector = if (lidarConnectionStage == ConnectionStages.CONNECTION_FAILED) Icons.Filled.SensorsOff else Icons.Filled.Sensors,
                     contentDescription = "Video feed icon",
                     modifier = Modifier
                         .size(50.dp)
@@ -374,7 +386,7 @@ fun Lidar(
                     tint = Color.White,
                 )
                 Text(
-                    text = if (lidarAvailable == ConnectionStages.CONNECTION_FAILED) "Lidar feed not available" else loadingText,
+                    text = if (lidarConnectionStage == ConnectionStages.CONNECTION_FAILED) "Lidar feed not available" else loadingText,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
@@ -383,7 +395,7 @@ fun Lidar(
                 )
             }
         }
-        if (lidarAvailable == ConnectionStages.CONNECTION_SUCCEEDED) {
+        if (lidarConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED) {
             AnimatedVisibility(
                 visible = visible,
                 enter = fadeIn(),
@@ -476,6 +488,7 @@ fun Joystick(
     modifier: Modifier = Modifier,
     joystickSize: Float,
     thumbSize: Float,
+    enabled: Boolean,
     onJoystickMoved: (Offset) -> Unit = {}
 ) {
     val joystickCenter = joystickSize / 2
@@ -488,15 +501,17 @@ fun Joystick(
                 thumbPosition = Offset(joystickCenter, joystickCenter)
                 onJoystickMoved(thumbPosition)
             }) { change, dragAmount ->
-                change.consume()
-                val scaledDrag = dragAmount * 0.6f
-                val newPos = thumbPosition + scaledDrag
-                // Ensure the thumb stays within the joystick area
-                thumbPosition = Offset(
-                    x = newPos.x.coerceIn((joystickSize / 5), joystickSize - joystickSize / 5),
-                    y = newPos.y.coerceIn((joystickSize / 5), joystickSize - joystickSize / 5)
-                )
-                onJoystickMoved(thumbPosition)
+                if (enabled) {
+                    change.consume()
+                    val scaledDrag = dragAmount * 0.6f
+                    val newPos = thumbPosition + scaledDrag
+                    // Ensure the thumb stays within the joystick area
+                    thumbPosition = Offset(
+                        x = newPos.x.coerceIn((joystickSize / 5), joystickSize - joystickSize / 5),
+                        y = newPos.y.coerceIn((joystickSize / 5), joystickSize - joystickSize / 5)
+                    )
+                    onJoystickMoved(thumbPosition)
+                }
             }
         }) {
         Image(

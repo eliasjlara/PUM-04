@@ -8,9 +8,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -49,7 +51,6 @@ import com.example.aida.socketcommunication.VideoClient
 import com.example.aida.ui.theme.AIDATheme
 import com.example.aida.ui.theme.TopBarColor
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -68,48 +69,64 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
-            val imageBitmap = remember { mutableStateOf<ImageBitmap?>(null) }
-            var fetchingCameraFeed by remember { mutableStateOf<Boolean>(true) }
-            var sttAvailable by remember { mutableStateOf<Boolean>(false) }
-            var lidarAvailable by remember { mutableStateOf<ConnectionStages>(ConnectionStages.CONNECTING) }
+            var cameraFeedConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
+            var lidarConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
+            var sttConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
+            var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+            var ipAddress by remember { mutableStateOf("1.1.1.1") }
+            var port by remember { mutableIntStateOf(1) }
             val speechViewModel = SpeechViewModel()
 
-            LaunchedEffect(Unit) {
+            suspend fun connectToAIDA() {
+                cameraFeedConnectionStage = ConnectionStages.CONNECTING
+                lidarConnectionStage = ConnectionStages.CONNECTING
+                sttConnectionStage = ConnectionStages.CONNECTING
+
                 withContext(Dispatchers.IO) {
                     try {
                         val videoClient = VideoClient(
-                            ip = "192.168.37.50",
-                            port = 6660,
+                            ip = ipAddress,
+                            port = port,
                             timeToTimeout = 10000
                         )
                         videoClient.sendStartCamera()
                         videoClient.sendGetVideo()
 
+                        cameraFeedConnectionStage = ConnectionStages.CONNECTION_SUCCEEDED
+
                         while (true) {
                             val byteArray = videoClient.fetch()
-                            imageBitmap.value =
+                            imageBitmap =
                                 BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                                     ?.asImageBitmap()
                         }
                     } catch (e: Exception) {
                         println("Network Custom Exception: $e")
-                        fetchingCameraFeed = false
+                        cameraFeedConnectionStage = ConnectionStages.CONNECTION_FAILED
                     }
-                    delay(2000)
-                    lidarAvailable = ConnectionStages.CONNECTION_FAILED
                     try {
                         speechViewModel.initializeSTTClient(
-                            ip = "192.168.37.50",
-                            port = 6660,
+                            ip = ipAddress,
+                            port = port,
                             timeToTimeout = 5000
                         )
-                        sttAvailable = true
+                        sttConnectionStage = ConnectionStages.CONNECTION_SUCCEEDED
                     } catch (e: Exception) {
+                        // TODO Remove lidar line below, only used for testing
+                        lidarConnectionStage = ConnectionStages.CONNECTION_FAILED
+                        sttConnectionStage = ConnectionStages.CONNECTION_FAILED
                         print("Speech Exception: $e")
                     }
+                    // TODO Implement lidar fetch
                 }
             }
+
+            LaunchedEffect(Unit) {
+                connectToAIDA()
+            }
+
             AIDATheme {
                 var topBarTitle by remember { mutableStateOf("AIDA Remote Control Beta") }
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -173,7 +190,7 @@ class MainActivity : ComponentActivity() {
                         val screenHeight = configuration.screenHeightDp.dp
                         val screenWidth = configuration.screenWidthDp.dp
                         // Dynamically set bar height depending on phone/tablet
-                        val barHeight = if (screenHeight / 8 < 50.dp) screenHeight / 8 else 50.dp
+                        val barHeight = if (screenHeight / 8 < 50.dp) screenHeight / 6 else 50.dp
 
                         TopBar(
                             onMenuClicked = {
@@ -186,32 +203,47 @@ class MainActivity : ComponentActivity() {
                             onCameraClicked = { state = 0 },
                             screenWidth,
                             barHeight,
-                            topBarTitle
+                            topBarTitle = topBarTitle
                         )
+
+                        val configurationCoroutineScope = rememberCoroutineScope()
 
                         when (state) {
                             0 -> CameraPage(
                                 screenHeight,
                                 barHeight,
                                 screenWidth,
-                                imageBitmap.value,
-                                fetchingCameraFeed,
+                                imageBitmap,
+                                cameraFeedConnectionStage,
                                 speechViewModel,
-                                sttAvailable,
-                                lidarAvailable
+                                sttConnectionStage,
+                                lidarConnectionStage,
+                                ipAddress,
+                                port
                             )
 
-                            1 -> ConfigurationPage(barHeight)
+                            1 -> ConfigurationPage(
+                                barHeight,
+                                ipAddress = ipAddress,
+                                onIpAddressChange = { newIp -> ipAddress = newIp },
+                                port = port,
+                                onPortChange = { newPort -> port = newPort },
+                                onButtonPress = {
+                                    state = 0
+
+                                    configurationCoroutineScope.launch {
+                                        connectToAIDA()
+
+                                    }
+                                }
+                            )
                         }
                     }
                 }
             }
-
         }
     }
-
 }
-
 
 /**
  * Function for the top bar, contains both UI and logic, however some
@@ -268,22 +300,55 @@ fun TopBar(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            var cameraPress by remember { mutableStateOf("on") }
+            var speakerPress by remember { mutableStateOf("on") }
+
             Spacer(Modifier.weight(5f))
-            Image(
-                painter = painterResource(id = R.drawable.camera_button),
-                contentDescription = "camera",
-                Modifier
-                    .clickable(onClick = onCameraClicked)
-                    .scale(1.2f)
-            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally, // Aligns the contents of the column to the center horizontally
+                modifier = Modifier
+                    .clickable(onClick = {
+                        cameraPress = if (cameraPress == "on") "off" else "on"
+                        onCameraClicked()
+                    }
+                    )
+                    .padding(8.dp) // Adds padding around the column
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.camera_button),
+                    contentDescription = "camera",
+                    Modifier
+                        .scale(1.2f)
+                )
+                Text(
+                    text = cameraPress,
+                    Modifier.offset(y = (-2).dp)
+                )
+            }
             Spacer(Modifier.weight(1f))
-            Image(
-                painter = painterResource(id = R.drawable.volume_button),
-                contentDescription = "volume",
-                Modifier
-                    .clickable(onClick = { /* TODO */ })
-                    .scale(1.2f)
-            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clickable(onClick = {
+                        speakerPress = if (speakerPress == "on") "off" else "on"
+
+                    }
+                    )
+                    .padding(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.volume_button),
+                    contentDescription = "camera",
+                    Modifier
+                        .scale(1.2f)
+                )
+                Text(
+                    text = speakerPress,
+                    Modifier.offset(y = (-2).dp)
+                )
+            }
             Spacer(Modifier.weight(1f))
             Text(
                 text = "Battery: " + 69 + "%",
