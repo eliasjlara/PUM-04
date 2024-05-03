@@ -1,4 +1,4 @@
-package com.example.aida
+package com.example.aida.viewmodels
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

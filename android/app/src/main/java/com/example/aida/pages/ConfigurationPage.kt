@@ -1,4 +1,4 @@
-package com.example.aida
+package com.example.aida.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.aida.viewmodels.MainViewModel
 
 
 /**
@@ -32,15 +33,15 @@ import androidx.compose.ui.unit.dp
  * there is no logic and only an UI component
  *
  * @param barHeight used to ensure that the content is padded correctly
+ * @param viewModel contains connection information, used to update IP
+ * address, update port and connect to AIDA with new information
+ * @param onButtonPress updates the state and the topBar title
  * @author Elias
  */
 @Composable
 fun ConfigurationPage(
     barHeight: Dp,
-    ipAddress: String,
-    onIpAddressChange: (String) -> Unit,
-    port: Int,
-    onPortChange: (Int) -> Unit,
+    viewModel: MainViewModel,
     onButtonPress: () -> Unit
 ) {
     Row(
@@ -60,13 +61,15 @@ fun ConfigurationPage(
             verticalArrangement = Arrangement.spacedBy(rowSpacing),
             horizontalAlignment = Alignment.Start
         ) {
-            var ipInput   by remember { mutableStateOf(ipAddress) }
-            var portInput by remember { mutableStateOf(port.toString()) }
+            var ipInput by remember { mutableStateOf(viewModel.ipAddress.value) }
+            var portInput by remember { mutableStateOf(viewModel.port.value.toString()) }
 
             Text(text = "SSH Connection Data", modifier = Modifier.align(Alignment.Start))
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(rowSpacing)
             ) {
+                // IP input
                 TextField(
                     value = ipInput,
                     onValueChange = { newValue ->
@@ -81,6 +84,7 @@ fun ConfigurationPage(
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
+                // Port input
                 TextField(
                     value = portInput,
                     onValueChange = { newValue ->
@@ -101,12 +105,14 @@ fun ConfigurationPage(
                 var username by remember { mutableStateOf("") }
                 var password by remember { mutableStateOf("") }
 
+                // Username input, currently unused
                 TextField(
                     value = username,
                     onValueChange = { username = it },
                     label = { Text("Username") },
                     modifier = Modifier.weight(1f)
                 )
+                // Password input, currently unused
                 TextField(
                     value = password,
                     onValueChange = { password = it },
@@ -114,10 +120,13 @@ fun ConfigurationPage(
                     modifier = Modifier.weight(1f)
                 )
             }
+
+            // Button to confirm IP address and port
             Button(
                 onClick = {
-                    onIpAddressChange(ipInput)
-                    onPortChange(portInput.toInt())
+                    viewModel.updateIpAddress(ipInput)
+                    viewModel.updatePort(portInput.toInt())
+                    viewModel.connectToAIDA()
                     onButtonPress()
                 },
                 modifier = Modifier
@@ -137,7 +146,7 @@ fun ConfigurationPage(
             color = Color.Gray
         )
 
-        // Second column for the SSH Terminal
+        // Second column for the SSH Terminal, currently unused
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.5f)

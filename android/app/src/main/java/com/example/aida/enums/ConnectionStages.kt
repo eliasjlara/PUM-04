@@ -1,4 +1,4 @@
-package com.example.aida
+package com.example.aida.enums
 
 enum class ConnectionStages {
     CONNECTING,

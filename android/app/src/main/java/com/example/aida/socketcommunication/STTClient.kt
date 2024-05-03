@@ -8,6 +8,21 @@ import java.nio.ByteOrder
  * to get STT data
  */
 class STTClient (ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) : AbstractClient(ip, port, timeToTimeout){
+
+    fun sendStartMic(){
+        val id = MessageType.MIC.value
+        val size = 2
+        val frameBufferSize = ByteBuffer.allocate(6)
+        frameBufferSize.putShort(id.toShort())
+        frameBufferSize.putInt(size)
+        frameBufferSize.order(ByteOrder.BIG_ENDIAN)
+        socket.getOutputStream().write(frameBufferSize.array())
+        val start = 1 // What should this be?
+        val startBuffer = ByteBuffer.allocate(2)
+        startBuffer.putShort(start.toShort())
+        startBuffer.order(ByteOrder.BIG_ENDIAN)
+        socket.getOutputStream().write(startBuffer.array())
+    }
     /**
      * Send message to server requesting to turn on STT-transcription
      */
