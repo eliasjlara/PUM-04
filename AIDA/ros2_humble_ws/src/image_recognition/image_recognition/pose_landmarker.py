@@ -23,6 +23,14 @@ class PoseLandmarker():
         self.COUNTER, self.FPS = 0, 0
         self.START_TIME = time.time()
         self.DETECTION_RESULT = None
+        self.model = "src//image_recognition//models//pose_landmarker_lite.task"
+        self.num_poses = 1
+        self.min_pose_detection_confidence = 0.5
+        self.min_pose_presence_confidence = 0.5
+        self.min_tracking_confidence = 0.5
+        self.camera_id = 0
+        self.width = 1280
+        self.height = 960
 
         # Test
         self.detector = None
@@ -32,65 +40,9 @@ class PoseLandmarker():
 
     # Sets up the arguments for the pose landmarker
     def setup(self):
-        parser = argparse.ArgumentParser(
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-        parser.add_argument(
-            '--model',
-            help='Name of the pose landmarker model bundle.',
-            required=False,
-            default='src//image_recognition//models//pose_landmarker_lite.task'
-        )
-        parser.add_argument(
-            '--numPoses',
-            help='Max number of poses that can be detected by the landmarker.',
-            required=False,
-            default=1)
-        parser.add_argument(
-            '--minPoseDetectionConfidence',
-            help='The minimum confidence score for pose detection to be considered '
-                'successful.',
-            required=False,
-            default=0.5)
-        parser.add_argument(
-            '--minPosePresenceConfidence',
-            help='The minimum confidence score of pose presence score in the pose '
-                'landmark detection.',
-            required=False,
-            default=0.5)
-        parser.add_argument(
-            '--minTrackingConfidence',
-            help='The minimum confidence score for the pose tracking to be '
-                'considered successful.',
-            required=False,
-            default=0.5)
-        parser.add_argument(
-            '--outputSegmentationMasks',
-            help='Set this if you would also like to visualize the segmentation '
-                'mask.',
-            required=False,
-            action='store_true')
-        # Finding the camera ID can be very reliant on platform-dependent methods.
-        # One common approach is to use the fact that camera IDs are usually indexed sequentially by the OS, starting from 0.
-        # Here, we use OpenCV and create a VideoCapture object for each potential ID with 'cap = cv2.VideoCapture(i)'.
-        # If 'cap' is None or not 'cap.isOpened()', it indicates the camera ID is not available.
-        parser.add_argument(
-            '--cameraId', help='Id of camera.', required=False, default=0)
-        parser.add_argument(
-            '--frameWidth',
-            help='Width of frame to capture from camera.',
-            required=False,
-            default=1280)
-        parser.add_argument(
-            '--frameHeight',
-            help='Height of frame to capture from camera.',
-            required=False,
-            default=960)
-        args = parser.parse_args()
-
-        self.setup_camera_feed(args.model, int(args.numPoses), args.minPoseDetectionConfidence,
-            args.minPosePresenceConfidence, args.minTrackingConfidence,
-            args.outputSegmentationMasks,
-            int(args.cameraId), args.frameWidth, args.frameHeight)
+        self.setup_camera_feed(self.model, self.num_poses, self.min_pose_detection_confidence,
+                               self.min_pose_presence_confidence, self.min_tracking_confidence,
+                               self.output_segmentation_masks, self.camera_id, self.width, self.height)
     
     def setup_camera_feed(self, model: str, num_poses: int,
         min_pose_detection_confidence: float,

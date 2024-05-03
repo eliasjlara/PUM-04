@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'camera_video = video.camera_video:main',
-            'web_video = video.web_video:main'
+            'web_video = video.web_video:main',
+            'video_viewer = video.video_viewer:main'
         ],
     },
 )

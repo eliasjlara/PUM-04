@@ -7,7 +7,7 @@ import cv2
 
 class VideoReceiveNode(Node):
     def __init__(self):
-        super().__init__('video_receive')
+        super().__init__('video_viewer')
         self.subscriber = self.create_subscription(Image, 'processed_video', self.callback, 10)
         self.bridge = CvBridge()
 
