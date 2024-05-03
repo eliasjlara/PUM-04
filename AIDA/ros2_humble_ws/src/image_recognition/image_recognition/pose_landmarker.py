@@ -25,7 +25,6 @@ class PoseLandmarker():
         self.DETECTION_RESULT = None
 
         # Test
-        #self.cap = cap
         self.detector = None
         self.output_segmentation_masks = False
 
@@ -118,10 +117,6 @@ class PoseLandmarker():
 
         self.output_segmentation_masks = output_segmentation_masks
 
-        # Start capturing video input from the camera
-        #self.cap = cv2.VideoCapture(camera_id) Moved
-        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.width = width
         self.height = height
         # Visualization parameters
@@ -153,11 +148,6 @@ class PoseLandmarker():
         self.detector = vision.PoseLandmarker.create_from_options(options)
     
     def apply_pose_landmarking(self, image) -> np.ndarray:
-        # success, image = self.cap.read()
-        # if not success:
-        #     sys.exit(
-        #         'ERROR: Unable to read from webcam. Please verify your webcam settings.'
-        #     )
 
         image = cv2.resize(image, (self.width, self.height))
 
