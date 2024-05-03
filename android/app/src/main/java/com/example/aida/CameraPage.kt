@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
@@ -95,13 +96,15 @@ fun CameraPage(
     screenHeight: Dp,
     barHeight: Dp,
     screenWidth: Dp,
+    viewModel: MainViewModel,
+    /*
     imageBitmap: ImageBitmap?,
     cameraFeedConnectionStage: ConnectionStages,
-    viewModel: SpeechViewModel,
     sttConnectionStage: ConnectionStages,
     lidarConnectionStage: ConnectionStages,
     ipAddress: String,
     port: Int
+     */
 ) {
     val widgetPadding = 40.dp
 
@@ -113,15 +116,14 @@ fun CameraPage(
     ) {
         var isLidarExpanded by remember { mutableStateOf(false) }
         var isVoiceRecording by remember { mutableStateOf(false) }
-        var voiceCommandString by remember { mutableStateOf("I am listening ...") }
 
         CameraFeed(
             isLidarExpanded = isLidarExpanded,
             screenWidth = screenWidth,
-            imageBitmap = imageBitmap,
-            cameraFeedConnectionStage = cameraFeedConnectionStage,
-            ipAddress = ipAddress,
-            port = port
+            imageBitmap = viewModel.imageBitmap.collectAsState().value,
+            cameraFeedConnectionStage = viewModel.cameraFeedConnectionStage.collectAsState().value,
+            ipAddress = viewModel.ipAddress.collectAsState().value,
+            port = viewModel.port.collectAsState().value,
         )
 
         Lidar(
@@ -132,7 +134,7 @@ fun CameraPage(
             screenHeight = screenHeight,
             isLidarExpanded = isLidarExpanded,
             onToggleLidar = { isLidarExpanded = !isLidarExpanded },
-            lidarConnectionStage = lidarConnectionStage
+            lidarConnectionStage = viewModel.lidarConnectionStage.collectAsState().value,
         )
 
         var triggerEffect by remember { mutableStateOf(false) }
@@ -156,15 +158,18 @@ fun CameraPage(
             voiceCommandString = voiceCommand
         )
         // TODO: Change sttConnection to Joystick
+
+        val sttConnected = (viewModel.sttConnectionStage.collectAsState().value == ConnectionStages.CONNECTION_SUCCEEDED)
+
         Joystick(
             Modifier
                 .padding(bottom = widgetPadding, start = widgetPadding)
                 .align(Alignment.BottomStart)
                 .zIndex(3f)
-                .alpha(if (sttConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED) 1.0f else 0.3f),
+                .alpha(if (sttConnected) 1.0f else 0.3f),
             joystickSize = 130F,
             thumbSize = 45f,
-            enabled = (sttConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED)
+            enabled = sttConnected
         ) { x: Offset ->
             Log.d("JoyStick", "$x")
         }
@@ -174,10 +179,10 @@ fun CameraPage(
                 .zIndex(3f)
                 .size(120.dp)
                 .align(Alignment.BottomEnd)
-                .alpha(if (sttConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED) 1.0f else 0.3f)
+                .alpha(if (sttConnected) 1.0f else 0.3f)
                 .clip(CircleShape)
                 .clickable(
-                    enabled = sttConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED,
+                    enabled = sttConnected,
                     onClick = {
                         isVoiceRecording = !isVoiceRecording
                         triggerEffect = !triggerEffect
@@ -507,8 +512,14 @@ fun Joystick(
                     val newPos = thumbPosition + scaledDrag
                     // Ensure the thumb stays within the joystick area
                     thumbPosition = Offset(
-                        x = newPos.x.coerceIn((joystickSize / 5), joystickSize - joystickSize / 5),
-                        y = newPos.y.coerceIn((joystickSize / 5), joystickSize - joystickSize / 5)
+                        x = newPos.x.coerceIn(
+                            (joystickSize / 5),
+                            joystickSize - joystickSize / 5
+                        ),
+                        y = newPos.y.coerceIn(
+                            (joystickSize / 5),
+                            joystickSize - joystickSize / 5
+                        )
                     )
                     onJoystickMoved(thumbPosition)
                 }

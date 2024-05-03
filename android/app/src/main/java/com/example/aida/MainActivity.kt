@@ -1,7 +1,6 @@
 package com.example.aida
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -42,8 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -54,12 +51,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.aida.socketcommunication.VideoClient
 import com.example.aida.ui.theme.AIDATheme
 import com.example.aida.ui.theme.TopBarColor
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * MainActivity for application. Displays a top bar that contains a menu
@@ -80,40 +74,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-
-            /*
-            val context = LocalContext.current
-
-            val IP_ADDRESS = stringPreferencesKey("ip_address")
-            val PORT = intPreferencesKey("port")
-
-            val cachedIpAddress: Flow<String> = context.dataStore.data
-                .map { preferences ->
-                    // No type safety.
-                    preferences[IP_ADDRESS] ?: "1.1.1.1"
-                }
-            val cachedPort: Flow<Int> = context.dataStore.data
-                .map { preferences ->
-                    // No type safety.
-                    preferences[PORT] ?: 1
-                }
-
-            suspend fun updateIpAddress(ipAddress: String) {
-                context.dataStore.edit { settings ->
-                    settings[IP_ADDRESS] = ipAddress
-                }
-            }
-
-            suspend fun updatePort(port: Int) {
-                context.dataStore.edit { settings ->
-                    settings[PORT] = port
-                }
-            }
-
-            val ipAddress by cachedIpAddress.collectAsState(initial = "1.1.1.1")
-            val port by cachedPort.collectAsState(initial = 1)
-             */
-
             val context = LocalContext.current
             val dataStore = context.dataStore
             val viewModel: MainViewModel = viewModel(factory = MainViewModelFactory(dataStore))
@@ -121,12 +81,11 @@ class MainActivity : ComponentActivity() {
             val ipAddress by viewModel.ipAddress.collectAsState()
             val port by viewModel.port.collectAsState()
 
-
+            /*
             var cameraFeedConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
             var lidarConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
             var sttConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
             var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
-            val speechViewModel = SpeechViewModel()
 
             suspend fun connectToAIDA() {
                 cameraFeedConnectionStage = ConnectionStages.CONNECTING
@@ -171,9 +130,10 @@ class MainActivity : ComponentActivity() {
                     // TODO Implement lidar fetch
                 }
             }
+             */
 
             LaunchedEffect(Unit) {
-                connectToAIDA()
+                viewModel.connectToAIDA()
             }
 
             AIDATheme {
@@ -262,13 +222,15 @@ class MainActivity : ComponentActivity() {
                                 screenHeight,
                                 barHeight,
                                 screenWidth,
-                                imageBitmap,
-                                cameraFeedConnectionStage,
-                                speechViewModel,
-                                sttConnectionStage,
-                                lidarConnectionStage,
+                                viewModel,
+                                /*
+                                viewModel.imageBitmap.collectAsState().value,
+                                viewModel.cameraFeedConnectionStage.collectAsState().value,
+                                viewModel.sttConnectionStage.collectAsState().value,
+                                viewModel.lidarConnectionStage.collectAsState().value,
                                 ipAddress,
                                 port
+                                 */
                             )
 
                             1 -> ConfigurationPage(
@@ -289,7 +251,7 @@ class MainActivity : ComponentActivity() {
                                     state = 0
 
                                     configurationCoroutineScope.launch {
-                                        connectToAIDA()
+                                        viewModel.connectToAIDA()
                                     }
                                     topBarTitle = "AIDA Remote Control Beta"
                                 }
