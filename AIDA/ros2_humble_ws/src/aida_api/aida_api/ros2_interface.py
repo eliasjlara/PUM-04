@@ -25,7 +25,8 @@ VIDEO_STREAM_ID = 0  # We'll keep things simple with a single stream
 
 
 # ROS2 Constants
-VIDEO_TOPIC = "image"
+# VIDEO_TOPIC = "image"
+VIDEO_TOPIC = "video_analysis/result" #"video/camera"
 LIDAR_TOPIC = "lidar"
 STT_TOPIC = "stt/stt_result"
 JOYSTICK_TOPIC = "joystick/pos"
@@ -88,6 +89,8 @@ class InterfaceNode(Node):
         self.bridge = CvBridge()
         self.host = host
         self.port = port
+        self.latest_frame = None
+
 
         self.init_clients()
         self.init_pubs()
@@ -95,6 +98,8 @@ class InterfaceNode(Node):
         self.init_queues()
 
     def start_camera(self):
+        self.get_logger().info("Server: Starting camera...")
+        return
         # Start up a standard ros camera node
         print("Starting camera...")
         # Execute the command. Temporary and to be replaced with the actual ROS2 node for camera.
@@ -130,11 +135,11 @@ class InterfaceNode(Node):
     def video_callback(self, msg) -> None:
         # print("Received video message")
         # image = np.frombuffer(msg.data, dtype=np.uint8)
-        # self.video_queue_lock.acquire()
+        self.video_queue_lock.acquire()
         cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.video_queue.put(cv_image)
         # print("Video frame added to queue: ", self.video_queue.qsize())
-        # self.video_queue_lock.release()
+        self.video_queue_lock.release()
 
     # def lidar_callback(self, msg) -> None:
     #     lidar_data = np.frombuffer(msg.data, dtype=np.uint8)
@@ -257,12 +262,17 @@ class InterfaceNode(Node):
     def start_server(self):
         self.socket.listen()
         print("Server listening...")
-        while not self.server_event.is_set():
-            client, addr = self.socket.accept()
-            print(f"Connected by {addr}")
-            thread = threading.Thread(target=self.handle_client, args=(client, addr))
-            thread.start()
-        self.socket.close()
+        try:
+            while not self.server_event.is_set():
+                client, addr = self.socket.accept()
+                print(f"Connected by {addr}")
+                thread = threading.Thread(target=self.handle_client, args=(client, addr))
+                thread.start()
+        except Exception as e:
+            self.get_logger().error(f"Server: Error: {e}")
+        
+        finally:
+            self.socket.close()
 
     def handle_client(self, client, addr):
         while not self.server_event.is_set():
@@ -276,10 +286,10 @@ class InterfaceNode(Node):
                 else:
                     # We do not require to receive a payload if the length is zero.
                     payload = b"\0x00"
-                print(f"Received message type: {message_type}")
+                self.get_logger().info(f"Server: Received message {message_type} from {addr}")
                 self.handle_message(client, message_type, payload)
             except ConnectionError:
-                print(f"Client {addr} disconnected")
+                self.get_logger().info(f"Server: Connection to [{addr}] closed.")
                 break
 
     def handle_message(self, client, message_type, data):
@@ -368,7 +378,7 @@ class InterfaceNode(Node):
             time.sleep(1 / STREAM_FREQUENCY)
             self.video_queue_lock.acquire()
             try:
-                frame = self.video_queue.get(block=False)
+                frame = self.latest_frame
             except queue.Empty:
                 frame = None
             self.video_queue_lock.release()
