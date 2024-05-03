@@ -20,7 +20,14 @@ class VideoPublisherNode(Node):
     def __init__(self):
             super().__init__('image_publisher', namespace='video')
             self.bridge = CvBridge()
-            source = 'https://videos.pexels.com/video-files/854370/854370-sd_640_360_30fps.mp4'
+            """
+            Some videos that can be used as source
+            'https://videos.pexels.com/video-files/854370/854370-sd_640_360_30fps.mp4'
+            'http://195.196.36.242/mjpg/video.mjpg'
+            'https://media.mammothresorts.com/mmsa/mammoth/cams/Village_Gondola_1280x720.jpg'
+            'https://videos.pexels.com/video-files/6740238/6740238-hd_1920_1080_25fps.mp4'
+            """
+            source = 'https://videos.pexels.com/video-files/8939444/8939444-hd_1280_720_25fps.mp4'
             self.cap = cv2.VideoCapture(source)
             self.srv = self.create_service(SetState, 'SetState', self.set_state_callback)
             self.publisher_ = self.create_publisher(Image, 'camera', 10)

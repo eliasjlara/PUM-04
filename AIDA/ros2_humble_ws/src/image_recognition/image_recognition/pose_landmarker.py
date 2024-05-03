@@ -23,9 +23,16 @@ class PoseLandmarker():
         self.COUNTER, self.FPS = 0, 0
         self.START_TIME = time.time()
         self.DETECTION_RESULT = None
+        self.model = "src//image_recognition//models//pose_landmarker_lite.task"
+        self.num_poses = 1
+        self.min_pose_detection_confidence = 0.5
+        self.min_pose_presence_confidence = 0.5
+        self.min_tracking_confidence = 0.5
+        self.camera_id = 0
+        self.desired_width = 1280
+        self.desired_height = 960
 
         # Test
-        #self.cap = cap
         self.detector = None
         self.output_segmentation_masks = False
 
@@ -33,65 +40,9 @@ class PoseLandmarker():
 
     # Sets up the arguments for the pose landmarker
     def setup(self):
-        parser = argparse.ArgumentParser(
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-        parser.add_argument(
-            '--model',
-            help='Name of the pose landmarker model bundle.',
-            required=False,
-            default='src//image_recognition//models//pose_landmarker_lite.task'
-        )
-        parser.add_argument(
-            '--numPoses',
-            help='Max number of poses that can be detected by the landmarker.',
-            required=False,
-            default=1)
-        parser.add_argument(
-            '--minPoseDetectionConfidence',
-            help='The minimum confidence score for pose detection to be considered '
-                'successful.',
-            required=False,
-            default=0.5)
-        parser.add_argument(
-            '--minPosePresenceConfidence',
-            help='The minimum confidence score of pose presence score in the pose '
-                'landmark detection.',
-            required=False,
-            default=0.5)
-        parser.add_argument(
-            '--minTrackingConfidence',
-            help='The minimum confidence score for the pose tracking to be '
-                'considered successful.',
-            required=False,
-            default=0.5)
-        parser.add_argument(
-            '--outputSegmentationMasks',
-            help='Set this if you would also like to visualize the segmentation '
-                'mask.',
-            required=False,
-            action='store_true')
-        # Finding the camera ID can be very reliant on platform-dependent methods.
-        # One common approach is to use the fact that camera IDs are usually indexed sequentially by the OS, starting from 0.
-        # Here, we use OpenCV and create a VideoCapture object for each potential ID with 'cap = cv2.VideoCapture(i)'.
-        # If 'cap' is None or not 'cap.isOpened()', it indicates the camera ID is not available.
-        parser.add_argument(
-            '--cameraId', help='Id of camera.', required=False, default=0)
-        parser.add_argument(
-            '--frameWidth',
-            help='Width of frame to capture from camera.',
-            required=False,
-            default=1280)
-        parser.add_argument(
-            '--frameHeight',
-            help='Height of frame to capture from camera.',
-            required=False,
-            default=960)
-        args = parser.parse_args()
-
-        self.setup_camera_feed(args.model, int(args.numPoses), args.minPoseDetectionConfidence,
-            args.minPosePresenceConfidence, args.minTrackingConfidence,
-            args.outputSegmentationMasks,
-            int(args.cameraId), args.frameWidth, args.frameHeight)
+        self.setup_camera_feed(self.model, self.num_poses, self.min_pose_detection_confidence,
+                               self.min_pose_presence_confidence, self.min_tracking_confidence,
+                               self.output_segmentation_masks, self.camera_id, self.desired_width, self.desired_height)
     
     def setup_camera_feed(self, model: str, num_poses: int,
         min_pose_detection_confidence: float,
@@ -118,12 +69,8 @@ class PoseLandmarker():
 
         self.output_segmentation_masks = output_segmentation_masks
 
-        # Start capturing video input from the camera
-        #self.cap = cv2.VideoCapture(camera_id) Moved
-        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        self.width = width
-        self.height = height
+        self.desired_width = width
+        self.desired_height = height
         # Visualization parameters
         fps_avg_frame_count = 10
 
@@ -152,14 +99,27 @@ class PoseLandmarker():
             result_callback=save_result)
         self.detector = vision.PoseLandmarker.create_from_options(options)
     
-    def apply_pose_landmarking(self, image) -> np.ndarray:
-        # success, image = self.cap.read()
-        # if not success:
-        #     sys.exit(
-        #         'ERROR: Unable to read from webcam. Please verify your webcam settings.'
-        #     )
+    def _crop_image(self, image):
+        height, width = image.shape[:2]  # Get original height and width
+        dim_scales = [self.desired_height / height, self.desired_width / width]
+        image = image.resize((width*max(dim_scales), height*max(dim_scales))
+        # Calculate how much to crop from the sides and top/bottom
+        x_start = (width - self.desired_width) // 2
+        y_start = (height - self.desired_height) // 2
+        x_end = x_start + self.desired_width
+        y_end = y_start + self.desired_height
+        print(f"Image shape: {image.shape}")
 
-        image = cv2.resize(image, (self.width, self.height))
+        # Perform the cropping using array slicing
+        cropped_img = image[y_start:y_end, x_start:x_end]
+
+        return cropped_img
+    
+
+    def apply_pose_landmarking(self, image) -> np.ndarray:
+
+
+        image = self._crop_image(image)
 
         # Convert the image from BGR to RGB as required by the TFLite model.
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

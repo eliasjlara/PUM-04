@@ -20,8 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'video_transmit = image_recognition.video_transmit:main',
-            'video_receive = image_recognition.video_receive:main'
+            'video_analyzer = image_recognition.video_analyzer:main',
         ],
     },
 )
