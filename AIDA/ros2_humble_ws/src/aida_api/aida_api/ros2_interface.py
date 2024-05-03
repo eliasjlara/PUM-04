@@ -25,7 +25,8 @@ VIDEO_STREAM_ID = 0  # We'll keep things simple with a single stream
 
 
 # ROS2 Constants
-VIDEO_TOPIC = "image"
+# VIDEO_TOPIC = "image"
+VIDEO_TOPIC = "processed_video" #"video/camera"
 LIDAR_TOPIC = "lidar"
 STT_TOPIC = "stt/stt_result"
 JOYSTICK_TOPIC = "joystick/pos"
@@ -81,7 +82,7 @@ class InterfaceNode(Node):
     A ROS2 node for communicating with AIDA.
     """
 
-    def __init__(self, start_workers=True, host="localhost", port=6660):
+    def __init__(self, start_workers=True, host="localhost", port=6662):
         super().__init__("api_node")
 
         self.server_up = False
@@ -99,6 +100,8 @@ class InterfaceNode(Node):
             self.start_workers()
 
     def start_camera(self):
+        self.get_logger().info("Server: Starting camera...")
+        return
         # Start up a standard ros camera node
         print("Starting camera...")
         # Execute the command. Temporary and to be replaced with the actual ROS2 node for camera.
@@ -134,6 +137,7 @@ class InterfaceNode(Node):
     def video_callback(self, msg) -> None:
         # print("Received video message")
         # image = np.frombuffer(msg.data, dtype=np.uint8)
+        self.get_logger().info(f"Server: received frame from camera.")
         self.video_queue_lock.acquire()
         cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.latest_frame = cv_image
@@ -281,10 +285,10 @@ class InterfaceNode(Node):
                 else:
                     # We do not require to receive a payload if the length is zero.
                     payload = b"\0x00"
-                print(f"Received message type: {message_type}")
+                self.get_logger().info(f"Server: Received message {message_type} from {addr}")
                 self.handle_message(client, message_type, payload)
             except ConnectionError:
-                print(f"Client {addr} disconnected")
+                self.get_logger().info(f"Server: Connection to [{addr}] closed.")
                 break
 
     def handle_message(self, client, message_type, data):
@@ -338,6 +342,7 @@ class InterfaceNode(Node):
         pass
 
     def handle_req_video_feed(self, client):
+        self.get_logger().info("Server: Sending video feed to client.")
         # Send video stream
         thread = threading.Thread(target=self.send_video_stream, args=(client,))
         thread.start()
