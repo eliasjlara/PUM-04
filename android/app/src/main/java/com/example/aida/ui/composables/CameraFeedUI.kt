@@ -119,7 +119,7 @@ fun CameraFeed(
                 contentDescription = "Video feed icon",
                 modifier = Modifier
                     .size(60.dp)
-                    .graphicsLayer(rotationZ = rotationDegrees.value),
+                    .graphicsLayer(rotationZ = if (cameraFeedConnectionStage == ConnectionStages.CONNECTING) rotationDegrees.value else 0f),
                 tint = Color.LightGray
             )
             Text(

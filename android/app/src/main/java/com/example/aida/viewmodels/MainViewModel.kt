@@ -94,7 +94,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
                 val result = sttClient.fetch()
 
                 withContext(Dispatchers.Main) {
-                    _voiceCommand.value = "\"$result\""
+                    _voiceCommand.value = "\"" + String(result) + "\""
                     delay(5000)
                     _voiceCommand.value = "Carrying out the action in sequence"
                     delay(5000)
