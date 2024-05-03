@@ -24,7 +24,7 @@ class VideoPublisherNode(Node):
             self.srv = self.create_service(SetState, 'SetState', self.set_state_callback)
             self.publisher_ = self.create_publisher(Image, 'camera', 10)
             self.timer_period = 0.03
-            self.is_active = False  # Begins as active
+            self.is_active = True  # Begins as active
             self.timer = self.create_timer(self.timer_period, self.publish_image)
 
     def publish_image(self):
