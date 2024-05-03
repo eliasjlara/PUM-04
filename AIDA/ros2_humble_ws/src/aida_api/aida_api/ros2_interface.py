@@ -26,7 +26,7 @@ VIDEO_STREAM_ID = 0  # We'll keep things simple with a single stream
 
 # ROS2 Constants
 # VIDEO_TOPIC = "image"
-VIDEO_TOPIC = "processed_video" #"video/camera"
+VIDEO_TOPIC = "video_analysis/result" #"video/camera"
 LIDAR_TOPIC = "lidar"
 STT_TOPIC = "stt/stt_result"
 JOYSTICK_TOPIC = "joystick/pos"
@@ -137,7 +137,7 @@ class InterfaceNode(Node):
     def video_callback(self, msg) -> None:
         # print("Received video message")
         # image = np.frombuffer(msg.data, dtype=np.uint8)
-        self.get_logger().info(f"Server: received frame from camera.")
+        # self.get_logger().info(f"Server: received frame from camera.")
         self.video_queue_lock.acquire()
         cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.latest_frame = cv_image

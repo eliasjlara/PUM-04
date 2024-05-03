@@ -20,7 +20,7 @@ class GestureRecognizer():
         # Global variables to calculate FPS
         self.COUNTER, self.FPS = 0, 0
         self.START_TIME = time.time()
-        self.model = "src//image_recognition//models//gesture_recognizer.task"
+        self.model = "..//src//image_recognition//models//gesture_recognizer.task"
         self.num_hands = 2
         self.min_hand_detection_confidence = 0.5
         self.min_hand_presence_confidence = 0.5

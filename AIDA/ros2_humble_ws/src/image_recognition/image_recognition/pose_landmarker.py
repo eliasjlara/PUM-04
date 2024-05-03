@@ -23,7 +23,7 @@ class PoseLandmarker():
         self.COUNTER, self.FPS = 0, 0
         self.START_TIME = time.time()
         self.DETECTION_RESULT = None
-        self.model = "src//image_recognition//models//pose_landmarker_lite.task"
+        self.model = "..//src//image_recognition//models//pose_landmarker_lite.task"
         self.num_poses = 1
         self.min_pose_detection_confidence = 0.5
         self.min_pose_presence_confidence = 0.5
@@ -102,7 +102,7 @@ class PoseLandmarker():
     def _crop_image(self, image):
         height, width = image.shape[:2]  # Get original height and width
         dim_scales = [self.desired_height / height, self.desired_width / width]
-        image = image.resize((width*max(dim_scales), height*max(dim_scales))
+        image = image.resize(width*max(dim_scales), height*max(dim_scales))
         # Calculate how much to crop from the sides and top/bottom
         x_start = (width - self.desired_width) // 2
         y_start = (height - self.desired_height) // 2

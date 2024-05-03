@@ -20,10 +20,10 @@ launch:
 
 - node:
     pkg: "video"
-    exec: "camera_video"
+    exec: "web_video"
     name: "camera"
     namespace: "video"
 
 - node:
     pkg: "image_recognition"
-    exec: "video_transmit"
+    exec: "video_analyzer"

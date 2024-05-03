@@ -27,7 +27,8 @@ class VideoPublisherNode(Node):
             'https://media.mammothresorts.com/mmsa/mammoth/cams/Village_Gondola_1280x720.jpg'
             'https://videos.pexels.com/video-files/6740238/6740238-hd_1920_1080_25fps.mp4'
             """
-            source = 'https://videos.pexels.com/video-files/8939444/8939444-hd_1280_720_25fps.mp4'
+            # source = 'https://videos.pexels.com/video-files/8939444/8939444-hd_1280_720_25fps.mp4'
+            source = "https://videos.pexels.com/video-files/3959718/3959718-hd_1366_720_50fps.mp4"
             self.cap = cv2.VideoCapture(source)
             self.srv = self.create_service(SetState, 'SetState', self.set_state_callback)
             self.publisher_ = self.create_publisher(Image, 'camera', 10)
@@ -45,6 +46,8 @@ class VideoPublisherNode(Node):
                 msg = self.bridge.cv2_to_imgmsg(frame, "bgr8")
                 msg.header.frame_id = str(frame_num)
                 self.publisher_.publish(msg)
+            else:
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     def set_state_callback(self, request, response):
         if request.desired_state == "active":

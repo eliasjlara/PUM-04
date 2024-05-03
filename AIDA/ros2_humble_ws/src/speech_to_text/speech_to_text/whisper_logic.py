@@ -16,7 +16,7 @@ class SpeechToText():
         model = model or "base.en"
         self.model = whisper.load_model(model)
     
-    def transcribe_audio(self, audio_data: np.ndarray) -> list:
+    def transcribe(self, audio_data: np.ndarray) -> list:
         """
         Translates the received audio data to text.
         

@@ -4,7 +4,7 @@ from rclpy.node import Node
 from audio_data.msg import AudioData
 from aida_interfaces.srv import SetState
 from std_msgs.msg import String
-from faster_whisper import WhisperModel
+from speech_to_text.whisper_logic import SpeechToText
 
 
 
@@ -60,7 +60,7 @@ class STTNode(Node):
         self.subscription # prevent unused variable warning
         
         # Init the STT model
-        self.stt_model = WhisperModel(model_size)
+        self.stt_model = SpeechToText(model_size)
 
         # Init the services for the node
         self.init_services()
@@ -124,12 +124,8 @@ class STTNode(Node):
         Returns:
             A string containing the translated text
         """
-        segments, _ = self.stt_model.transcribe(audio_data, beam_size=5)
-        list_of_segments = list(segments)
-        if len(list_of_segments) == 0:
-            return ""
-        else:
-            return list_of_segments[0].text.strip()
+        text = self.stt_model.transcribe(audio_data)
+        return text
 
     def destroy_node(self):
         """
