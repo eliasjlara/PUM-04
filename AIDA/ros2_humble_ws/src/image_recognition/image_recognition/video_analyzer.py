@@ -34,7 +34,7 @@ class VideoTransmitNode(Node):
         self.cv2_img = None
         self.active_analysis = AnalysisType.GESTURE_RECOGNIZER
         # TODO: Don't load both models at the same time
-        # self.pose_landmarker = PoseLandmarker()
+        self.pose_landmarker = PoseLandmarker()
         self.gesture_recognizer = GestureRecognizer()
 
 

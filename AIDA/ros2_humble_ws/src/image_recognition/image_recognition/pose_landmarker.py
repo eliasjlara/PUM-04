@@ -29,8 +29,8 @@ class PoseLandmarker():
         self.min_pose_presence_confidence = 0.5
         self.min_tracking_confidence = 0.5
         self.camera_id = 0
-        self.width = 1280
-        self.height = 960
+        self.desired_width = 1280
+        self.desired_height = 960
 
         # Test
         self.detector = None
@@ -42,7 +42,7 @@ class PoseLandmarker():
     def setup(self):
         self.setup_camera_feed(self.model, self.num_poses, self.min_pose_detection_confidence,
                                self.min_pose_presence_confidence, self.min_tracking_confidence,
-                               self.output_segmentation_masks, self.camera_id, self.width, self.height)
+                               self.output_segmentation_masks, self.camera_id, self.desired_width, self.desired_height)
     
     def setup_camera_feed(self, model: str, num_poses: int,
         min_pose_detection_confidence: float,
@@ -69,8 +69,8 @@ class PoseLandmarker():
 
         self.output_segmentation_masks = output_segmentation_masks
 
-        self.width = width
-        self.height = height
+        self.desired_width = width
+        self.desired_height = height
         # Visualization parameters
         fps_avg_frame_count = 10
 
@@ -99,9 +99,27 @@ class PoseLandmarker():
             result_callback=save_result)
         self.detector = vision.PoseLandmarker.create_from_options(options)
     
+    def _crop_image(self, image):
+        height, width = image.shape[:2]  # Get original height and width
+        dim_scales = [self.desired_height / height, self.desired_width / width]
+        image = image.resize((width*max(dim_scales), height*max(dim_scales))
+        # Calculate how much to crop from the sides and top/bottom
+        x_start = (width - self.desired_width) // 2
+        y_start = (height - self.desired_height) // 2
+        x_end = x_start + self.desired_width
+        y_end = y_start + self.desired_height
+        print(f"Image shape: {image.shape}")
+
+        # Perform the cropping using array slicing
+        cropped_img = image[y_start:y_end, x_start:x_end]
+
+        return cropped_img
+    
+
     def apply_pose_landmarking(self, image) -> np.ndarray:
 
-        image = cv2.resize(image, (self.width, self.height))
+
+        image = self._crop_image(image)
 
         # Convert the image from BGR to RGB as required by the TFLite model.
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
