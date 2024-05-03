@@ -1,5 +1,6 @@
 package com.example.aida
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -31,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,10 +45,15 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aida.socketcommunication.VideoClient
 import com.example.aida.ui.theme.AIDATheme
 import com.example.aida.ui.theme.TopBarColor
@@ -67,16 +74,58 @@ import kotlinx.coroutines.withContext
  * @author Elias
  */
 class MainActivity : ComponentActivity() {
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
+
+            /*
+            val context = LocalContext.current
+
+            val IP_ADDRESS = stringPreferencesKey("ip_address")
+            val PORT = intPreferencesKey("port")
+
+            val cachedIpAddress: Flow<String> = context.dataStore.data
+                .map { preferences ->
+                    // No type safety.
+                    preferences[IP_ADDRESS] ?: "1.1.1.1"
+                }
+            val cachedPort: Flow<Int> = context.dataStore.data
+                .map { preferences ->
+                    // No type safety.
+                    preferences[PORT] ?: 1
+                }
+
+            suspend fun updateIpAddress(ipAddress: String) {
+                context.dataStore.edit { settings ->
+                    settings[IP_ADDRESS] = ipAddress
+                }
+            }
+
+            suspend fun updatePort(port: Int) {
+                context.dataStore.edit { settings ->
+                    settings[PORT] = port
+                }
+            }
+
+            val ipAddress by cachedIpAddress.collectAsState(initial = "1.1.1.1")
+            val port by cachedPort.collectAsState(initial = 1)
+             */
+
+            val context = LocalContext.current
+            val dataStore = context.dataStore
+            val viewModel: MainViewModel = viewModel(factory = MainViewModelFactory(dataStore))
+
+            val ipAddress by viewModel.ipAddress.collectAsState()
+            val port by viewModel.port.collectAsState()
+
+
             var cameraFeedConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
             var lidarConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
             var sttConnectionStage by remember { mutableStateOf(ConnectionStages.CONNECTING) }
             var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
-            var ipAddress by remember { mutableStateOf("1.1.1.1") }
-            var port by remember { mutableIntStateOf(1) }
             val speechViewModel = SpeechViewModel()
 
             suspend fun connectToAIDA() {
@@ -225,16 +274,24 @@ class MainActivity : ComponentActivity() {
                             1 -> ConfigurationPage(
                                 barHeight,
                                 ipAddress = ipAddress,
-                                onIpAddressChange = { newIp -> ipAddress = newIp },
+                                onIpAddressChange = { newIp ->
+                                    configurationCoroutineScope.launch {
+                                        viewModel.updateIpAddress(newIp)
+                                    }
+                                },
                                 port = port,
-                                onPortChange = { newPort -> port = newPort },
+                                onPortChange = { newPort ->
+                                    configurationCoroutineScope.launch {
+                                        viewModel.updatePort(newPort)
+                                    }
+                                },
                                 onButtonPress = {
                                     state = 0
 
                                     configurationCoroutineScope.launch {
                                         connectToAIDA()
-
                                     }
+                                    topBarTitle = "AIDA Remote Control Beta"
                                 }
                             )
                         }
