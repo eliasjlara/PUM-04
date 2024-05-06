@@ -23,7 +23,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.aida.enums.ConnectionStages
 import com.example.aida.ui.composables.CameraFeed
@@ -36,8 +35,8 @@ import com.example.aida.viewmodels.MainViewModel
 /**
  * The camera page displays both the camera feed and the lidar. Logic
  * for switching between camera feed and lidar feed is currently implemented
- * but the correct data is not fetched. Therefore, placeholder pictures
- * is currently in use.
+ * but the correct data is not fetched. Therefore, a placeholder picture for
+ * the lidar is currently in use.
  *
  * @param screenHeight used to calculate space for page, might refactor
  * @param barHeight used to ensure that the content is padded correctly
@@ -45,6 +44,7 @@ import com.example.aida.viewmodels.MainViewModel
  * @param viewModel contains connection information, used to check whether
  * each connection is made, as well as fetching the image and lidar. Also
  * handles the speech to text initiation and fetching.
+ *
  * @author Elias
  */
 @OptIn(UnstableApi::class)
@@ -67,7 +67,7 @@ fun CameraPage(
         val isVoiceRecording by viewModel.isRecording.observeAsState(initial = false)
 
         CameraFeed(
-            isLidarExpanded = isLidarExpanded,
+            lidarIsExpanded = isLidarExpanded,
             screenWidth = screenWidth,
             imageBitmap = viewModel.imageBitmap.collectAsState().value,
             cameraFeedConnectionStage = viewModel.cameraFeedConnectionStage.collectAsState().value,
@@ -87,7 +87,7 @@ fun CameraPage(
         )
         val voiceCommand by viewModel.voiceCommand.observeAsState("I am listening ...")
 
-        // Displays the text from recorded AIDA instructions, i.e. speech to text
+        // Displays the text from recorded AIDA instructions, i.e., speech to text
         VoiceCommandBox(
             modifier = Modifier
                 .padding(top = 3.dp, bottom = screenHeight - screenHeight / 4)
@@ -97,33 +97,39 @@ fun CameraPage(
             isVoiceRecording = isVoiceRecording,
             voiceCommandString = voiceCommand
         )
-        // TODO: Change sttConnection to Joystick
-
-        val sttConnected =
-            (viewModel.sttConnectionStage.collectAsState().value == ConnectionStages.CONNECTION_SUCCEEDED)
 
         Joystick(
-            Modifier
+            modifier = Modifier
                 .padding(bottom = widgetPadding, start = widgetPadding)
                 .align(Alignment.BottomStart)
                 .zIndex(3f)
-                .alpha(if (sttConnected) 1.0f else 0.3f),
+                .alpha(
+                    if (viewModel.joystickConnectionStage.collectAsState().value
+                        == ConnectionStages.CONNECTION_SUCCEEDED
+                    ) 1.0f else 0.3f
+                ),
             joystickSize = 130F,
             thumbSize = 45f,
-            enabled = sttConnected
+            enabled = viewModel.joystickConnectionStage
         ) { x: Offset ->
-            Log.d("JoyStick", "$x")
+            // TODO: Sent offset x to AIDA
         }
+
         RecordVoiceButton(
             modifier = Modifier
                 .padding(bottom = widgetPadding, end = widgetPadding)
                 .zIndex(3f)
                 .size(120.dp)
                 .align(Alignment.BottomEnd)
-                .alpha(if (sttConnected) 1.0f else 0.3f)
+                .alpha(
+                    if (viewModel.sttConnectionStage.collectAsState().value ==
+                        ConnectionStages.CONNECTION_SUCCEEDED
+                    ) 1.0f else 0.3f
+                )
                 .clip(CircleShape)
                 .clickable(
-                    enabled = sttConnected,
+                    enabled = viewModel.sttConnectionStage.collectAsState().value
+                            == ConnectionStages.CONNECTION_SUCCEEDED,
                     onClick = {
                         viewModel.startVoiceRecording()
                     })

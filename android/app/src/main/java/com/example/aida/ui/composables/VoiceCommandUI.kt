@@ -21,17 +21,20 @@ import androidx.compose.ui.unit.sp
 import com.example.aida.R
 
 /**
- * Displays the speech to text words, in a box, upon button press on
- * the RecordVoiceButton
+ * Displays the speech in a text format using [voiceCommandString], in a
+ * box, upon button press on the RecordVoiceButton
  *
  * @param modifier contains UI information that needs the scope from parent
- * @param isVoiceRecording if voice is recording, display the box
- * toggled both here, when the speech ends, and when the record button is pressed
+ * @param screenWidth used to set the size of the box
+ * @param isVoiceRecording if voice is recording, display the box. This is
+ * toggled both here, when the speech ends, and when the record button is
+ * pressed
+ *
  * @author Elias
  */
 @Composable
 fun VoiceCommandBox(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     screenWidth: Dp,
     isVoiceRecording: Boolean,
     voiceCommandString: String
@@ -61,11 +64,12 @@ fun VoiceCommandBox(
  * Displays the record speech button. Used for speech to text
  *
  * @param modifier contains UI information that needs the scope from parent
+ *
  * @author Elias
  */
 @Composable
 fun RecordVoiceButton(
-    modifier: Modifier = Modifier
+    modifier: Modifier
 ) {
     Image(
         painter = painterResource(id = R.drawable.microphone_button),

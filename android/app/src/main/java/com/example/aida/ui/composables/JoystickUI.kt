@@ -17,21 +17,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.aida.R
-
+import com.example.aida.enums.ConnectionStages
+import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Displays and handles logic for the joystick
+ * Displays the joystick based on [joystickSize] and [thumbSize] and if
+ * the joystick is connetected to AIDA, i.e, [enabled]. The logic for
+ * the joystick is used in [onJoystickMoved] and sent to AIDA.
  *
  * @param modifier contains UI information that needs the scope from parent
- * @param onJoystickMoved records movement from the joystick
+ *
  * @author Elias
  */
 @Composable
 fun Joystick(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     joystickSize: Float,
     thumbSize: Float,
-    enabled: Boolean,
+    enabled: StateFlow<ConnectionStages>,
     onJoystickMoved: (Offset) -> Unit = {}
 ) {
     val joystickCenter = joystickSize / 2
@@ -44,7 +47,7 @@ fun Joystick(
                 thumbPosition = Offset(joystickCenter, joystickCenter)
                 onJoystickMoved(thumbPosition)
             }) { change, dragAmount ->
-                if (enabled) {
+                if (enabled.value == ConnectionStages.CONNECTION_SUCCEEDED) {
                     change.consume()
                     val scaledDrag = dragAmount * 0.6f
                     val newPos = thumbPosition + scaledDrag

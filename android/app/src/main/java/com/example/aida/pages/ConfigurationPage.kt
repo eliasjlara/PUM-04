@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.aida.viewmodels.MainViewModel
 
-
 /**
  * The configuration page contains information on how to connect to AIDA
  * It's still in early development and might therefore change, currently
@@ -36,6 +35,7 @@ import com.example.aida.viewmodels.MainViewModel
  * @param viewModel contains connection information, used to update IP
  * address, update port and connect to AIDA with new information
  * @param onButtonPress updates the state and the topBar title
+ *
  * @author Elias
  */
 @Composable
@@ -57,15 +57,16 @@ fun ConfigurationPage(
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
-                .padding(top = paddingTop, start = paddingSides, end = paddingSides),
-            verticalArrangement = Arrangement.spacedBy(rowSpacing),
-            horizontalAlignment = Alignment.Start
+                .padding(top = paddingTop, start = paddingSides, end = paddingSides, ),
+            verticalArrangement = Arrangement.spacedBy(rowSpacing)
         ) {
             var ipInput by remember { mutableStateOf(viewModel.ipAddress.value) }
             var portInput by remember { mutableStateOf(viewModel.port.value.toString()) }
+            val standardInputModifier = Modifier.weight(1f)
 
             Text(text = "SSH Connection Data", modifier = Modifier.align(Alignment.Start))
 
+            // IP & Port input
             Row(
                 horizontalArrangement = Arrangement.spacedBy(rowSpacing)
             ) {
@@ -75,15 +76,15 @@ fun ConfigurationPage(
                     onValueChange = { newValue ->
                         // Check that the address is correctly formatted
                         if (newValue.matches(Regex("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\$"))) {
-                            // Check each segment is within 0-255
                             ipInput = newValue
                         }
                     },
                     label = { Text("IP-address") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    modifier = Modifier.weight(1f)
+                    modifier = standardInputModifier
                 )
+
                 // Port input
                 TextField(
                     value = portInput,
@@ -96,9 +97,11 @@ fun ConfigurationPage(
                     label = { Text("Port") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    modifier = Modifier.weight(1f)
+                    modifier = standardInputModifier
                 )
             }
+
+            // Username & Password input, currently unused
             Row(
                 horizontalArrangement = Arrangement.spacedBy(rowSpacing)
             ) {
@@ -110,14 +113,15 @@ fun ConfigurationPage(
                     value = username,
                     onValueChange = { username = it },
                     label = { Text("Username") },
-                    modifier = Modifier.weight(1f)
+                    modifier = standardInputModifier
                 )
+
                 // Password input, currently unused
                 TextField(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Password") },
-                    modifier = Modifier.weight(1f)
+                    modifier = standardInputModifier
                 )
             }
 
@@ -151,10 +155,11 @@ fun ConfigurationPage(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
                 .padding(top = paddingTop, start = paddingSides, end = paddingSides),
-            verticalArrangement = Arrangement.spacedBy(rowSpacing),
-            horizontalAlignment = Alignment.Start
+            verticalArrangement = Arrangement.spacedBy(rowSpacing)
         ) {
-            Text(text = "SSH Terminal", modifier = Modifier.align(Alignment.Start))
+            Text(
+                text = "SSH Terminal"
+            )
         }
     }
 }

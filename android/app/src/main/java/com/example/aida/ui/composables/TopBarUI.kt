@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,7 +41,6 @@ import com.example.aida.ui.theme.TopBarColor
 fun TopBar(
     onMenuClicked: () -> Unit,
     onCameraClicked: () -> Unit,
-    screenWidth: Dp,
     barHeight: Dp,
     topBarTitle: String,
 ) {
@@ -50,12 +49,13 @@ fun TopBar(
     Row(
         modifier = Modifier
             .height(barHeight)
-            .width(screenWidth)
+            .fillMaxWidth()
             .background(TopBarColor.copy(alpha = 0.6f))
             .padding(start = barPadding, end = barPadding),
         horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Set the menu icon
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -68,6 +68,8 @@ fun TopBar(
                     .scale(1.2f)
             )
         }
+
+        // Set text in the middle of the top bar
         Row(
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.Center
@@ -77,9 +79,11 @@ fun TopBar(
                 fontSize = 16.sp
             )
         }
+
+        // Set camera and volume on/off buttons
         Row(
             modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             var cameraPress by remember { mutableStateOf("on") }
@@ -88,14 +92,13 @@ fun TopBar(
             Spacer(Modifier.weight(5f))
 
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally, // Aligns the contents of the column to the center horizontally
                 modifier = Modifier
                     .clickable(onClick = {
                         cameraPress = if (cameraPress == "on") "off" else "on"
                         onCameraClicked()
                     }
                     )
-                    .padding(8.dp, top = 10.dp)
+                    .padding(top = 10.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.camera_button),
@@ -105,7 +108,8 @@ fun TopBar(
                 )
                 Text(
                     text = cameraPress,
-                    Modifier.offset(y = (-2).dp)
+                    Modifier
+                        .offset(y = (-2).dp)
                 )
             }
             Spacer(Modifier.weight(1f))
@@ -118,7 +122,7 @@ fun TopBar(
 
                     }
                     )
-                    .padding(8.dp, top = 10.dp) // Adds padding around the column
+                    .padding(top = 10.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.volume_button),
@@ -128,7 +132,8 @@ fun TopBar(
                 )
                 Text(
                     text = speakerPress,
-                    Modifier.offset(y = (-2).dp)
+                    Modifier
+                        .offset(y = (-2).dp)
                 )
             }
             Spacer(Modifier.weight(1f))
