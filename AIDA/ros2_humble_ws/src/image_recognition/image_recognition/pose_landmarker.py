@@ -1,7 +1,4 @@
-import argparse
-import sys
 import time
-
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -13,7 +10,9 @@ from mediapipe.framework.formats import landmark_pb2
 
 class PoseLandmarker():
     def __init__(self):
-        
+        """
+        Initializes the PoseLandmarker class.
+        """
         
         self.mp_pose = mp.solutions.pose
         self.mp_drawing = mp.solutions.drawing_utils
@@ -23,7 +22,7 @@ class PoseLandmarker():
         self.COUNTER, self.FPS = 0, 0
         self.START_TIME = time.time()
         self.DETECTION_RESULT = None
-        self.model = "src//image_recognition//models//pose_landmarker_lite.task"
+        self.model = "..//src//image_recognition//models//pose_landmarker_lite.task"
         self.num_poses = 1
         self.min_pose_detection_confidence = 0.5
         self.min_pose_presence_confidence = 0.5
@@ -32,41 +31,35 @@ class PoseLandmarker():
         self.desired_width = 1280
         self.desired_height = 960
 
-        # Test
         self.detector = None
         self.output_segmentation_masks = False
 
-        self.setup()
-
-    # Sets up the arguments for the pose landmarker
-    def setup(self):
         self.setup_camera_feed(self.model, self.num_poses, self.min_pose_detection_confidence,
                                self.min_pose_presence_confidence, self.min_tracking_confidence,
-                               self.output_segmentation_masks, self.camera_id, self.desired_width, self.desired_height)
+                               self.output_segmentation_masks, self.desired_width, self.desired_height)
     
     def setup_camera_feed(self, model: str, num_poses: int,
         min_pose_detection_confidence: float,
         min_pose_presence_confidence: float, min_tracking_confidence: float,
         output_segmentation_masks: bool,
-        camera_id: int, width: int, height: int) -> None:
-        """Continuously run inference on images acquired from the camera.
+        width: int, height: int) -> None:
+        """
+        Continuously run inference on images.
 
         Args:
-        model: Name of the pose landmarker model bundle.
-        num_poses: Max number of poses that can be detected by the landmarker.
-        min_pose_detection_confidence: The minimum confidence score for pose
+        - model: Name of the pose landmarker model bundle.
+        - num_poses: Max number of poses that can be detected by the landmarker.
+        - min_pose_detection_confidence: The minimum confidence score for pose
             detection to be considered successful.
-        min_pose_presence_confidence: The minimum confidence score of pose
+        - min_pose_presence_confidence: The minimum confidence score of pose
             presence score in the pose landmark detection.
-        min_tracking_confidence: The minimum confidence score for the pose
+        - min_tracking_confidence: The minimum confidence score for the pose
             tracking to be considered successful.
-        output_segmentation_masks: Choose whether to visualize the segmentation
+        - output_segmentation_masks: Choose whether to visualize the segmentation
             mask or not.
-        camera_id: The camera id to be passed to OpenCV.
-        width: The width of the frame captured from the camera.
-        height: The height of the frame captured from the camera.
+        - width: The width of the frame captured from the camera.
+        - height: The height of the frame captured from the camera.
         """
-
         self.output_segmentation_masks = output_segmentation_masks
 
         self.desired_width = width
@@ -100,9 +93,18 @@ class PoseLandmarker():
         self.detector = vision.PoseLandmarker.create_from_options(options)
     
     def _crop_image(self, image):
+        """
+        Crop the image to the desired width and height.
+
+        Args:
+        - image: The input image.
+
+        Returns:
+        - cropped_img: The cropped image.
+        """
         height, width = image.shape[:2]  # Get original height and width
-        scale_factor = min([self.desired_height / height, self.desired_width / width])
-        image = cv2.resize(image, (int(scale_factor*width), int(scale_factor*height)))
+        dim_scales = [self.desired_height / height, self.desired_width / width]
+        image = image.resize(width*max(dim_scales), height*max(dim_scales))
         # Calculate how much to crop from the sides and top/bottom
         x_start = (width - self.desired_width) // 2
         y_start = (height - self.desired_height) // 2
@@ -110,21 +112,22 @@ class PoseLandmarker():
         y_end = y_start + self.desired_height
         print(f"Image shape: {image.shape}")
 
-        height, width = image.shape[:2]  # Get original height and width
-        # Calculate how much to crop from the sides and top/bottom
-        x_start = (width - self.desired_width) // 2
-        y_start = (height - self.desired_height) // 2
-        x_end = x_start + self.desired_width
-        y_end = y_start + self.desired_height
-
         # Perform the cropping using array slicing
         cropped_img = image[y_start:y_end, x_start:x_end]
 
         return cropped_img
+    
 
     def apply_pose_landmarking(self, image) -> np.ndarray:
+        """
+        Apply pose landmarking to the input image.
 
+        Args:
+        - image: The input image.
 
+        Returns:
+        - current_frame: The image with pose landmarks and segmentation masks (if enabled) drawn on it.
+        """
         image = self._crop_image(image)
 
         # Convert the image from BGR to RGB as required by the TFLite model.

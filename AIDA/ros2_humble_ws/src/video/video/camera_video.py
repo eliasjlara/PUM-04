@@ -1,8 +1,4 @@
-import queue
-import threading
 import cv2
-import time
-
 import rclpy
 from rclpy.node import Node
 from aida_interfaces.srv import SetState
@@ -12,22 +8,37 @@ from cv_bridge import CvBridge
 
 class VideoPublisherNode(Node):
     """
-    A ROS2 node for transmitting images from camera.
+    A ROS2 node that publishes video frames from a camera.
 
-    This node initializes a publisher to capture images from the camera and publish them to a ROS2 topic.
-    It provides methods to start and stop the capture and publisher workers.
+    This node captures frames from a camera and publishes them as ROS2 Image messages.
+
+    Attributes:
+        bridge (CvBridge): OpenCV bridge for converting images.
+        cap (cv2.VideoCapture): Video capture object for accessing the camera.
+        srv (rclpy.Service): ROS2 service for setting the state of the image publishing.
+        publisher_ (rclpy.Publisher): ROS2 publisher for publishing the camera images.
+        timer_period (float): Time period for the image publishing timer.
+        is_active (bool): Flag indicating whether the image publishing is active or not.
+        timer (rclpy.Timer): ROS2 timer for triggering the image publishing at regular intervals.
     """
+
     def __init__(self):
-            super().__init__('image_publisher', namespace='video')
-            self.bridge = CvBridge()
-            self.cap = cv2.VideoCapture(0)
-            self.srv = self.create_service(SetState, 'SetState', self.set_state_callback)
-            self.publisher_ = self.create_publisher(Image, 'camera', 10)
-            self.timer_period = 0.03
-            self.is_active = True  # Begins as active
-            self.timer = self.create_timer(self.timer_period, self.publish_image)
+        super().__init__('image_publisher', namespace='video')
+        self.bridge = CvBridge()
+        self.cap = cv2.VideoCapture(0)
+        self.srv = self.create_service(SetState, 'SetState', self.set_state_callback)
+        self.publisher_ = self.create_publisher(Image, 'camera', 10)
+        self.timer_period = 0.03
+        self.is_active = True  # Begins as active
+        self.timer = self.create_timer(self.timer_period, self.publish_image)
 
     def publish_image(self):
+        """
+        Publishes the camera image as a ROS2 Image message.
+
+        This method reads a frame from the camera, converts it to a ROS2 Image message,
+        and publishes it using the ROS2 publisher.
+        """
         frame_num = 0
         if self.is_active:
             ret, frame = self.cap.read()
@@ -38,6 +49,19 @@ class VideoPublisherNode(Node):
                 self.publisher_.publish(msg)
 
     def set_state_callback(self, request, response):
+        """
+        Callback function for the SetState service.
+
+        This method is called when the SetState service is invoked.
+        It sets the state of the image publishing based on the desired state provided in the request.
+
+        Args:
+            request (SetState.Request): The request object containing the desired state.
+            response (SetState.Response): The response object to be filled with the result.
+
+        Returns:
+            SetState.Response: The response object with the success status and message.
+        """
         if request.desired_state == "active":
             self.is_active = True
             response.success = True
