@@ -36,7 +36,7 @@ class GestureRecognizer():
         self.recognition_result_list = []
 
         self.set_up_camera_feed(self.model, self.num_hands, self.min_hand_detection_confidence,
-                                self.min_hand_presence_confidence, self.min_tracking_confidence,
+                                self.min_hand_presence_confidence, self.min_tracking_confidence, self.camera_id,
                                 self.desired_width, self.desired_height)
 
     def set_up_camera_feed(self, model: str, num_hands: int,

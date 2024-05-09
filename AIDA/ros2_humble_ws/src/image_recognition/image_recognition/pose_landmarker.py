@@ -36,7 +36,7 @@ class PoseLandmarker():
 
         self.setup_camera_feed(self.model, self.num_poses, self.min_pose_detection_confidence,
                                self.min_pose_presence_confidence, self.min_tracking_confidence,
-                               self.output_segmentation_masks, self.desired_width, self.desired_height)
+                               self.output_segmentation_masks, self.camera_id, self.desired_width, self.desired_height)
     
     def setup_camera_feed(self, model: str, num_poses: int,
         min_pose_detection_confidence: float,
