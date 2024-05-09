@@ -1,4 +1,7 @@
+import argparse
+import sys
 import time
+
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -10,9 +13,7 @@ from mediapipe.framework.formats import landmark_pb2
 
 class PoseLandmarker():
     def __init__(self):
-        """
-        Initializes the PoseLandmarker class.
-        """
+        
         
         self.mp_pose = mp.solutions.pose
         self.mp_drawing = mp.solutions.drawing_utils
@@ -31,9 +32,14 @@ class PoseLandmarker():
         self.desired_width = 1280
         self.desired_height = 960
 
+        # Test
         self.detector = None
         self.output_segmentation_masks = False
 
+        self.setup()
+
+    # Sets up the arguments for the pose landmarker
+    def setup(self):
         self.setup_camera_feed(self.model, self.num_poses, self.min_pose_detection_confidence,
                                self.min_pose_presence_confidence, self.min_tracking_confidence,
                                self.output_segmentation_masks, self.camera_id, self.desired_width, self.desired_height)
@@ -42,24 +48,25 @@ class PoseLandmarker():
         min_pose_detection_confidence: float,
         min_pose_presence_confidence: float, min_tracking_confidence: float,
         output_segmentation_masks: bool,
-        width: int, height: int) -> None:
-        """
-        Continuously run inference on images.
+        camera_id: int, width: int, height: int) -> None:
+        """Continuously run inference on images acquired from the camera.
 
         Args:
-        - model: Name of the pose landmarker model bundle.
-        - num_poses: Max number of poses that can be detected by the landmarker.
-        - min_pose_detection_confidence: The minimum confidence score for pose
+        model: Name of the pose landmarker model bundle.
+        num_poses: Max number of poses that can be detected by the landmarker.
+        min_pose_detection_confidence: The minimum confidence score for pose
             detection to be considered successful.
-        - min_pose_presence_confidence: The minimum confidence score of pose
+        min_pose_presence_confidence: The minimum confidence score of pose
             presence score in the pose landmark detection.
-        - min_tracking_confidence: The minimum confidence score for the pose
+        min_tracking_confidence: The minimum confidence score for the pose
             tracking to be considered successful.
-        - output_segmentation_masks: Choose whether to visualize the segmentation
+        output_segmentation_masks: Choose whether to visualize the segmentation
             mask or not.
-        - width: The width of the frame captured from the camera.
-        - height: The height of the frame captured from the camera.
+        camera_id: The camera id to be passed to OpenCV.
+        width: The width of the frame captured from the camera.
+        height: The height of the frame captured from the camera.
         """
+
         self.output_segmentation_masks = output_segmentation_masks
 
         self.desired_width = width
@@ -93,15 +100,6 @@ class PoseLandmarker():
         self.detector = vision.PoseLandmarker.create_from_options(options)
     
     def _crop_image(self, image):
-        """
-        Crop the image to the desired width and height.
-
-        Args:
-        - image: The input image.
-
-        Returns:
-        - cropped_img: The cropped image.
-        """
         height, width = image.shape[:2]  # Get original height and width
         dim_scales = [self.desired_height / height, self.desired_width / width]
         image = image.resize(width*max(dim_scales), height*max(dim_scales))
@@ -119,15 +117,8 @@ class PoseLandmarker():
     
 
     def apply_pose_landmarking(self, image) -> np.ndarray:
-        """
-        Apply pose landmarking to the input image.
 
-        Args:
-        - image: The input image.
 
-        Returns:
-        - current_frame: The image with pose landmarks and segmentation masks (if enabled) drawn on it.
-        """
         image = self._crop_image(image)
 
         # Convert the image from BGR to RGB as required by the TFLite model.
