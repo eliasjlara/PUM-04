@@ -40,7 +40,7 @@ STREAM_FREQUENCY = 30
 class MessageType:
     CAMERA = 1
     IMAGE_ANALYSIS = 2
-    MIC = 3  # Not used
+    MIC = 3
     STT = 4
     LIDAR = 5
 
@@ -104,7 +104,7 @@ class InterfaceNode(Node):
 
         self.bridge = CvBridge()
         self.video_frame = None
-        self.stt_result = None
+        self.stt_result = ""
         self.video_frame_lock = threading.Lock()
         self.stt_result_lock = threading.Lock()
         self.host = host
@@ -227,7 +227,7 @@ class InterfaceNode(Node):
         Args:
             msg: The STT message.
         """
-        self.get_logger().info("Received STT message:", msg.data)
+        self.get_logger().info(f"Received STT message: {msg.data}")
         self.stt_result_lock.acquire()
         self.stt_result = msg.data
         self.stt_result_lock.release()
@@ -524,8 +524,11 @@ class InterfaceNode(Node):
         """
         self.stt_result_lock.acquire()
         stt_res = self.stt_result
+        self.stt_result = ""
         self.stt_result_lock.release()
+        self.get_logger().info(f"Server| Sending STT response: {stt_res}")
         stt_res = stt_res.encode("utf-8")
+
         # Send STT response
         client.sendall(struct.pack(HEADER_FORMAT, MessageType.TEXT, len(stt_res)))
         client.sendall(stt_res)
@@ -606,7 +609,7 @@ def main(args=None):
         api.get_logger().info("Keyboard interrupt")
     finally:
         api.stop_workers()
-        api.server.shutdown()
+        api.socket.shutdown()
         api.destroy_node()
 
         rclpy.shutdown()
