@@ -8,4 +8,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+ros2/experimentation/audio_ws/build
+ros2/experimentation/audio_ws/install
+ros2/experimentation/audio_ws/log
 .venv

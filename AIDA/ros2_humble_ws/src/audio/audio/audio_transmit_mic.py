@@ -4,8 +4,6 @@ import sounddevice as sd
 import time
 import numpy as np
 
-
-
 import rclpy
 from rclpy.node import Node
 from audio_data.msg import AudioData 
@@ -155,7 +153,12 @@ class AudioTransmitterNode(Node):
         """
         Sets the desired state for node when request is recieved.
 
-        #TODO finish this comment
+        Args:
+            request: SetState.Request object - input to the service
+            response: SetState.Response object - output to the service - Is empty when passed as argument
+        
+        Returns:
+            SetState.Response object - response to the service
         """
 
         try:
@@ -193,21 +196,23 @@ class AudioTransmitterNode(Node):
             audio_data = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=channels, dtype=np.float32)
             sd.wait()
             self.get_logger().info("MIC node: Pausing the recording")
-            msg = self._to_msg(audio_data, sample_rate, channels, duration)            
+            msg = self._to_msg(audio_data, sample_rate, channels)            
             self.frame_num += 1
             self.capture_queue.put(msg)
             if self.get_parameter('capture_once').get_parameter_value().bool_value:
                 self.get_logger().info("MIC node: Capture once is activated, stopping the recording")
                 self.capture_event.set()
 
-    def _to_msg(self, data, sample_rate, channels, duration):
+    def _to_msg(self, data, sample_rate, channels):
         """
         Converts audio data to a ROS2 message.
 
         This method converts the audio data, sample rate, channels, and duration into a ROS2 message format.
 
         Args:
-            None
+            data: numpy array of audio data
+            sample_rate: sample rate of the audio data
+            channels: number of channels in the audio data
 
         Returns:
             Message of AudioData type
