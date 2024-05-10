@@ -103,7 +103,7 @@ class InterfaceNode(Node):
         self.init_queues()
 
     def start_camera(self):
-        self.get_logger().info("Server: Starting camera...")
+        self.get_logger().info("Server| Starting camera...")
         req = SetState.Request()
         req.desired_state = "active"
         self.future = self.camera_client.call_async(req)
@@ -111,7 +111,7 @@ class InterfaceNode(Node):
         print(self.future.result())
 
     def start_microphone(self):
-        self.get_logger().info("Server: Starting microphone...")
+        self.get_logger().info("Server| Starting microphone...")
         req = SetState.Request()
         req.desired_state = "active"
         self.future = self.mic_client.call_async(req)
@@ -119,7 +119,7 @@ class InterfaceNode(Node):
         print(self.future.result())
 
     def start_gesture_recognition(self):
-        self.get_logger().info("Server: Starting gesture recognition...")
+        self.get_logger().info("Server| Starting gesture recognition...")
         req = SetState.Request()
         req.desired_state = "gesture"
         self.future = self.image_analysis_client.call_async(req)
@@ -127,7 +127,7 @@ class InterfaceNode(Node):
         print(self.future.result())
     
     def start_pose_recognition(self):
-        self.get_logger().info("Server: Starting pose recognition...")
+        self.get_logger().info("Server| Starting pose recognition...")
         req = SetState.Request()
         req.desired_state = "pose"
         self.future = self.image_analysis_client.call_async(req)
@@ -135,7 +135,7 @@ class InterfaceNode(Node):
         print(self.future.result())
 
     def stop_camera(self):
-        self.get_logger().info("Server: Stopping camera...")
+        self.get_logger().info("Server| Stopping camera...")
         req = SetState.Request()
         req.desired_state = "idle"
         self.future = self.camera_client.call_async(req)
@@ -143,7 +143,7 @@ class InterfaceNode(Node):
         print(self.future.result())
 
     def stop_microphone(self):
-        self.get_logger().info("Server: Stopping microphone...")
+        self.get_logger().info("Server| Stopping microphone...")
         req = SetState.Request()
         req.desired_state = "idle"
         self.future = self.mic_client.call_async(req)
@@ -151,7 +151,7 @@ class InterfaceNode(Node):
         print(self.future.result())
 
     def stop_image_recognition(self):
-        self.get_logger().info("Server: Stopping image recognition...")
+        self.get_logger().info("Server| Stopping image recognition...")
         req = SetState.Request()
         req.desired_state = "idle"
         self.future = self.image_analysis_client.call_async(req)
@@ -294,7 +294,7 @@ class InterfaceNode(Node):
                 data = client.recv(MESSAGE_HEADER_SIZE)
                 if not data:
                     client_connected = False
-                    self.get_logger().info(f"Server: Connection to [{addr}] was closed.")
+                    self.get_logger().info(f"Server| Connection to [{addr}] was closed.")
                     break
                 message_type, payload_length = struct.unpack(HEADER_FORMAT, data)
                 if payload_length > 0:
@@ -302,10 +302,10 @@ class InterfaceNode(Node):
                 else:
                     # We do not require to receive a payload if the length is zero.
                     payload = b"\0x00"
-                self.get_logger().info(f"Server: Received message {message_type} from {addr}")
+                self.get_logger().info(f"Server| Received message {message_type} from {addr}")
                 self.handle_message(client, message_type, payload)
             except ConnectionError:
-                self.get_logger().info(f"Server: Connection to [{addr}] was interrupted.")
+                self.get_logger().info(f"Server| Connection to [{addr}] was interrupted.")
                 break
 
     def handle_message(self, client, message_type, data):
@@ -365,7 +365,7 @@ class InterfaceNode(Node):
         pass
 
     def handle_req_video_feed(self, client):
-        self.get_logger().info("Server: Sending video feed to client.")
+        self.get_logger().info("Server| Sending video feed to client.")
         # Send video stream
         thread = threading.Thread(target=self.send_video_stream, args=(client,))
         thread.start()
@@ -387,7 +387,7 @@ class InterfaceNode(Node):
 
     def handle_text(self, text):
         # Echo text message to console
-        print("Client says:", text)
+        self.get_logger().info(f"Server| Received text message: {text}")
 
     def handle_joystick_move(self, data):
         data = struct.unpack(msg_formats.get(MessageType.JOYSTICK_MOVE), data)
@@ -400,21 +400,16 @@ class InterfaceNode(Node):
         while True:  # Video streaming loop
             time.sleep(1 / STREAM_FREQUENCY)
             self.video_frame_lock.acquire()
-            try:
-                frame = self.video_frame
-                #frame = self.video_queue.get(block=False)
-            except queue.Empty:
-                frame = None
+            frame = self.video_frame
             self.video_frame_lock.release()
             if frame is None:
-                print("Video queue empty. Requesting too frequently or feed offline.")
+                self.get_logger().info("Server| Video feed is empty.")
             else:
                 # cv_image = cv2.resize(frame, (960, 540))
-                # print("Forwarding video frame from queue...")
                 try:
                     self.send_video_frame(conn, frame)
                 except ConnectionError:
-                    self.get_logger().info(f"Server: Video feed connection was interrupted.")
+                    self.get_logger().info(f"Server| Video feed connection was interrupted.")
                     break
     def send_video_frame(self, conn, frame):
         frame_bytes = cv2.imencode(".jpg", frame)[1].tobytes()  # Encode as JPEG
