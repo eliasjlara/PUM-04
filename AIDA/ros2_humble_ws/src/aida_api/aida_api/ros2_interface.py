@@ -75,6 +75,8 @@ msg_formats = {
 class Instruction:
     ON = 1
     OFF = 2
+    GESTURE = 3
+    POSE = 4
 
 
 class InterfaceNode(Node):
@@ -82,14 +84,17 @@ class InterfaceNode(Node):
     A ROS2 node for communicating with AIDA.
     """
 
-    def __init__(self, host="localhost", port=6660):
+    def __init__(self, host="localhost", port=6662):
         super().__init__("api_node")
 
         self.server_up = False
         self.bridge = CvBridge()
         self.host = host
         self.port = port
-        self.latest_frame = None
+        self.video_frame = None
+        self.stt_result = None
+        self.video_frame_lock = threading.Lock()
+        self.stt_result_lock = threading.Lock()
 
 
         self.init_clients()
@@ -99,26 +104,38 @@ class InterfaceNode(Node):
 
     def start_camera(self):
         self.get_logger().info("Server: Starting camera...")
-        return
-        # Start up a standard ros camera node
-        print("Starting camera...")
-        # Execute the command. Temporary and to be replaced with the actual ROS2 node for camera.
-        subprocess.Popen(
-            ["ros2", "run", "image_tools", "cam2image"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        print("Camera started")
+        req = SetState.Request()
+        req.desired_state = "active"
+        self.future = self.camera_client.call_async(req)
+        # rclpy.spin_until_future_complete(self, self.future)
+        print(self.future.result())
 
     def start_microphone(self):
-        print("Starting microphone...")
+        self.get_logger().info("Server: Starting microphone...")
         req = SetState.Request()
         req.desired_state = "active"
         self.future = self.mic_client.call_async(req)
         # rclpy.spin_until_future_complete(self, self.future)
         print(self.future.result())
 
+    def start_gesture_recognition(self):
+        self.get_logger().info("Server: Starting gesture recognition...")
+        req = SetState.Request()
+        req.desired_state = "gesture"
+        self.future = self.image_analysis_client.call_async(req)
+        # rclpy.spin_until_future_complete(self, self.future)
+        print(self.future.result())
+    
+    def start_pose_recognition(self):
+        self.get_logger().info("Server: Starting pose recognition...")
+        req = SetState.Request()
+        req.desired_state = "pose"
+        self.future = self.image_analysis_client.call_async(req)
+        # rclpy.spin_until_future_complete(self, self.future)
+        print(self.future.result())
+
     def stop_camera(self):
+        self.get_logger().info("Server: Stopping camera...")
         req = SetState.Request()
         req.desired_state = "idle"
         self.future = self.camera_client.call_async(req)
@@ -126,20 +143,26 @@ class InterfaceNode(Node):
         print(self.future.result())
 
     def stop_microphone(self):
+        self.get_logger().info("Server: Stopping microphone...")
         req = SetState.Request()
         req.desired_state = "idle"
         self.future = self.mic_client.call_async(req)
-        rclpy.spin_until_future_complete(self, self.future)
+        # rclpy.spin_until_future_complete(self, self.future)
+        print(self.future.result())
+
+    def stop_image_recognition(self):
+        self.get_logger().info("Server: Stopping image recognition...")
+        req = SetState.Request()
+        req.desired_state = "idle"
+        self.future = self.image_analysis_client.call_async(req)
+        # rclpy.spin_until_future_complete(self, self.future)
         print(self.future.result())
 
     def video_callback(self, msg) -> None:
-        # print("Received video message")
-        # image = np.frombuffer(msg.data, dtype=np.uint8)
-        self.video_queue_lock.acquire()
+        self.video_frame_lock.acquire()
         cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        self.video_queue.put(cv_image)
-        # print("Video frame added to queue: ", self.video_queue.qsize())
-        self.video_queue_lock.release()
+        self.video_frame = cv_image
+        self.video_frame_lock.release()
 
     # def lidar_callback(self, msg) -> None:
     #     lidar_data = np.frombuffer(msg.data, dtype=np.uint8)
@@ -149,9 +172,9 @@ class InterfaceNode(Node):
 
     def stt_callback(self, msg) -> None:
         print("Received STT message:", msg.data)
-        self.stt_queue_lock.acquire()
+        self.stt_result_lock.acquire()
         self.stt_queue.put(msg.data)
-        self.stt_queue_lock.release()
+        self.stt_result_lock.release()
 
     def destroy_node(self):
         super().destroy_node()
@@ -178,17 +201,12 @@ class InterfaceNode(Node):
         #     10)
 
     def init_queues(self):
-        self.video_queue_lock = threading.Lock()
-        self.video_queue = queue.Queue()
         # self.lidar_queue_lock = threading.Lock()
         # self.lidar_queue = queue.Queue()
-        self.stt_queue_lock = threading.Lock()
-        self.stt_queue = queue.Queue()
         self.joystick_queue_lock = threading.Lock()
         self.joystick_queue = queue.Queue()
 
     def start_workers(self, start_socket=True) -> None:
-
         self.joystick_publisher_event = threading.Event()
         self.joystick_publisher_event.clear()
         self.joystick_publisher_thread = threading.Thread(
@@ -262,23 +280,21 @@ class InterfaceNode(Node):
     def start_server(self):
         self.socket.listen()
         print("Server listening...")
-        try:
-            while not self.server_event.is_set():
-                client, addr = self.socket.accept()
-                print(f"Connected by {addr}")
-                thread = threading.Thread(target=self.handle_client, args=(client, addr))
-                thread.start()
-        except Exception as e:
-            self.get_logger().error(f"Server: Error: {e}")
-        
-        finally:
-            self.socket.close()
+        while not self.server_event.is_set():
+            client, addr = self.socket.accept()
+            print(f"Connected by {addr}")
+            thread = threading.Thread(target=self.handle_client, args=(client, addr))
+            thread.start()
+        self.socket.close()
 
     def handle_client(self, client, addr):
-        while not self.server_event.is_set():
+        client_connected = True
+        while client_connected:
             try:
                 data = client.recv(MESSAGE_HEADER_SIZE)
                 if not data:
+                    client_connected = False
+                    self.get_logger().info(f"Server: Connection to [{addr}] was closed.")
                     break
                 message_type, payload_length = struct.unpack(HEADER_FORMAT, data)
                 if payload_length > 0:
@@ -289,7 +305,7 @@ class InterfaceNode(Node):
                 self.get_logger().info(f"Server: Received message {message_type} from {addr}")
                 self.handle_message(client, message_type, payload)
             except ConnectionError:
-                self.get_logger().info(f"Server: Connection to [{addr}] closed.")
+                self.get_logger().info(f"Server: Connection to [{addr}] was interrupted.")
                 break
 
     def handle_message(self, client, message_type, data):
@@ -323,8 +339,14 @@ class InterfaceNode(Node):
             print("Unknown camera instruction:", data)
 
     def handle_image_analysis(self, data):
-        # Implement logic to handle image analysis message
-        pass
+        if data == Instruction.GESTURE:
+            self.start_gesture_recognition()
+        elif data == Instruction.POSE:
+            self.start_pose_recognition()
+        elif data == Instruction.OFF:
+            self.stop_image_recognition()
+        else:
+            print("Unknown image recognition instruction:", data)        
 
     def handle_mic(self, data):
         if data == Instruction.ON:
@@ -343,18 +365,19 @@ class InterfaceNode(Node):
         pass
 
     def handle_req_video_feed(self, client):
+        self.get_logger().info("Server: Sending video feed to client.")
         # Send video stream
         thread = threading.Thread(target=self.send_video_stream, args=(client,))
         thread.start()
 
     def handle_req_stt(self, client):
         print("Getting STT message from queue...")
-        self.stt_queue_lock.acquire()
+        self.stt_result_lock.acquire()
         try:
-            stt_res = self.stt_queue.get(block=False)
+            stt_res = self.stt_result
         except queue.Empty:
             stt_res = ""
-        self.stt_queue_lock.release()
+        self.stt_result_lock.release()
         stt_res = stt_res.encode("utf-8")
 
         print(f"Sending STT result: {stt_res}")
@@ -376,19 +399,23 @@ class InterfaceNode(Node):
     def send_video_stream(self, conn):
         while True:  # Video streaming loop
             time.sleep(1 / STREAM_FREQUENCY)
-            self.video_queue_lock.acquire()
+            self.video_frame_lock.acquire()
             try:
-                frame = self.latest_frame
+                frame = self.video_frame
+                #frame = self.video_queue.get(block=False)
             except queue.Empty:
                 frame = None
-            self.video_queue_lock.release()
+            self.video_frame_lock.release()
             if frame is None:
                 print("Video queue empty. Requesting too frequently or feed offline.")
             else:
                 # cv_image = cv2.resize(frame, (960, 540))
                 # print("Forwarding video frame from queue...")
-                self.send_video_frame(conn, frame)
-
+                try:
+                    self.send_video_frame(conn, frame)
+                except ConnectionError:
+                    self.get_logger().info(f"Server: Video feed connection was interrupted.")
+                    break
     def send_video_frame(self, conn, frame):
         frame_bytes = cv2.imencode(".jpg", frame)[1].tobytes()  # Encode as JPEG
         # Send video frame header
@@ -402,9 +429,8 @@ class InterfaceNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    api = InterfaceNode()
+    api = InterfaceNode(host="0.0.0.0")
     api.start_workers()
-
     try:
         rclpy.spin(api)
     except KeyboardInterrupt:
