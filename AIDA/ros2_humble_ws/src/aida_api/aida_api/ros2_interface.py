@@ -118,17 +118,17 @@ class InterfaceNode(Node):
         self.init_queues()
 
     def start_camera(self):
-            """
-            Start the camera.
+        """
+        Start the camera.
 
-            This method starts the camera by sending a request to set the desired state to "active".
-            It logs a message indicating that the camera is being started and prints the result of the request.
-            """
-            self.get_logger().info("Server| Starting camera...")
-            req = SetState.Request()
-            req.desired_state = "active"
-            self.future = self.camera_client.call_async(req)
-            return self.future.result()
+        This method starts the camera by sending a request to set the desired state to "active".
+        It logs a message indicating that the camera is being started and prints the result of the request.
+        """
+        self.get_logger().info("Server| Starting camera...")
+        req = SetState.Request()
+        req.desired_state = "active"
+        self.future = self.camera_client.call_async(req)
+        return self.future.result()
 
     def start_microphone(self):
         """
@@ -319,7 +319,7 @@ class InterfaceNode(Node):
         if hasattr(self, "server_thread") and self.server_thread.is_alive():
             self.server_thread.join()
 
-    def _to_joystick_msg(self, data):
+    def to_joystick_msg(self, data):
         """
         Convert joystick data to a ROS2 compatible Joystick message.
 
@@ -353,21 +353,26 @@ class InterfaceNode(Node):
                 self.joystick_publisher.publish(msg)
 
     def start_server(self):
-            """
-            Start the socket server and listen for incoming connections.
+        """
+        Start the socket server and listen for incoming connections.
 
-            This method starts the socket server and listens for incoming connections on the specified host and port.
-            It accepts client connections and spawns a new thread to handle each client connection.
-            The server continues to listen for connections until the server event is set.
-            """
-            self.socket.listen()
-            self.get_logger().info(f"Server| Listening on {self.host}:{self.port}")
+        This method starts the socket server and listens for incoming connections on the specified host and port.
+        It accepts client connections and spawns a new thread to handle each client connection.
+        The server continues to listen for connections until the server event is set.
+        """
+        self.socket.listen()
+        self.get_logger().info(f"Server| Listening on {self.host}:{self.port}")
+        try:
             while not self.server_event.is_set():
                 client, addr = self.socket.accept()
                 self.get_logger().info(f"Server| Connection from {addr}")
                 thread = threading.Thread(target=self.handle_client, args=(client, addr))
                 thread.start()
+        except Exception as e:
+            self.get_logger().error(f"Server: Error: {e}")
+        finally:
             self.socket.close()
+
 
     def handle_client(self, client, addr):
         """
@@ -545,7 +550,7 @@ class InterfaceNode(Node):
             data: The joystick movement data.
         """
         data = struct.unpack(msg_formats.get(MessageType.JOYSTICK_MOVE), data)
-        jstk_msg = self._to_joystick_msg(data)
+        jstk_msg = self.to_joystick_msg(data)
         self.joystick_queue_lock.acquire()
         self.joystick_queue.put(jstk_msg)
         self.joystick_queue_lock.release()
