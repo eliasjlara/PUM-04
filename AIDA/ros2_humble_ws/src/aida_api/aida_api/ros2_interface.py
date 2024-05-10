@@ -171,7 +171,7 @@ class InterfaceNode(Node):
     #     self.lidar_queue_lock.release()
 
     def stt_callback(self, msg) -> None:
-        print("Received STT message:", msg.data)
+        self.get_logger().info("Received STT message:", msg.data)
         self.stt_result_lock.acquire()
         self.stt_queue.put(msg.data)
         self.stt_result_lock.release()
@@ -279,10 +279,10 @@ class InterfaceNode(Node):
 
     def start_server(self):
         self.socket.listen()
-        print("Server listening...")
+        self.get_logger().info(f"Server| Listening on {self.host}:{self.port}")
         while not self.server_event.is_set():
             client, addr = self.socket.accept()
-            print(f"Connected by {addr}")
+            self.get_logger().info(f"Server| Connection from {addr}")
             thread = threading.Thread(target=self.handle_client, args=(client, addr))
             thread.start()
         self.socket.close()
@@ -336,7 +336,7 @@ class InterfaceNode(Node):
         elif data == Instruction.OFF:
             self.stop_camera()
         else:
-            print("Unknown camera instruction:", data)
+            self.get_logger().info("Unknown camera instruction:", data)
 
     def handle_image_analysis(self, data):
         if data == Instruction.GESTURE:
@@ -346,7 +346,7 @@ class InterfaceNode(Node):
         elif data == Instruction.OFF:
             self.stop_image_recognition()
         else:
-            print("Unknown image recognition instruction:", data)        
+            self.get_logger().info("Unknown image analysis instruction:", data)     
 
     def handle_mic(self, data):
         if data == Instruction.ON:
@@ -354,7 +354,7 @@ class InterfaceNode(Node):
         elif data == Instruction.OFF:
             self.stop_microphone()  # You will probably not do this because the mic is always on a certain duration
         else:
-            print("Unknown mic instruction:", data)
+            self.get_logger().info("Unknown mic instruction:", data)
 
     def handle_stt(self, data):
         # Implement logic to handle STT message
@@ -371,16 +371,10 @@ class InterfaceNode(Node):
         thread.start()
 
     def handle_req_stt(self, client):
-        print("Getting STT message from queue...")
         self.stt_result_lock.acquire()
-        try:
-            stt_res = self.stt_result
-        except queue.Empty:
-            stt_res = ""
+        stt_res = self.stt_result
         self.stt_result_lock.release()
         stt_res = stt_res.encode("utf-8")
-
-        print(f"Sending STT result: {stt_res}")
         # Send STT response
         client.sendall(struct.pack(HEADER_FORMAT, MessageType.TEXT, len(stt_res)))
         client.sendall(stt_res)
@@ -411,6 +405,7 @@ class InterfaceNode(Node):
                 except ConnectionError:
                     self.get_logger().info(f"Server| Video feed connection was interrupted.")
                     break
+
     def send_video_frame(self, conn, frame):
         frame_bytes = cv2.imencode(".jpg", frame)[1].tobytes()  # Encode as JPEG
         # Send video frame header
