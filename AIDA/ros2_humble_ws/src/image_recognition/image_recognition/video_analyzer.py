@@ -70,17 +70,19 @@ class VideoTransmitNode(Node):
         """
         self.cv2_img = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
         self.counter += 1
-        self.counter %= 10
+        self.counter %= 5
+        self.img_out = self.cv2_img
         # Apply the selected analysis. Only one analysis can be active at a time.
-        if self.active_analysis == AnalysisType.NONE or self.counter == 0:
-            self.img_out = self.cv2_img
-        elif self.active_analysis == AnalysisType.POSE_LANDMARKER:
-            self.img_out = self.pose_landmarker.apply_pose_landmarking(self.cv2_img)
+        if self.active_analysis == AnalysisType.POSE_LANDMARKER:
+            if self.counter == 0:
+                self.pose_landmarker.apply_pose_landmarking(self.cv2_img)
+            self.img_out = self.pose_landmarker.apply_result(self.cv2_img)
         elif self.active_analysis == AnalysisType.GESTURE_RECOGNIZER:
-            self.img_out = self.gesture_recognizer.apply_gesture_detection(self.cv2_img)
-            self.img_out = self.gesture_recognizer.get_result_image()
-        if isinstance(self.img_out, np.ndarray):
-            self.publish_frame()
+            if self.counter == 0:
+                self.gesture_recognizer.apply_gesture_detection(self.cv2_img)
+            self.img_out = self.gesture_recognizer.apply_result(self.cv2_img) # TODO: use copy instead?
+
+        self.publish_frame()
 
     def publish_frame(self):        
         """

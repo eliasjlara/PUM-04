@@ -41,10 +41,6 @@ class GestureRecognizerWrapper:
             result_callback=self.save_result,
         )
 
-        # self.options = GestureRecognizerOptions(
-        #     base_options=BaseOptions(model_asset_path=self.model),
-        #     running_mode=VisionRunningMode.LIVE_STREAM,)
-
         if load:
             self.load_model()
 
@@ -92,9 +88,8 @@ class GestureRecognizerWrapper:
         """
         with self.result_lock:
             self.result = result
-            self.result_img = np.copy(output_image.numpy_view())
 
-    def get_result_image(self) -> np.ndarray:
+    def apply_result(self, cv2_img) -> np.ndarray:
         """
         Returns the image with the gesture recognition results.
 
@@ -104,17 +99,14 @@ class GestureRecognizerWrapper:
         Returns:
             np.ndarray : The image with the gesture recognition results.
         """
-        image = None
         if self.result:
             with self.result_lock:
                 result = self.result
-                image = self.result_img
                 # image = self.draw_gesture_results(self.result)
                 for hand_index, hand_landmarks in enumerate(self.result.hand_landmarks):
-                    self.draw_landmarks(image, hand_landmarks)
-                    self.draw_gesture_text(image, hand_landmarks, self.result.gestures[hand_index])
-            
-        return image
+                    self.draw_landmarks(cv2_img, hand_landmarks)
+                    self.draw_gesture_text(cv2_img, hand_landmarks, self.result.gestures[hand_index])
+        return cv2_img
 
     def apply_gesture_detection(self, cv2_img: cv2.VideoCapture) -> np.ndarray:
         """
@@ -129,8 +121,6 @@ class GestureRecognizerWrapper:
         np_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
         mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=np_img)
         self.recognizer.recognize_async(mp_img, time.time_ns() // 1_000_000)
-        # self.recognizer.recognize_for_video(mp_img, time.time_ns() // 1_000_000)
-        # return mp_img
 
     def get_text_size(self, text, font_size, font_thickness):
         """
