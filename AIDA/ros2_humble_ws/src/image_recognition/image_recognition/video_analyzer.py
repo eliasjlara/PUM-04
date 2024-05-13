@@ -7,11 +7,11 @@ from aida_interfaces.srv import SetState
 from sensor_msgs.msg import Image
 import cv2
 import numpy as np
-from gesture_recognizer import GestureRecognizer
-from pose_landmarker import PoseLandmarker
+from image_recognition.gesture_recognizer import GestureRecognizer
+from image_recognition.pose_landmarker import PoseLandmarker
 
 # Add the directory containing gesture_recognizer.py to the Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 class AnalysisType:
     NONE = 1

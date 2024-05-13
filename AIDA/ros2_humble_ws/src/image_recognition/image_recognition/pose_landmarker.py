@@ -103,8 +103,8 @@ class PoseLandmarker():
         - cropped_img: The cropped image.
         """
         height, width = image.shape[:2]  # Get original height and width
-        dim_scales = [self.desired_height / height, self.desired_width / width]
-        image = image.resize(width*max(dim_scales), height*max(dim_scales))
+        # dim_scales = [self.desired_height / height, self.desired_width / width]
+        # image = image.resize(width*max(dim_scales), height*max(dim_scales))
         # Calculate how much to crop from the sides and top/bottom
         x_start = (width - self.desired_width) // 2
         y_start = (height - self.desired_height) // 2
