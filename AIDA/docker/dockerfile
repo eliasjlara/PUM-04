@@ -41,7 +41,7 @@ RUN /bin/bash -c "pip3 install -r requirements.txt"
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build && source install/local_setup.bash"
 
 # Change directory to the launch location
-WORKDIR /app/PUM-04/AIDA/launch
+WORKDIR /app/PUM-04/AIDA/ros2_humble_ws/launch
 
 # CMD [ "/bin/bash", "-c", "source /opt/ros/humble/setup.bash", "&&", "/bin/bash", "-c", "source /app/PUM-04/AIDA/ros2_humble_ws/install/local_setup.bash"] 
 #, "&&", "ros2",  "launch launch_all.yaml"]
