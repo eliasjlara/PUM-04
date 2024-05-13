@@ -1,7 +1,4 @@
-import argparse
-import sys
 import time
-
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -13,6 +10,11 @@ from mediapipe.framework.formats import landmark_pb2
 
 class GestureRecognizer():
     def __init__(self):
+        """
+        Initializes the GestureRecognizer class.
+
+        This class is responsible for setting up the camera feed and performing gesture recognition on the captured images.
+        """
         self.mp_hands = mp.solutions.hands
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_drawing_styles = mp.solutions.drawing_styles
@@ -33,19 +35,15 @@ class GestureRecognizer():
         self.recognizer = None
         self.recognition_result_list = []
 
-        self.setup()
-
-    # Sets up the arguments for the gesture recognizer
-    def setup(self):
         self.set_up_camera_feed(self.model, self.num_hands, self.min_hand_detection_confidence,
-                                self.min_hand_presence_confidence, self.min_tracking_confidence, self.camera_id,
+                                self.min_hand_presence_confidence, self.min_tracking_confidence,
                                 self.desired_width, self.desired_height)
 
     def set_up_camera_feed(self, model: str, num_hands: int,
         min_hand_detection_confidence: float,
         min_hand_presence_confidence: float, min_tracking_confidence: float,
-        camera_id: int, width: int, height: int) -> None:
-        """Continuously run inference on images acquired from the camera.
+        width: int, height: int) -> None:
+        """Continuously run inference on images.
 
         Args:
             model: Name of the gesture recognition model bundle.
@@ -56,7 +54,6 @@ class GestureRecognizer():
                 presence score in the hand landmark detection.
             min_tracking_confidence: The minimum confidence score for the hand
                 tracking to be considered successful.
-            camera_id: The camera id to be passed to OpenCV.
             width: The width of the frame captured from the camera.
             height: The height of the frame captured from the camera.
         """
@@ -66,8 +63,6 @@ class GestureRecognizer():
         # Visualization parameters
         fps_avg_frame_count = 10
 
-        recognition_frame = None
-        #recognition_result_list = []
         self.recognition_result_list.clear()
 
         def save_result(result: vision.GestureRecognizerResult,
@@ -92,6 +87,15 @@ class GestureRecognizer():
         self.recognizer = vision.GestureRecognizer.create_from_options(options)
 
     def _crop_image(self, image):
+        """
+        Crop the image to the desired width and height.
+
+        Args:
+            image: The input image.
+
+        Returns:
+            The cropped image.
+        """
         height, width = image.shape[:2]  # Get original height and width
         # Calculate how much to crop from the sides and top/bottom
         x_start = (width - self.desired_width) // 2
@@ -105,7 +109,15 @@ class GestureRecognizer():
         return cropped_img
     
     def apply_gesture_detection(self, image) -> np.ndarray:
-        
+        """
+        Apply gesture detection on the given image.
+
+        Args:
+            image: The input image.
+
+        Returns:
+            The image with gesture detection results.
+        """
         image = self._crop_image(image)        
 
         # Convert the image from BGR to RGB as required by the TFLite model.

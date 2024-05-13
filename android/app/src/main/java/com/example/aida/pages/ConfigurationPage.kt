@@ -1,4 +1,4 @@
-package com.example.aida
+package com.example.aida.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -20,9 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
+import com.example.aida.viewmodels.MainViewModel
 
 /**
  * The configuration page contains information on how to connect to AIDA
@@ -30,10 +32,18 @@ import androidx.compose.ui.unit.dp
  * there is no logic and only an UI component
  *
  * @param barHeight used to ensure that the content is padded correctly
+ * @param viewModel contains connection information, used to update IP
+ * address, update port and connect to AIDA with new information
+ * @param onButtonPress updates the state and the topBar title
+ *
  * @author Elias
  */
 @Composable
-fun ConfigurationPage(barHeight: Dp) {
+fun ConfigurationPage(
+    barHeight: Dp,
+    viewModel: MainViewModel,
+    onButtonPress: () -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(top = barHeight)
@@ -47,51 +57,82 @@ fun ConfigurationPage(barHeight: Dp) {
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
-                .padding(top = paddingTop, start = paddingSides, end = paddingSides),
-            verticalArrangement = Arrangement.spacedBy(rowSpacing),
-            horizontalAlignment = Alignment.Start
+                .padding(top = paddingTop, start = paddingSides, end = paddingSides, ),
+            verticalArrangement = Arrangement.spacedBy(rowSpacing)
         ) {
+            var ipInput by remember { mutableStateOf(viewModel.ipAddress.value) }
+            var portInput by remember { mutableStateOf(viewModel.port.value.toString()) }
+            val standardInputModifier = Modifier.weight(1f)
+
             Text(text = "SSH Connection Data", modifier = Modifier.align(Alignment.Start))
+
+            // IP & Port input
             Row(
                 horizontalArrangement = Arrangement.spacedBy(rowSpacing)
             ) {
-                var ip by remember { mutableStateOf("") }
-                var port by remember { mutableStateOf("") }
-
+                // IP input
                 TextField(
-                    value = ip,
-                    onValueChange = { ip = it },
+                    value = ipInput,
+                    onValueChange = { newValue ->
+                        // Check that the address is correctly formatted
+                        if (newValue.matches(Regex("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\$"))) {
+                            ipInput = newValue
+                        }
+                    },
                     label = { Text("IP-address") },
-                    modifier = Modifier.weight(1f)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = standardInputModifier
                 )
+
+                // Port input
                 TextField(
-                    value = port,
-                    onValueChange = { port = it },
+                    value = portInput,
+                    onValueChange = { newValue ->
+                        // Ensure the input is 0 to 4 characters
+                        if (newValue.matches(Regex("^[0-9]{1,4}\$"))) {
+                            portInput = newValue
+                        }
+                    },
                     label = { Text("Port") },
-                    modifier = Modifier.weight(1f)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = standardInputModifier
                 )
             }
+
+            // Username & Password input, currently unused
             Row(
                 horizontalArrangement = Arrangement.spacedBy(rowSpacing)
             ) {
                 var username by remember { mutableStateOf("") }
                 var password by remember { mutableStateOf("") }
 
+                // Username input, currently unused
                 TextField(
                     value = username,
                     onValueChange = { username = it },
                     label = { Text("Username") },
-                    modifier = Modifier.weight(1f)
+                    modifier = standardInputModifier
                 )
+
+                // Password input, currently unused
                 TextField(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Password") },
-                    modifier = Modifier.weight(1f)
+                    modifier = standardInputModifier
                 )
             }
+
+            // Button to confirm IP address and port
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    viewModel.updateIpAddress(ipInput)
+                    viewModel.updatePort(portInput.toInt())
+                    viewModel.connectToAIDA()
+                    onButtonPress()
+                },
                 modifier = Modifier
                     .padding(20.dp)
                     .align(Alignment.CenterHorizontally)
@@ -109,15 +150,16 @@ fun ConfigurationPage(barHeight: Dp) {
             color = Color.Gray
         )
 
-        // Second column for the SSH Terminal
+        // Second column for the SSH Terminal, currently unused
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
                 .padding(top = paddingTop, start = paddingSides, end = paddingSides),
-            verticalArrangement = Arrangement.spacedBy(rowSpacing),
-            horizontalAlignment = Alignment.Start
+            verticalArrangement = Arrangement.spacedBy(rowSpacing)
         ) {
-            Text(text = "SSH Terminal", modifier = Modifier.align(Alignment.Start))
+            Text(
+                text = "SSH Terminal"
+            )
         }
     }
 }
