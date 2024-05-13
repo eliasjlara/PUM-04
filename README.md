@@ -1,6 +1,6 @@
 # AIDA
 
-AIDA is a robot worked on by a group of students in the course TDDD96. The project is requested by IDA and is currently worked on by eight people simultaneously, which in turn, is why this repo exists! The repo is used to assist in the creation of code as well as keeping track of our kanban board and other iterative processes. In this README there is a guide for use on how to use the repo, as well as some useful links. 
+AIDA is a robot worked on by a group of students in the course TDDD96. The project is requested by IDA and is currently worked on by eight people simultaneously, which in turn, is why this repo exists! The repo is used to assist in the creation of code as well as keeping track of our kanban board and other iterative processes. In this README there is a guide for use on how to use the repo, as well as some useful links.  
 
 <br/>
 
