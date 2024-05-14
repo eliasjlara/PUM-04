@@ -21,6 +21,10 @@ class GestureRecognizerWrapper:
         self.label_font_size = 1
         self.label_thickness = 2
 
+        self.gesture_options = {
+            "num_hands": 2,
+        }
+
         self.model = "..//src//image_recognition//models//gesture_recognizer.task"
         self.result = None
         self.result_lock = threading.Lock()
@@ -36,6 +40,7 @@ class GestureRecognizerWrapper:
         self.options = GestureRecognizerOptions(
             base_options=BaseOptions(model_asset_path=self.model),
             running_mode=VisionRunningMode.LIVE_STREAM,
+            num_hands=self.gesture_options["num_hands"],
             result_callback=self.save_result,
         )
 
