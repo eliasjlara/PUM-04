@@ -55,6 +55,18 @@ abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, tim
         return getBody(size)
     }
 
+    fun sendRequest(id: Short, data: ByteArray) {
+        val frameSize = data.size
+        val frameBufferSize = ByteBuffer.allocate(6)
+        frameBufferSize.order(ByteOrder.BIG_ENDIAN)
+        frameBufferSize.putShort(id)
+        frameBufferSize.putInt(frameSize)
+
+        frameBufferSize.order(ByteOrder.BIG_ENDIAN)
+        socket.getOutputStream().write(frameBufferSize.array())
+        socket.getOutputStream().write(data)
+    }
+
     /**
      * Closes the socket connection
      */
