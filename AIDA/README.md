@@ -101,7 +101,8 @@ To launch a group of nodes place yourself in the folder ros2_humble_ws (ros2 Hum
 To start a node in the project place yourself in the folder ros2_humble_ws (ros2 Humble Hawksbill workspace).  
 - First build the changes using: `colcon build` or `colcon build --packages-select <package_name>` (for building current package only)  
 - Thereafter source the local environment: `source install/localsetup.bash`  
-- Last run the command: `ros2 run <package_name> <executable_name>`
+- Last run the command: `ros2 run <package_name> <executable_name>`  
+
 
 ### Example
 Example to start the Speech to text node in the file *faster_whisper_node.py* run the command:

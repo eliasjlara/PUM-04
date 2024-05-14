@@ -1,11 +1,10 @@
 import numpy as np
 import rclpy
-
 from rclpy.node import Node
 from audio_data.msg import AudioData
 from aida_interfaces.srv import SetState
 from std_msgs.msg import String
-from speech_to_text.whisper_logic import SpeechToText
+from faster_whisper import WhisperModel
 
 
 
@@ -26,11 +25,11 @@ class STTNode(Node):
         
         translate: Translates audio from numpy data to text
         _message_to_numpy_array : Translates the message from topic to numpy array
-        
+        destroy_node : Destructs the STTNode object.
         publish_result : Publishes the inputed string to stt_result topic
     """
 
-    def __init__(self):
+    def __init__(self, model_size: str = "base.en"):
         """
         Initializes the STTNode object.
 
@@ -60,8 +59,8 @@ class STTNode(Node):
             10)
         self.subscription # prevent unused variable warning
         
-        # Init the logic class for STT
-        self.stt_model = SpeechToText()
+        # Init the STT model
+        self.stt_model = WhisperModel(model_size)
 
         # Init the services for the node
         self.init_services()
@@ -69,6 +68,7 @@ class STTNode(Node):
         # Set the node status to active by default
         # Trancsription is done when the node is active
         self.active = True
+
 
     def listener_callback(self, msg):
         """
@@ -85,10 +85,14 @@ class STTNode(Node):
             self.get_logger().info("STT node: Receiving audio data from topic")
             audio_data = self._message_to_numpy_array(msg)
             self.get_logger().info("STT node: Applying STT model to audio data")
-            result = self.stt_model.transcribe_audio(audio_data)
-            # The segment is the result of the transcription, strip of trailing and leading whitespaces
-            self.get_logger().info("STT node: Transcription contains segment: " + result)
-            self.publish_result(result)
+            #translation = self.stt_model.transcribe_audio(audio_data)
+            translation = self.translate(audio_data)
+            #for segment in translation:
+                # The segment is the result of the transcription, strip of trailing and leading whitespaces
+            #    result = segment.text.strip() 
+            #    self.get_logger().info("STT node: Transcription contains segment: " + result)
+            #    self.publish_result(result)
+            self.publish_result(translation)
             self.get_logger().info("STT node: The current transcription is finished")
         else:
             self.get_logger().info("STT node: Node is idle, no transcription is done")
@@ -109,6 +113,38 @@ class STTNode(Node):
         #TODO : Add error handling
         return np.frombuffer(msg.data, dtype=np.float32)
     
+
+    def translate(self, audio_data: np.ndarray) -> str:
+        """
+        Translates audio from numpy data to text
+
+        Args:
+            audio_data: A numpy array containing the audio data to be translated
+        
+        Returns:
+            A string containing the translated text
+        """
+        segments, _ = self.stt_model.transcribe(audio_data, beam_size=5)
+        list_of_segments = list(segments)
+        return list_of_segments[0].text.strip()
+
+    def destroy_node(self):
+        """
+        Destructs the STTNode object.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+    
+        self.subscription.destroy()
+        self.publisher.destroy()
+        self.srv.destroy()
+        self.stt_model = None
+        super().destroy_node()
+    
     def init_services(self) -> None:
         """
         Initialzes the services for the node.
@@ -121,7 +157,7 @@ class STTNode(Node):
             None
         """
         self.srv = self.create_service(SetState, 'stt/SetState', self.set_state_of_node)
-
+        self.get_logger().info("STT node: Service list: " + str(self.get_service_names_and_types()))
     
     def set_state_of_node(self, request: SetState.Request, response: SetState.Response) -> SetState.Response:
         """
@@ -174,7 +210,6 @@ def main(args=None):
     stt_node.destroy_node()
 
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()

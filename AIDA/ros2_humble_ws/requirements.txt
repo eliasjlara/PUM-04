@@ -1,4 +1,6 @@
-numpy
 opencv-python
 sounddevice
-whisper
+faster-whisper
+numpy == 1.24.3
+pytest
+librosa
