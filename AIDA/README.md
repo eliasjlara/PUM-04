@@ -97,8 +97,6 @@ To start a node in the project place yourself in the folder ros2_humble_ws (ros2
 - Last run the command: `ros2 run <package_name> <executable_name>`  
 - Alternatively go to the AIDA/ros2_humble_ws/launch/ folder and run through the launch file with the command: `ros2 launch launch_all.yaml`
 
-### Running 
-
 ### Example
 Example to start the Speech to text node in the file *faster_whisper_node.py* run the command:
 ```
@@ -109,6 +107,18 @@ ros2 run speech_to_text faster_whisper_node
 
 
 To test a service request in command line use the following syntax `ros2 service call /mic/SetState aida_interfaces/srv/SetState "{desired_state: 'active'}"`
+
+### Docker
+To run nodes in docker (on linux) simply move to the *PUM-04/AIDA/docker/* directory and build the container using:
+```
+sudo docker build -t ros2-aida --build-arg CACHEBUST=$(date +%s) .
+```
+and to actually run them:
+```
+sudo docker run -it --rm --device=/dev/video0 --device=/dev/snd/controlC0 --device=/dev/snd/pcmC0D0c --network host ros2-aida
+```
+The above command runs the container with an interactive environment, allows access to camera and microphone, and shares the network with host computer. If the access to either camera or microphone doesn't work, try to find the name of your device in */dev/* or */dev/snd/* and replace suiting part above command..
+
 ### Tips
 >[!NOTE]
 >The topic of publisher and subscriber must be in the same namespace
