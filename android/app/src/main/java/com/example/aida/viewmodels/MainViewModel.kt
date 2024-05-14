@@ -94,7 +94,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     // Init Clients
     private lateinit var sttClient: STTClient
     private lateinit var videoClient: VideoClient
-    private lateinit var lidarClient: LidarClient
+    //private lateinit var lidarClient: LidarClient
 
     // Speech to text variables
     private val _voiceCommand = MutableLiveData<String>()
@@ -161,7 +161,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
             connectToVideo(ip, prt)
 
             // TODO Implement lidar fetch
-            connectToLidar()
+            connectToLidar(ip, prt)
 
             // TODO Implement send joystick
             connectToJoystick()
@@ -253,6 +253,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         try {
             sttClient.stop()
             videoClient.stop()
+            //lidarClient.stop()
         } catch (e: Exception) {
             println("Error when closing: $e")
         }
