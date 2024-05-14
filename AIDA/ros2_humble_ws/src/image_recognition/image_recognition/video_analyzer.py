@@ -1,17 +1,11 @@
-import sys
-import os
 import rclpy
 from rclpy.node import Node
 from cv_bridge import CvBridge
 from aida_interfaces.srv import SetState
 from sensor_msgs.msg import Image
-import cv2
-import numpy as np
-from image_recognition.gesture_recognition import GestureRecognizerWrapper
-# from image_recognition.pose_landmarker import PoseLandmarker
 
-# Add the directory containing gesture_recognizer.py to the Python path
-# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from image_recognition.gesture_recognition import GestureRecognizerWrapper
+from image_recognition.pose_landmarking import PoseLandmarkerWrapper
 
 class AnalysisType:
     NONE = 1
@@ -49,11 +43,12 @@ class VideoTransmitNode(Node):
         self.bridge = CvBridge()
 
         self.counter = 0
+        self.trigger_interval = 6
         self.img_out = None
         self.cv2_img = None
-        self.active_analysis = AnalysisType.GESTURE_RECOGNIZER
-        # NOTE: The performance could be improved by not having both analysis running at the same time.
-        # self.pose_landmarker = PoseLandmarker()
+        self.active_analysis = AnalysisType.POSE_LANDMARKER # Default analysis type
+
+        self.pose_landmarker = PoseLandmarkerWrapper()
         self.gesture_recognizer = GestureRecognizerWrapper()
         self.reload_models()
 
@@ -70,7 +65,7 @@ class VideoTransmitNode(Node):
         """
         self.cv2_img = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
         self.counter += 1
-        self.counter %= 5
+        self.counter %= self.trigger_interval
         self.img_out = self.cv2_img
         # Apply the selected analysis. Only one analysis can be active at a time.
         if self.active_analysis == AnalysisType.POSE_LANDMARKER:
@@ -137,6 +132,8 @@ class VideoTransmitNode(Node):
         else:
             response.success = False
             response.message = "Invalid desired state. Options: 'pose', 'gesture', 'idle'"
+
+        self.reload_models()
         return response
 
     def reload_models(self):
@@ -153,7 +150,7 @@ class VideoTransmitNode(Node):
             self.gesture_recognizer.unload_model()
             self.pose_landmarker.load_model()
         elif self.active_analysis == AnalysisType.GESTURE_RECOGNIZER:
-            # self.pose_landmarker.unload_model()
+            self.pose_landmarker.unload_model()
             self.gesture_recognizer.load_model()
         elif self.active_analysis == AnalysisType.NONE:
             self.pose_landmarker.unload_model()
