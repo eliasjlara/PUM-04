@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aida.enums.ConnectionStages
+import com.example.aida.socketcommunication.JoystickClient
 import com.example.aida.socketcommunication.LidarClient
 import com.example.aida.socketcommunication.STTClient
 import com.example.aida.socketcommunication.VideoClient
@@ -94,7 +95,8 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     // Init Clients
     private lateinit var sttClient: STTClient
     private lateinit var videoClient: VideoClient
-    //private lateinit var lidarClient: LidarClient
+    private lateinit var lidarClient: LidarClient
+    private lateinit var joystickClient: JoystickClient
 
     // Speech to text variables
     private val _voiceCommand = MutableLiveData<String>()
@@ -134,13 +136,35 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
             }
         }
     }
+    // TODO - how to wait until next value of joystick is sent?
+    private var _sendingJoystickData = MutableLiveData<Boolean>()
+    val sendingJoystickData: LiveData<Boolean> = _sendingJoystickData
+    fun sendJoystickData(x: Float, y: Float) {
+        // Only send if we are not already sending data at specified frequency
+        // TODO - Is there a better way to do this?
+        //if (_sendingJoystickData.value == false){
+        _sendingJoystickData.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                joystickClient.sendJoystickData(x, y)
+                delay(16)
+                _sendingJoystickData.value = false
+            } catch (e: Exception) {
+                println("Joystick error: $e")
+            }
+        }
+        //}
+    }
 
     // Connections to AIDA
     private val _cameraFeedConnectionStage = MutableStateFlow(ConnectionStages.CONNECTING)
     private val _lidarConnectionStage = MutableStateFlow(ConnectionStages.CONNECTING)
     private val _sttConnectionStage = MutableStateFlow(ConnectionStages.CONNECTING)
     private val _joystickConnectionStage = MutableStateFlow(ConnectionStages.CONNECTING)
+    // Image bitmap for camera feed
     private val _imageBitmap = MutableStateFlow<ImageBitmap?>(null)
+    // Image bitmap for lidar
+    private val _lidarImageBitmap = MutableStateFlow<ImageBitmap?>(null)
 
     val cameraFeedConnectionStage: StateFlow<ConnectionStages> =
         _cameraFeedConnectionStage.asStateFlow()
@@ -148,7 +172,10 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     val sttConnectionStage: StateFlow<ConnectionStages> = _sttConnectionStage.asStateFlow()
     val joystickConnectionStage: StateFlow<ConnectionStages> =
         _joystickConnectionStage.asStateFlow()
+    // Image bitmap for camera feed
     val imageBitmap: StateFlow<ImageBitmap?> = _imageBitmap.asStateFlow()
+    // Image bitmap for lidar
+    val lidarImageBitmap: StateFlow<ImageBitmap?> = _lidarImageBitmap.asStateFlow()
 
 
     fun connectToAIDA(ip: String = ipAddress.value, prt: Int = port.value) {
@@ -164,7 +191,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
             connectToLidar(ip, prt)
 
             // TODO Implement send joystick
-            connectToJoystick()
+            connectToJoystick(ip, prt)
 
         }
     }
@@ -184,6 +211,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
 
                 while (true) {
                     val byteArray = videoClient.fetch()
+                    // TODO - Do we need to have 2 different imageBitmaps?
                     _imageBitmap.value =
                         BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                             ?.asImageBitmap()
@@ -216,21 +244,21 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     private fun connectToLidar(ip : String, prt : Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                /*lidarClient = LidarClient(
+                lidarClient = LidarClient(
                     ip = ip,
                     port = prt,
                     timeToTimeout = 5000
                 )
                 lidarClient.sendStartLidar()
-                lidarClient.sentRequestLidarData()*/
+                lidarClient.sentRequestLidarData()
                 _lidarConnectionStage.value = ConnectionStages.CONNECTION_SUCCEEDED
-                //while (true) {
+                while (true) {
                     // TODO - Implement fetch
-                    //val byteArray = lidarClient.fetch()
-                    //_imageBitmap.value =
-                    //    BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                    //        ?.asImageBitmap()
-                //}
+                    val byteArray = lidarClient.fetch()
+                    _lidarImageBitmap.value =
+                        BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                            ?.asImageBitmap()
+                }
             } catch (e: Exception) {
                 println("Can't connect to Lidar: $e")
                 _lidarConnectionStage.value = ConnectionStages.CONNECTION_FAILED
@@ -238,10 +266,22 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         }
     }
 
-    private fun connectToJoystick() {
+    private fun connectToJoystick(ip: String, prt: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                joystickClient = JoystickClient(
+                    ip = ip,
+                    port = prt,
+                    timeToTimeout = 5000
+                )
                 _joystickConnectionStage.value = ConnectionStages.CONNECTION_SUCCEEDED
+                while (true){
+                    // TODO - not hardcoded values. How do we get access to data in camerapage?
+                    // TODO - Dependencies both ways between MainViewModel and CameraPage, is that good?
+                    joystickClient.sendJoystickData(0.0f, 0.0f)
+                    // Update every 16 ms - 60 fps
+                    delay(16)
+                }
             } catch (e: Exception) {
                 println("Can't connect to Lidar: $e")
                 _joystickConnectionStage.value = ConnectionStages.CONNECTION_FAILED
@@ -253,7 +293,8 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         try {
             sttClient.stop()
             videoClient.stop()
-            //lidarClient.stop()
+            lidarClient.stop()
+            joystickClient.stop()
         } catch (e: Exception) {
             println("Error when closing: $e")
         }

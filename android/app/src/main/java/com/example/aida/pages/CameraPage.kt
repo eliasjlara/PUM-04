@@ -74,7 +74,7 @@ fun CameraPage(
             ipAddress = viewModel.ipAddress.collectAsState().value,
             port = viewModel.port.collectAsState().value,
         )
-
+        // TODO - need to send the imageBitmap and handle inside lidardisplay
         Lidar(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -84,7 +84,7 @@ fun CameraPage(
             isLidarExpanded = isLidarExpanded,
             onToggleLidar = { isLidarExpanded = !isLidarExpanded },
             lidarConnectionStage = viewModel.lidarConnectionStage.collectAsState().value,
-        )
+        ) // Do we need to add ipAddress and port here? as in camerafeed?
         val voiceCommand by viewModel.voiceCommand.observeAsState("I am listening ...")
 
         // Displays the text from recorded AIDA instructions, i.e., speech to text
@@ -111,7 +111,18 @@ fun CameraPage(
             joystickSize = 130F,
             thumbSize = 45f,
             enabled = viewModel.joystickConnectionStage
-        ) { x: Offset ->
+        ) { offset: Offset ->
+            // TODO - Is there a better way to prevent sending data
+            // at higher then 60 Hz?
+            val lowerValue = 26
+            val upperValue = 104
+            val middleValue = 65
+            // TODO - split normalizer to function
+            val normalizedX = 2.0f*(offset.x - middleValue) / (upperValue - lowerValue) - 1.0f
+            val normalizedY = 2.0f*(offset.y - middleValue) / (upperValue - lowerValue) - 1.0f
+            if(viewModel.sendingJoystickData.value == false) {
+                viewModel.sendJoystickData(normalizedX, normalizedY)
+            }
             // TODO: Sent offset x to AIDA
         }
 
