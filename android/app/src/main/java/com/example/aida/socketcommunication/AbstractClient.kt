@@ -10,6 +10,7 @@ import java.nio.ByteOrder
  * The client can send and receive messages over socket
  */
 abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) {
+    // TODO - should this be lateinit? As we are using specific init function
     val socket: Socket
 
     init {
@@ -55,15 +56,19 @@ abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, tim
         return getBody(size)
     }
 
-    fun sendRequest(id: Short, data: ByteArray) {
+    /**
+     * Function sends a message to the server
+     * @param id Id explains to server the what type of message @see MessageType
+     * @param data The data to be sent to the server
+     */
+    fun sendDataToServer(id: Short, data: ByteArray) {
         val frameSize = data.size
-        val frameBufferSize = ByteBuffer.allocate(6)
-        frameBufferSize.order(ByteOrder.BIG_ENDIAN)
-        frameBufferSize.putShort(id)
-        frameBufferSize.putInt(frameSize)
-
-        frameBufferSize.order(ByteOrder.BIG_ENDIAN)
-        socket.getOutputStream().write(frameBufferSize.array())
+        val header = ByteBuffer.allocate(6)
+        header.order(ByteOrder.BIG_ENDIAN)
+        header.putShort(id)
+        header.putInt(frameSize)
+        header.order(ByteOrder.BIG_ENDIAN)
+        socket.getOutputStream().write(header.array())
         socket.getOutputStream().write(data)
     }
 

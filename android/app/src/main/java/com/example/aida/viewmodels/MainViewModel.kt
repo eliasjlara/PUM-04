@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aida.enums.ConnectionStages
+import com.example.aida.socketcommunication.LidarClient
 import com.example.aida.socketcommunication.STTClient
 import com.example.aida.socketcommunication.VideoClient
 import kotlinx.coroutines.Dispatchers
@@ -93,6 +94,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     // Init Clients
     private lateinit var sttClient: STTClient
     private lateinit var videoClient: VideoClient
+    private lateinit var lidarClient: LidarClient
 
     // Speech to text variables
     private val _voiceCommand = MutableLiveData<String>()
@@ -211,10 +213,24 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         }
     }
 
-    private fun connectToLidar() {
+    private fun connectToLidar(ip : String, prt : Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                /*lidarClient = LidarClient(
+                    ip = ip,
+                    port = prt,
+                    timeToTimeout = 5000
+                )
+                lidarClient.sendStartLidar()
+                lidarClient.sentRequestLidarData()*/
                 _lidarConnectionStage.value = ConnectionStages.CONNECTION_SUCCEEDED
+                //while (true) {
+                    // TODO - Implement fetch
+                    //val byteArray = lidarClient.fetch()
+                    //_imageBitmap.value =
+                    //    BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                    //        ?.asImageBitmap()
+                //}
             } catch (e: Exception) {
                 println("Can't connect to Lidar: $e")
                 _lidarConnectionStage.value = ConnectionStages.CONNECTION_FAILED
