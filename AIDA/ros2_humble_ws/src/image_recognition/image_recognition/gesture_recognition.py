@@ -1,12 +1,11 @@
-import mediapipe as mp
-from mediapipe.tasks.python import vision
-from mediapipe.framework.formats import landmark_pb2
-
 import cv2
 import threading
 import numpy as np
 import time
 
+import mediapipe as mp
+from mediapipe.tasks.python import vision
+from mediapipe.framework.formats import landmark_pb2
 
 class GestureRecognizerWrapper:
     """
@@ -23,7 +22,6 @@ class GestureRecognizerWrapper:
         self.label_thickness = 2
 
         self.model = "..//src//image_recognition//models//gesture_recognizer.task"
-        self.result_img = None
         self.result = None
         self.result_lock = threading.Lock()
 
@@ -74,9 +72,11 @@ class GestureRecognizerWrapper:
         result: vision.GestureRecognizerResult,
         output_image: mp.Image,
         timestamp_ms: int,
-    ):
+    ) -> None :
         """
         Save the gesture recognition result.
+
+        Used as a callback function for the gesture recognition model.
 
         Args:
             result : GestureRecognizerResult : The result of the gesture recognition.
@@ -201,72 +201,4 @@ class GestureRecognizerWrapper:
         cv2.putText(cv2_img, result_text, (text_x, text_y),
                     cv2.FONT_HERSHEY_DUPLEX, self.label_font_size,
                     self.label_text_color, self.label_thickness, cv2.LINE_AA)
-
-    # def draw_landmarks(self, cv2_img: cv2.VideoCapture, hand_landmarks) -> np.ndarray:
-    #     """
-    #     Draws the landmarks on the input image.
-    #     """
-    #     # Draw hand landmarks on the frame
-    #     hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-    #     hand_landmarks_proto.landmark.extend(
-    #         [
-    #             landmark_pb2.NormalizedLandmark(
-    #                 x=landmark.x, y=landmark.y, z=landmark.z
-    #             )
-    #             for landmark in hand_landmarks
-    #         ]
-    #     )
-    #     self.mp_drawing.draw_landmarks(
-    #         cv2_img,
-    #         hand_landmarks_proto,
-    #         self.mp_hands.HAND_CONNECTIONS,
-    #         self.mp_drawing_styles.get_default_hand_landmarks_style(),
-    #         self.mp_drawing_styles.get_default_hand_connections_style(),
-    #     )
-
-    # def draw_gesture_tag(self, cv2_img: cv2.VideoCapture, gestures) -> np.ndarray:
-    #     # Label box parameters
-    #     label_text_color = (255, 255, 255)  # white
-    #     label_font_size = 1
-    #     label_thickness = 2
-    
-        
-    #     # Draw the text
-    #     cv2.putText(
-    #         cv2_img,
-    #         result_text,
-    #         (text_x, text_y),
-    #         cv2.FONT_HERSHEY_DUPLEX,
-    #         label_font_size,
-    #         label_text_color,
-    #         label_thickness,
-    #         cv2.LINE_AA,
-    #     )
-
-    # def draw_gesture_results(self, cv2_img: cv2.VideoCapture) -> np.ndarray:
-
-
-    #         # Calculate the bounding box of the hand
-    #         x_min = min([landmark.x for landmark in hand_landmarks])
-    #         y_min = min([landmark.y for landmark in hand_landmarks])
-    #         y_max = max([landmark.y for landmark in hand_landmarks])
-
-    #         # Convert normalized coordinates to pixel values
-    #         frame_height, frame_width = cv2_img.shape[:2]
-    #         x_min_px = int(x_min * frame_width)
-    #         y_min_px = int(y_min * frame_height)
-    #         y_max_px = int(y_max * frame_height)
-
-    #         # Get gesture classification results
-    #         if self.recognition_result_list[0].gestures:
-    #             gesture = self.recognition_result_list[0].gestures[hand_index]
-    #             category_name = gesture[0].category_name
-    #             score = round(gesture[0].score, 2)
-    #             result_text = f"{category_name} ({score})"
-
-
-
-
-
-    #     return cv2_img
 
