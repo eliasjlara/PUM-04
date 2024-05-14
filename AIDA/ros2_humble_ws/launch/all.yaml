@@ -6,11 +6,11 @@ launch:
     name: "ros2_mic_node"
     namespace: "mic"
 
-# - node:
-#     pkg: "speech_to_text"
-#     exec: "faster_whisper_node"
-#     name: "speech_to_text"
-#     namespace: ""
+- node:
+    pkg: "speech_to_text"
+    exec: "faster_whisper_node"
+    name: "speech_to_text"
+    namespace: ""
 
 - node:
     pkg: "aida_api"
@@ -20,7 +20,7 @@ launch:
 
 - node:
     pkg: "video"
-    exec: "web_video"
+    exec: "camera_video"
     name: "camera"
     namespace: "video"
 

@@ -20,7 +20,7 @@ launch:
 
 # - node:
 #     pkg: "video"
-#     exec: "web_video"
+#     exec: "camera_video"
 #     name: "camera"
 #     namespace: "video"
 
