@@ -115,14 +115,15 @@ fun CameraPage(
         ) { offset: Offset ->
             // TODO - Is there a better way to prevent sending data
             // at higher then 60 Hz?
-            val lowerValue = 26
-            val upperValue = 104
-            val middleValue = 65
+            //val lowerValue = 26
+            //val upperValue = 104
+            //val middleValue = 65
             // TODO - split normalizer to function
-            val normalizedX = 2.0f*(offset.x - lowerValue) / (upperValue - lowerValue) - 1.0f
-            val normalizedY = 2.0f*(offset.y - lowerValue) / (upperValue - lowerValue) - 1.0f
+            //val normalizedX = 2.0f*(offset.x - lowerValue) / (upperValue - lowerValue) - 1.0f
+            //val normalizedY = 2.0f*(offset.y - lowerValue) / (upperValue - lowerValue) - 1.0f
             if(viewModel.sendingJoystickData.value == false) {
-                viewModel.sendJoystickData(normalizedX, normalizedY)
+                viewModel.sendJoystickData(offset.x, offset.y)
+            //    viewModel.sendJoystickData(normalizedX, normalizedY)
             }
             // TODO: Sent offset x to AIDA
         }
