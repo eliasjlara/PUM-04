@@ -4,5 +4,5 @@
 std_msgs/Header header
 
 # The joystick positional data, as x and y
-uint32 x
-uint32 y
+float32 x
+float32 y

@@ -67,7 +67,7 @@ msg_formats = {
     MessageType.VIDEO_FRAME: "!HII",
     MessageType.LIDAR_DATA: "!H",
     MessageType.AUDIO: "!H",
-    MessageType.JOYSTICK_MOVE: "!ii",
+    MessageType.JOYSTICK_MOVE: "!ff",
 }
 
 
@@ -330,8 +330,8 @@ class InterfaceNode(Node):
             Joystick: The converted Joystick message.
         """
         msg = Joystick()
-        msg.x = data[0].tobytes()
-        msg.y = data[1].tobytes()
+        msg.x = data[0]
+        msg.y = data[1]
         return msg
 
     def publish_joystick(self):
@@ -344,13 +344,13 @@ class InterfaceNode(Node):
             if self.joystick_publisher_event.is_set():
                 break
             try:
-                msg = self.joystick_queue.get(block=True, timeout=2)
+                msg = self.joystick_queue.get(block=False)
             except queue.Empty:
                 msg = None
             if self.joystick_publisher_event.is_set():
                 break
             if msg != None:
-                self.joystick_publisher.publish(msg)
+                self.joystick_pub.publish(msg)
 
     def start_server(self):
         """
@@ -552,11 +552,13 @@ class InterfaceNode(Node):
         Args:
             data: The joystick movement data.
         """
+        self.get_logger().info(f"Server| Received joystick data: {data}")   
         data = struct.unpack(msg_formats.get(MessageType.JOYSTICK_MOVE), data)
+        self.get_logger().info(f"Server| Received joystick data: {data}")   
         jstk_msg = self.to_joystick_msg(data)
-        self.joystick_queue_lock.acquire()
+        # self.joystick_queue_lock.acquire()
         self.joystick_queue.put(jstk_msg)
-        self.joystick_queue_lock.release()
+        # self.joystick_queue_lock.release()
 
     def send_video_stream(self, conn):
         """
