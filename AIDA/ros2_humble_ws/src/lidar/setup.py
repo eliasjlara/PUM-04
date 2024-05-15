@@ -13,16 +13,15 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='johannes',
-    maintainer_email='johannes.eriksson00@gmail.com',
+    maintainer='albin',
+    maintainer_email='18600349+thulavall@users.noreply.github.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'lidar = lidar.lidar:main',
-            'lidar_to_image = lidar.lidar_to_image:main'
-
+            'lidar_to_image = lidar.lidar_to_image:main',
         ],
     },
 )
