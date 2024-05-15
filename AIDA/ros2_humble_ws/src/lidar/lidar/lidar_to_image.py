@@ -6,6 +6,7 @@ from lidar_data.msg import LidarData
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge                       
 
+MAX_LIDAR_DISTANCE = 5000  # Maximum distance in millimeters
 
 class LidarToImage(Node):
     distance = [0] * 360
@@ -28,10 +29,7 @@ class LidarToImage(Node):
         canvas_height = 480
         canvas = np.full((canvas_height, canvas_width, 3), 255, dtype=np.uint8)  # Create white canvas
 
-        # Sample distance list (adjust values as needed)
-        distances = [100 for x in range(360)]  # 360 points at radius 100
-
-        self.draw_points_on_canvas(canvas, distances)
+        self.draw_points_on_canvas(canvas, self.distance)
         self.frame_count =+ 1
         self.publish_lidar_image(canvas)
         
@@ -67,11 +65,10 @@ class LidarToImage(Node):
             distances = distances[:360]  # Truncate or pad distances list as needed
 
         # Normalize distances to fit canvas dimensions
-        max_radius = min(center_x, center_y)  # Use the shorter dimension as max radius
-        normalized_distances = [min(max_radius, d) for d in distances]
+        normalized_distances = [int(d/(MAX_LIDAR_DISTANCE/center_x)) for d in distances]
 
         # Draw points based on normalized distances and angles
-        for angle in range(0, 360):
+        for angle in range(360, 0, -1): # Draw points clockwise
             radius = normalized_distances[angle]
             x = int(center_x + radius * np.cos(np.radians(angle)))
             y = int(center_y - radius * np.sin(np.radians(angle)))  # Subtract for upward Y-axis
