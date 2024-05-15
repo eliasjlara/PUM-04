@@ -90,12 +90,18 @@ Thereafter run the command `colcon build` or `colcon build --packages-select <pa
   ```
 - In the *package.xml* file add the dependancies using `<depend>dependancy_name</depend>`  
 
+### Launching a group of nodes
+To launch a group of nodes place yourself in the folder ros2_humble_ws (ros2 Humble Hawksbill workspace).  
+- First build the changes using: `colcon build` or `colcon build --packages-select <package_name>` (for building current package only)  
+- Thereafter source the local environment: `source install/localsetup.bash`
+- Move to the ros2_humble_ws/launch directory.
+- Run the command: `ros2 launch <launch_file_name.yaml>`
+
 ### Running nodes
 To start a node in the project place yourself in the folder ros2_humble_ws (ros2 Humble Hawksbill workspace).  
 - First build the changes using: `colcon build` or `colcon build --packages-select <package_name>` (for building current package only)  
 - Thereafter source the local environment: `source install/localsetup.bash`  
 - Last run the command: `ros2 run <package_name> <executable_name>`  
-- Alternatively go to the AIDA/ros2_humble_ws/launch/ folder and run through the launch file with the command: `ros2 launch launch_all.yaml`
 
 ### Example
 Example to start the Speech to text node in the file *faster_whisper_node.py* run the command:
