@@ -95,7 +95,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     // Init Clients
     private lateinit var sttClient: STTClient
     private lateinit var videoClient: VideoClient
-    //private lateinit var lidarClient: LidarClient
+    private lateinit var lidarClient: LidarClient
     private lateinit var joystickClient: JoystickClient
 
     // Speech to text variables
@@ -250,21 +250,21 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     private fun connectToLidar(ip : String, prt : Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                /*lidarClient = LidarClient(
+                lidarClient = LidarClient(
                     ip = ip,
                     port = prt,
                     timeToTimeout = 5000
                 )
                 lidarClient.sendStartLidar()
-                lidarClient.sentRequestLidarData()*/
+                lidarClient.sentRequestLidarData()
                 _lidarConnectionStage.value = ConnectionStages.CONNECTION_SUCCEEDED
-                /*while (true) {
+                while (true) {
                     // TODO - Implement fetch
                     val byteArray = lidarClient.fetch()
                     _lidarImageBitmap.value =
                         BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                             ?.asImageBitmap()
-                }*/
+                }
             } catch (e: Exception) {
                 println("Can't connect to Lidar: $e")
                 _lidarConnectionStage.value = ConnectionStages.CONNECTION_FAILED
@@ -299,7 +299,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         try {
             sttClient.stop()
             videoClient.stop()
-            //lidarClient.stop()
+            lidarClient.stop()
             joystickClient.stop()
         } catch (e: Exception) {
             println("Error when closing: $e")

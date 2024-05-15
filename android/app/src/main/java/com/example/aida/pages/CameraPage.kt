@@ -82,6 +82,7 @@ fun CameraPage(
             screenWidth = screenWidth,
             screenHeight = screenHeight,
             isLidarExpanded = isLidarExpanded,
+            lidarBitmap = viewModel.lidarImageBitmap.collectAsState().value,
             onToggleLidar = { isLidarExpanded = !isLidarExpanded },
             lidarConnectionStage = viewModel.lidarConnectionStage.collectAsState().value,
         ) // Do we need to add ipAddress and port here? as in camerafeed?
