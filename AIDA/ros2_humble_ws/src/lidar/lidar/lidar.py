@@ -9,7 +9,14 @@ import serial
 from time import sleep
 import threading
 import tkinter as tk
-import math 
+import math
+
+
+import rclpy
+from rclpy.node import Node
+from lidar_data.msg import LidarData
+
+
 
 # LIDAR DATASHEET: https://emanual.robotis.com/assets/docs/LDS_Basic_Specification.pdf
 # RED       5V
@@ -23,30 +30,51 @@ import math
 # RED       5V
 
 
-class Lidar:
+class Lidar(Node):
     distance = [0] * 360
     confidence = [0] * 360
     rpm = 0
     keep_loop = True
 
     def __init__(self, port, angle_offset=0):
+        super().__init__("lidar")   
+
         """
         Initiate Lidar object, aquire serial port, set parameters and start a lidar thread
         :param port: Serial Port at which lidar is connected
         :param angle_offset: Angle Offset (to adjust the front at zero) { 0 > angle_offset < 360 }
         """
+
         self.ser = serial.Serial(port=port, baudrate=115200)
         self.angle_offset = angle_offset
         self.thread = threading.Thread(target=self._start_loop)
+
+        self.publisher_ = self.create_publisher(LidarData, 'lidar/data', 10)
+        timer_period = 1  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.i = 0
         
         self.counterr = 0
         # Instansiera TKinter
-        root = tk.Tk()
-        self.canvas = tk.Canvas(root, width=600, height=600)
-        self.canvas.pack()
+        #root = tk.Tk()
+        #self.canvas = tk.Canvas(root, width=600, height=600)
+        #self.canvas.pack()
 
         self.thread.start()
-        root.mainloop()
+        #root.mainloop()
+        #self.counter_ = 0
+
+      
+
+    def timer_callback(self):
+        msg = LidarData()
+        #msg.header.frame_id = 10
+        msg.data = self.distance
+        msg.length = len(self.distance)
+        self.publisher_.publish(msg)
+        self.get_logger().info('Publishing: "%s"' % msg.data)
+        self.i += 1
+
 
     def _read_serial(self):
         """
@@ -87,22 +115,22 @@ class Lidar:
         bytes_data = list(data)
 
         length = bytes_data[1]
-        print("this is length " + str(length))
+       # print("this is length " + str(length))
 
         speed = (bytes_data[3] << 8) | bytes_data[2]
-        print("this is speed " + str(speed))
+        #print("this is speed " + str(speed))
 
         start_angel = (bytes_data[5] << 8) | bytes_data[4]
-        print("this is start_angel " + str(start_angel/100))
+        #print("this is start_angel " + str(start_angel/100))
 
         end_angel = (bytes_data[43] << 8) | bytes_data[42]
-        print("this is end_angel " + str(end_angel/100))
+        #print("this is end_angel " + str(end_angel/100))
 
         time_stamp = (bytes_data[45] << 8) | bytes_data[44]
-        print("this is time_stamp " + str(time_stamp))
+        #print("this is time_stamp " + str(time_stamp))
 
         crc = bytes_data[1]
-        print("this is crs " + str(crc))
+       # print("this is crs " + str(crc))
         
         for i in range(11):
             
@@ -112,16 +140,16 @@ class Lidar:
             endangle = end_angel/100
             #angle_offsetted = angle + self.angle_offset if angle + self.angle_offset < 360 else angle + self.angle_offset - 360
             angle_offsetted = (endangle + (i*(endangle - startangle)/11)) % 360
-            print("this is start angle " + str(startangle))
-            print("this is end angle " + str(endangle))
-            print(str(i) +" this is angle offsetted " + str(angle_offsetted))
+          #  print("this is start angle " + str(startangle))
+           # print("this is end angle " + str(endangle))
+            #print(str(i) +" this is angle offsetted " + str(angle_offsetted))
             self.distance[round(angle_offsetted)-1] = distance
             self.confidence[round(angle_offsetted)-1] = confidence
         
        
 
-        print("this is distance " + str(self.distance))
-        print("this is confidence " + str(self.confidence))
+       # print("this is distance " + str(self.distance))
+        #print("this is confidence " + str(self.confidence))
        
 
     def start(self):
@@ -146,8 +174,8 @@ class Lidar:
         counter = 0
         while self.keep_loop:
             data = self._read_serial()
-            print(data)
-            print(data[0])
+           # print(data)
+            #print(data[0])
             
             
             if data[0] != 84:
@@ -163,10 +191,10 @@ class Lidar:
             #sleep(1)
             self._new_read_range(data)
             
-            if counter == 100:
-                counter = 0
-                self.draw_lidar_data(self.distance, self.confidence)
-            counter += 1
+            #if counter == 100:
+             #   counter = 0
+              #  self.draw_lidar_data(self.distance, self.confidence)
+            #counter += 1
 
     def terminate(self):
         """
@@ -204,11 +232,7 @@ class Lidar:
         center_x, center_y = 300, 300  # Anta mitten av canvas
         max_radius = 250  # Hur långt ifrån mittpunkten datan ritas
         
-        if(self.counterr == 4):
-            print(" in counter if ")
-            
-            self.counterr = 0
-        self.counterr = self.counterr +1
+
         self.canvas.delete("all")
         for i, distance in enumerate(data):
             if(confidence[i]) < 220:
@@ -221,21 +245,27 @@ class Lidar:
     # Hämtar lidar-data (exempeldata, ska bytas mot riktig sensor)
     # Ritar/Uppdaterar canvas
 
-if __name__ == '__main__':
-    lidar = Lidar("/dev/ttyUSB0", angle_offset=0)
 
-    lidar.start()
+def main(args=None):
     
+    rclpy.init(args=args)
+    lidar = Lidar("/dev/ttyUSB0", angle_offset=0)
+    lidar.start()
+    rclpy.spin(lidar)
+    rclpy.shutdown()
+
+
+
     a = 0
     while(True):
-        a+=1
-        #print(a)
-        
+        a+=1        
         sleep(2)
-        #print(f'rpm = {lidar.get_rpm()}')
-        #print(f'distance = {lidar.get_distance()}')
-        #print(f'intensity = {lidar.get_intensity()}')
 
     #lidar.stop()
 
     #lidar.terminate()
+ 
+
+if __name__ == '__main__':
+    main()
+    
