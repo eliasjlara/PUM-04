@@ -118,8 +118,8 @@ fun CameraPage(
             val upperValue = 104
             val middleValue = 65
             // TODO - split normalizer to function
-            val normalizedX = 2.0f*(offset.x - middleValue) / (upperValue - lowerValue) - 1.0f
-            val normalizedY = 2.0f*(offset.y - middleValue) / (upperValue - lowerValue) - 1.0f
+            val normalizedX = 2.0f*(offset.x - lowerValue) / (upperValue - lowerValue) - 1.0f
+            val normalizedY = 2.0f*(offset.y - lowerValue) / (upperValue - lowerValue) - 1.0f
             if(viewModel.sendingJoystickData.value == false) {
                 viewModel.sendJoystickData(normalizedX, normalizedY)
             }

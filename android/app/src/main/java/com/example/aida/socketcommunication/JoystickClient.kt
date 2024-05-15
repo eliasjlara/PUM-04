@@ -14,7 +14,13 @@ class JoystickClient(ip : String = "localhost", port : Int = 12345, timeToTimeou
      * @param y The y value of the joystick - float value between -1 and 1
      */
     fun sendJoystickData(x : Float, y : Float){
-        checkIfJoystickDataValid(x, y)
+        try {
+            checkIfJoystickDataValid(x, y)
+        } catch (e : IllegalArgumentException){
+            println("Sending joystick data to server: failed")
+            println(e.message)
+            return
+        }
         val id = MessageType.JOYSTICK.value
         // The values are floats of size 4 bytes
         // Therefore the message is 8 bytes long with 2 floats
@@ -22,6 +28,7 @@ class JoystickClient(ip : String = "localhost", port : Int = 12345, timeToTimeou
         val buffer = ByteBuffer.allocate(size)
         buffer.putFloat(x)
         buffer.putFloat(y)
+        println("Sending joystick data to server: x: $x, y: $y")
         sendDataToServer(id, buffer.array())
     }
 
