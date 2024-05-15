@@ -1,0 +1,11 @@
+launch:
+
+- node:
+    pkg: "video"
+    exec: "camera_video"
+    name: "camera"
+    namespace: "video"
+
+- node:
+    pkg: "image_recognition"
+    exec: "video_analyzer"
