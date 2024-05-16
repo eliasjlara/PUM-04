@@ -26,7 +26,7 @@ VIDEO_STREAM_ID = 0  # We'll keep things simple with a single stream
 # ROS2 Constants
 # VIDEO_TOPIC = "image"
 VIDEO_TOPIC = "video_analysis/result"  # "video/camera"
-LIDAR_TOPIC = "lidar"
+LIDAR_TOPIC = "lidar/image"
 STT_TOPIC = "stt/stt_result"
 JOYSTICK_TOPIC = "joystick/pos"
 
@@ -46,9 +46,8 @@ class MessageType:
     LIDAR = 5
 
     REQ_VIDEO_FEED = 6
-    REQ_LIDAR_FEED = 15
     REQ_STT = 7
-    REQ_LIDAR = 8
+    REQ_LIDAR_FEED = 8
 
     TEXT = 9
     VIDEO_FRAME = 10
@@ -109,6 +108,7 @@ class InterfaceNode(Node):
         self.video_frame = None
         self.stt_result = ""
         self.video_frame_lock = threading.Lock()
+        self.lidar_frame_lock = threading.Lock()
         self.stt_result_lock = threading.Lock()
         self.host = host
         self.port = port
@@ -294,6 +294,7 @@ class InterfaceNode(Node):
         """
         self.joystick_queue_lock = threading.Lock()
         self.joystick_queue = queue.Queue()
+        
 
     def start_workers(self, start_socket=True) -> None:
         """
