@@ -1,17 +1,11 @@
-import sys
-import os
 import rclpy
 from rclpy.node import Node
 from cv_bridge import CvBridge
 from aida_interfaces.srv import SetState
 from sensor_msgs.msg import Image
-import cv2
-import numpy as np
-from gesture_recognizer import GestureRecognizer
-from pose_landmarker import PoseLandmarker
 
-# Add the directory containing gesture_recognizer.py to the Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from image_recognition.gesture_recognition import GestureRecognizerWrapper
+from image_recognition.pose_landmarking import PoseLandmarkerWrapper
 
 class AnalysisType:
     NONE = 1
@@ -48,12 +42,15 @@ class VideoTransmitNode(Node):
         self.srv = self.create_service(SetState, 'video_analyzer/SetState', self.set_state_callback)
         self.bridge = CvBridge()
 
+        self.counter = 0
+        self.trigger_interval = 6
         self.img_out = None
         self.cv2_img = None
-        self.active_analysis = AnalysisType.GESTURE_RECOGNIZER
-        # NOTE: The performance could be improved by not having both analysis running at the same time.
-        self.pose_landmarker = PoseLandmarker()
-        self.gesture_recognizer = GestureRecognizer()
+        self.active_analysis = AnalysisType.POSE_LANDMARKER # Default analysis type
+
+        self.pose_landmarker = PoseLandmarkerWrapper()
+        self.gesture_recognizer = GestureRecognizerWrapper()
+        self.reload_models()
 
 
     def callback(self, msg):
@@ -67,13 +64,19 @@ class VideoTransmitNode(Node):
             None
         """
         self.cv2_img = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+        self.counter += 1
+        self.counter %= self.trigger_interval
+        self.img_out = self.cv2_img
         # Apply the selected analysis. Only one analysis can be active at a time.
         if self.active_analysis == AnalysisType.POSE_LANDMARKER:
-            self.img_out = self.pose_landmarker.apply_pose_landmarking(self.cv2_img)
+            if self.counter == 0:
+                self.pose_landmarker.apply_pose_landmarking(self.cv2_img)
+            self.img_out = self.pose_landmarker.apply_result(self.cv2_img)
         elif self.active_analysis == AnalysisType.GESTURE_RECOGNIZER:
-            self.img_out = self.gesture_recognizer.apply_gesture_detection(self.cv2_img)
-        elif self.active_analysis == AnalysisType.NONE:
-            self.img_out = self.cv2_img
+            if self.counter == 0:
+                self.gesture_recognizer.apply_gesture_detection(self.cv2_img)
+            self.img_out = self.gesture_recognizer.apply_result(self.cv2_img) # TODO: use copy instead?
+
         self.publish_frame()
 
     def publish_frame(self):        
@@ -86,7 +89,7 @@ class VideoTransmitNode(Node):
         Returns:
             None
         """
-        # Converts an OpenCV image to a ROS2 Image Message (docs ROS: sensor_msgs/Image.msg)
+        # Converts an OpenCV image to a ROS2 Image Message (docs ROS: sensor_msgs/Image.msg
         msg = self.bridge.cv2_to_imgmsg(self.img_out, 'bgr8')
         # Publishes to the frame topic
         self.publisher.publish(msg)
@@ -101,8 +104,8 @@ class VideoTransmitNode(Node):
         Returns:
             None
         """
-        self.pose_landmarker.detector.close()
-        self.gesture_recognizer.recognizer.close()
+        self.gesture_recognizer.unload_model()
+        self.pose_landmarker.unload_model()
         super().destroy_node()
         
     def set_state_callback(self, request, response):
@@ -129,9 +132,29 @@ class VideoTransmitNode(Node):
         else:
             response.success = False
             response.message = "Invalid desired state. Options: 'pose', 'gesture', 'idle'"
+
+        self.reload_models()
         return response
 
+    def reload_models(self):
+        """
+        Reloads the models for the pose landmarking and gesture recognition analysis.
 
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        if self.active_analysis == AnalysisType.POSE_LANDMARKER:
+            self.gesture_recognizer.unload_model()
+            self.pose_landmarker.load_model()
+        elif self.active_analysis == AnalysisType.GESTURE_RECOGNIZER:
+            self.pose_landmarker.unload_model()
+            self.gesture_recognizer.load_model()
+        elif self.active_analysis == AnalysisType.NONE:
+            self.pose_landmarker.unload_model()
+            self.gesture_recognizer.unload_model()
 
 def main(args=None):
     rclpy.init(args=args)
