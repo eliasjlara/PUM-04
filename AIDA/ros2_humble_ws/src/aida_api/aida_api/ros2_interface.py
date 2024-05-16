@@ -35,6 +35,7 @@ MIC_CONTROL_SERVICE = "mic/SetState"
 
 STREAM_FREQUENCY = 30
 
+VIDEO_COMPRESSION_QUALITY = 70
 
 # Message Type Enums (make sure these match your client-side definitions)
 class MessageType:
@@ -511,8 +512,7 @@ class InterfaceNode(Node):
         """
         self.get_logger().info("Server| Sending video feed to client.")
         # Send video stream
-        thread = threading.Thread(target=self.send_video_stream, args=(client,))
-        thread.start()
+        self.send_video_stream(client)
 
     def handle_req_stt(self, client):
         """
@@ -568,14 +568,15 @@ class InterfaceNode(Node):
         Args:
             conn: The client socket.
         """
+        if not self.video_frame:
+            self.get_logger().info("Server| No video feed available.")
+
         while True:  # Video streaming loop
             time.sleep(1 / STREAM_FREQUENCY)
             self.video_frame_lock.acquire()
             frame = self.video_frame
             self.video_frame_lock.release()
-            if frame is None:
-                self.get_logger().info("Server| Video feed is empty.")
-            else:
+            if frame:
                 try:
                     self.send_video_frame(conn, frame)
                 except ConnectionError:
@@ -591,7 +592,8 @@ class InterfaceNode(Node):
             conn: The client socket.
             frame: The video frame.
         """
-        frame_bytes = cv2.imencode(".jpg", frame)[1].tobytes()  # Encode as JPEG
+
+        frame_bytes = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, VIDEO_COMPRESSION_QUALITY])[1].tobytes()  # Encode as JPEG
         # Send video frame header
         conn.sendall(
             struct.pack(HEADER_FORMAT, MessageType.VIDEO_FRAME, len(frame_bytes))
