@@ -116,10 +116,11 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
                 sttClient.sendStartMic()
                 delay(10000) // Wait for STT to be ready
                 sttClient.sendRequestSTTData()
-                val result = sttClient.fetch()
+                val result = sttClient.receiveSTTData()
 
                 withContext(Dispatchers.Main) {
-                    _voiceCommand.value = "\"" + String(result) + "\""
+                    //_voiceCommand.value = "\"" + String(result) + "\""
+                    _voiceCommand.value = "\"" + result + "\""
                     delay(5000)
                     _voiceCommand.value = "Carrying out the action in sequence"
                     delay(5000)
@@ -235,13 +236,8 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
 
             connectToSTT(ip, prt)
             connectToVideo(ip, prt)
-
-            // TODO Implement lidar fetch
             connectToLidar(ip, prt)
-
-            // TODO Implement send joystick
             connectToJoystick(ip, prt)
-
         }
     }
 
@@ -258,17 +254,11 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
                 )
                 videoClient.sendStartCamera()
                 videoClient.sendGetVideo()
-                var byteArray = videoClient.fetch()
-                _videoBitmap.value =
-                    BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                        ?.asImageBitmap()
+                _videoBitmap.value = videoClient.receiveVideoData()
                 _cameraFeedConnectionStage.value = ConnectionStages.CONNECTION_SUCCEEDED
 
                 while (_cameraFeedConnectionStage.value == ConnectionStages.CONNECTION_SUCCEEDED) {
-                    byteArray = videoClient.fetch()
-                    _videoBitmap.value =
-                        BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                            ?.asImageBitmap()
+                    _videoBitmap.value = videoClient.receiveVideoData()
                 }
             } catch (e: Exception) {
                 println("Can't Connect to Video: $e")
@@ -313,13 +303,10 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
                 )
                 lidarClient.sendStartLidar()
                 lidarClient.sentRequestLidarData()
+                _lidarImageBitmap.value = lidarClient.receiveLidarData()
                 _lidarConnectionStage.value = ConnectionStages.CONNECTION_SUCCEEDED
                 while (true) {
-                    // TODO - Implement fetch
-                    val byteArray = lidarClient.fetch()
-                    _lidarImageBitmap.value =
-                        BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                            ?.asImageBitmap()
+                    _lidarImageBitmap.value = lidarClient.receiveLidarData()
                 }
             } catch (e: Exception) {
                 println("Can't connect to Lidar: $e")
