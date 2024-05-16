@@ -39,13 +39,14 @@ fun Joystick(
 ) {
     val joystickCenter = joystickSize / 2
     var thumbPosition by remember { mutableStateOf(Offset(joystickCenter, joystickCenter)) }
-
+    val minPixelValue = joystickSize / 5
+    val maxPixelValue = joystickSize - joystickSize / 5
     Box(modifier = modifier
         .size(joystickSize.dp)
         .pointerInput(Unit) {
             detectDragGestures(onDragEnd = {
-                val minPixelValue = joystickSize / 5
-                val maxPixelValue = joystickSize - joystickSize / 5
+                //val minPixelValue = joystickSize / 5
+                //val maxPixelValue = joystickSize - joystickSize / 5
                 thumbPosition = Offset(joystickCenter, joystickCenter)
                 val normalizedPositionX = normalizePosition(joystickCenter, minPixelValue, maxPixelValue)
                 val normalizedPositionY = normalizePosition(joystickCenter, minPixelValue, maxPixelValue)
@@ -58,8 +59,8 @@ fun Joystick(
                     // TODO - the values sent to server is off by scale 0.6 - should be 1, is 0.6.
                     val scaledDrag = dragAmount * 0.6f
                     val newPos = thumbPosition + scaledDrag
-                    val minPixelValue = joystickSize / 5
-                    val maxPixelValue = joystickSize - joystickSize / 5
+                    //val minPixelValue = joystickSize / 5
+                    //val maxPixelValue = joystickSize - joystickSize / 5
                     // Ensure the thumb stays within the joystick area
                     thumbPosition = Offset(
                         x = newPos.x.coerceIn(
@@ -75,8 +76,8 @@ fun Joystick(
                             maxPixelValue
                         )
                     )
-                    val normalizedPositionX = normalizePosition(thumbPosition.x, 0f, joystickSize)
-                    val normalizedPositionY = normalizePosition(thumbPosition.y, 0f, joystickSize)
+                    val normalizedPositionX = normalizePosition(thumbPosition.x, minPixelValue, maxPixelValue)
+                    val normalizedPositionY = normalizePosition(thumbPosition.y, minPixelValue, maxPixelValue)
                     val normalizedPosition = Offset(normalizedPositionX, normalizedPositionY)
                     onJoystickMoved(normalizedPosition)
                     //onJoystickMoved(thumbPosition)
@@ -101,6 +102,10 @@ fun Joystick(
                 })
     }
 }
+
+/**
+ * Normalize the position of between the values between -1 and 1
+ */
 private fun normalizePosition(value: Float, lowerValue: Float, upperValue: Float): Float {
     return 2.0f * (value - lowerValue) / (upperValue - lowerValue) - 1.0f
 }
