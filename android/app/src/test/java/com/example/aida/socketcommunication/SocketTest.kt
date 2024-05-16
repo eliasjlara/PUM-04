@@ -1,6 +1,6 @@
 package com.example.aida.socketcommunication
 
-import junit.framework.Assert.assertEquals
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
 import java.lang.Thread.sleep

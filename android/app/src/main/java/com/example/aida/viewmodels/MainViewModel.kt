@@ -104,6 +104,10 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     private val _isRecording = MutableLiveData<Boolean>()
     val isRecording: LiveData<Boolean> = _isRecording
 
+    /**
+     * Starts the voice recording process and fetches the STT result
+     * from the server.
+     */
     fun startVoiceRecording() {
         _isRecording.value = true
 
@@ -136,13 +140,16 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
             }
         }
     }
-    // TODO - how to wait until next value of joystick is sent?
+    // Joystick variables to send at specified intervals
     private var _sendingJoystickData = MutableLiveData<Boolean>(false)
     val sendingJoystickData: LiveData<Boolean> = _sendingJoystickData
-    fun sendJoystickData(x: Float, y: Float) {
-        // Only send if we are not already sending data at specified frequency
-        // TODO - Is there a better way to do this?
 
+    /**
+     * Sends joystick data to the server at specified intervals.
+     * @param x the x value of the joystick
+     * @param y the y value of the joystick
+     */
+    fun sendJoystickData(x: Float, y: Float) {
         _sendingJoystickData.value = true
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -161,13 +168,14 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         }
     }
 
+
     // Connections to AIDA
     private val _cameraFeedConnectionStage = MutableStateFlow(ConnectionStages.CONNECTING)
     private val _lidarConnectionStage = MutableStateFlow(ConnectionStages.CONNECTING)
     private val _sttConnectionStage = MutableStateFlow(ConnectionStages.CONNECTING)
     private val _joystickConnectionStage = MutableStateFlow(ConnectionStages.CONNECTING)
     // Image bitmap for camera feed
-    private val _imageBitmap = MutableStateFlow<ImageBitmap?>(null)
+    private val _videoBitmap = MutableStateFlow<ImageBitmap?>(null)
     // Image bitmap for lidar
     private val _lidarImageBitmap = MutableStateFlow<ImageBitmap?>(null)
 
@@ -178,11 +186,46 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
     val joystickConnectionStage: StateFlow<ConnectionStages> =
         _joystickConnectionStage.asStateFlow()
     // Image bitmap for camera feed
-    val imageBitmap: StateFlow<ImageBitmap?> = _imageBitmap.asStateFlow()
+    val videoBitmap: StateFlow<ImageBitmap?> = _videoBitmap.asStateFlow()
     // Image bitmap for lidar
     val lidarImageBitmap: StateFlow<ImageBitmap?> = _lidarImageBitmap.asStateFlow()
 
+    /**
+    * Toggles the camera feed on and off
+    * If the camera feed is on, it will close the connection to server and turn of
+    * video feed
+    * If the camera feed is off, it will connect to the server and start the video feed
+     */
+    fun toggleCameraFeed(){
+            if (_cameraFeedConnectionStage.value == ConnectionStages.CONNECTION_SUCCEEDED){
+                viewModelScope.launch (Dispatchers.IO){
+                    try {
+                        videoClient.sendStopCamera()
+                        videoClient.stop()
+                        _videoBitmap.value = null
+                        _cameraFeedConnectionStage.value = ConnectionStages.CONNECTION_CLOSED
+                    }
+                    catch (e: Exception){
+                        _cameraFeedConnectionStage.value = ConnectionStages.CONNECTION_FAILED
+                        println("Can't close video: $e")
+                    }
 
+                }
+
+            }
+            else if (_cameraFeedConnectionStage.value == ConnectionStages.CONNECTION_CLOSED){
+                viewModelScope.launch (Dispatchers.IO){
+                    _cameraFeedConnectionStage.value = ConnectionStages.CONNECTING
+                    connectToVideo(ipAddress.value, port.value)
+                }
+            }
+    }
+    /**
+    * Connects to AIDA API with all clients
+    * @param ip the ip address of the server
+    * @param prt the port of the server
+    * If no ip and port is provided, it will use the cached values
+     */
     fun connectToAIDA(ip: String = ipAddress.value, prt: Int = port.value) {
         viewModelScope.launch(Dispatchers.IO) {
             _cameraFeedConnectionStage.value = ConnectionStages.CONNECTING
@@ -202,6 +245,9 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         }
     }
 
+    /**
+     * Connects to the video client and starts receiving video data
+     */
     private fun connectToVideo(ip: String, prt: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -212,23 +258,30 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
                 )
                 videoClient.sendStartCamera()
                 videoClient.sendGetVideo()
-
+                var byteArray = videoClient.fetch()
+                _videoBitmap.value =
+                    BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                        ?.asImageBitmap()
                 _cameraFeedConnectionStage.value = ConnectionStages.CONNECTION_SUCCEEDED
 
-                while (true) {
-                    val byteArray = videoClient.fetch()
-                    // TODO - Do we need to have 2 different imageBitmaps?
-                    _imageBitmap.value =
+                while (_cameraFeedConnectionStage.value == ConnectionStages.CONNECTION_SUCCEEDED) {
+                    byteArray = videoClient.fetch()
+                    _videoBitmap.value =
                         BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                             ?.asImageBitmap()
                 }
             } catch (e: Exception) {
                 println("Can't Connect to Video: $e")
-                _cameraFeedConnectionStage.value = ConnectionStages.CONNECTION_FAILED
+                // If we close the video data - we fetch from a closed connection. Set the
+                // connection stage to closed, else set to failed.
+                if (_cameraFeedConnectionStage.value != ConnectionStages.CONNECTION_CLOSED)
+                    _cameraFeedConnectionStage.value = ConnectionStages.CONNECTION_FAILED
             }
         }
     }
-
+    /**
+    * Connects the STT client to the server
+     */
     private fun connectToSTT(ip: String, prt: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -247,6 +300,9 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         }
     }
 
+    /**
+     * Connects to the Lidar client and starts receiving Lidar data
+     */
     private fun connectToLidar(ip : String, prt : Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -272,6 +328,9 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         }
     }
 
+    /**
+     * Connects to the Joystick client
+     */
     private fun connectToJoystick(ip: String, prt: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -281,13 +340,6 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
                     timeToTimeout = 5000
                 )
                 _joystickConnectionStage.value = ConnectionStages.CONNECTION_SUCCEEDED
-                /*while (true){
-                    // TODO - not hardcoded values. How do we get access to data in camerapage?
-                    // TODO - Dependencies both ways between MainViewModel and CameraPage, is that good?
-                    joystickClient.sendJoystickData(0.0f, 0.0f)
-                    // Update every 16 ms - 60 fps
-                    delay(16)
-                }*/
             } catch (e: Exception) {
                 println("Can't connect to Lidar: $e")
                 _joystickConnectionStage.value = ConnectionStages.CONNECTION_FAILED
@@ -295,6 +347,9 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
         }
     }
 
+    /**
+     * Closes all connections to AIDA
+     */
     fun closeConnections() {
         try {
             sttClient.stop()

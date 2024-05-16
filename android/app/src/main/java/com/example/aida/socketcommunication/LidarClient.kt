@@ -1,5 +1,8 @@
 package com.example.aida.socketcommunication
 
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import java.nio.ByteBuffer
 // TODO - Add function that receives Lidar data and converts to image
 /**
@@ -12,11 +15,23 @@ class LidarClient(ip : String = "localhost", port : Int = 12345, timeToTimeout :
     fun sendStartLidar(){
         val id = MessageType.LIDAR.value
         val size = 2
-        val start = 1 // What should this be?
+        val start = Instructions.ON.value
         val buffer = ByteBuffer.allocate(size)
-        buffer.putShort(start.toShort())
+        buffer.putShort(start)
         sendDataToServer(id, buffer.array())
     }
+    /**
+     * Send message to server requesting to turn off Lidar
+     */
+    fun sendStopLidar() {
+        val id = MessageType.LIDAR.value
+        val size = 2
+        val stop = Instructions.OFF.value
+        val buffer = ByteBuffer.allocate(size)
+        buffer.putShort(stop)
+        sendDataToServer(id, buffer.array())
+    }
+
     /**
      * Send request to server to start sending Lidar data
      */
@@ -27,8 +42,13 @@ class LidarClient(ip : String = "localhost", port : Int = 12345, timeToTimeout :
         sendDataToServer(id, buffer.array())
     }
 
-    fun receiveLidarData(){
+    /**
+     * Receives lidar data from server and converts to Image
+     * @return ImageBitmap? of the video data
+     */
+    fun receiveLidarData() : ImageBitmap?{
         val data = fetch()
-        println("Message received: ${String(data)}")
+        return BitmapFactory.decodeByteArray(data, 0, data.size)
+            ?.asImageBitmap()
     }
 }

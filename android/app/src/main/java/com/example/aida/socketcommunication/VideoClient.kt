@@ -1,4 +1,7 @@
 package com.example.aida.socketcommunication
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import java.nio.ByteBuffer
 
 // TODO - Add function that receives video data and converts to image
@@ -14,12 +17,22 @@ class VideoClient (ip : String = "localhost", port : Int = 12345, timeToTimeout 
     fun sendStartCamera(){
         val id = MessageType.CAMERA.value
         val size = 2
-        val start = 1
+        val start = Instructions.ON.value
         val buffer = ByteBuffer.allocate(size)
-        buffer.putShort(start.toShort())
+        buffer.putShort(start)
         sendDataToServer(id, buffer.array())
     }
-
+    /**
+     * Sends a request to stop the camera feed to the server
+     */
+    fun sendStopCamera() {
+        val id = MessageType.CAMERA.value
+        val size = 2
+        val stop = Instructions.OFF.value
+        val buffer = ByteBuffer.allocate(size)
+        buffer.putShort(stop)
+        sendDataToServer(id, buffer.array())
+    }
     /**
      * Sends a request to server to start sending video data
      */
@@ -29,5 +42,15 @@ class VideoClient (ip : String = "localhost", port : Int = 12345, timeToTimeout 
         val buffer = ByteBuffer.allocate(size)
         sendDataToServer(id, buffer.array())
     }
-    // TODO - Use fetch to create a image instead of doing it in the application
+
+    /**
+     * Receives video data from server and converts to Image
+     * @return ImageBitmap? of the video data
+     */
+    fun receiveVideoData() : ImageBitmap?{
+        val data = fetch()
+        return BitmapFactory.decodeByteArray(data, 0, data.size)
+            ?.asImageBitmap()
+
+    }
 }

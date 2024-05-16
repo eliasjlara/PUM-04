@@ -69,7 +69,7 @@ fun CameraPage(
         CameraFeed(
             lidarIsExpanded = isLidarExpanded,
             screenWidth = screenWidth,
-            imageBitmap = viewModel.imageBitmap.collectAsState().value,
+            imageBitmap = viewModel.videoBitmap.collectAsState().value,
             cameraFeedConnectionStage = viewModel.cameraFeedConnectionStage.collectAsState().value,
             ipAddress = viewModel.ipAddress.collectAsState().value,
             port = viewModel.port.collectAsState().value,
