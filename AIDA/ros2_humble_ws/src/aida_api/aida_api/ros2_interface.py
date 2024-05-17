@@ -568,7 +568,7 @@ class InterfaceNode(Node):
         Args:
             conn: The client socket.
         """
-        if not self.video_frame:
+        if not isinstance(self.video_frame, np.ndarray):
             self.get_logger().info("Server| No video feed available.")
 
         while True:  # Video streaming loop
@@ -576,12 +576,12 @@ class InterfaceNode(Node):
             self.video_frame_lock.acquire()
             frame = self.video_frame
             self.video_frame_lock.release()
-            if frame:
-                try:
-                    self.send_video_frame(conn, frame)
-                except ConnectionError:
-                    self.get_logger().info(f"Server| Video feed connection was interrupted.")
-                    break
+
+            try:
+                self.send_video_frame(conn, frame)
+            except ConnectionError:
+                self.get_logger().info(f"Server| Video feed connection was interrupted.")
+                break
 
     def send_video_frame(self, conn, frame):
         """
