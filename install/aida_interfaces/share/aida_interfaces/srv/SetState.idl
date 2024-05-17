@@ -1,0 +1,27 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from aida_interfaces/srv/SetState.srv
+// generated code does not contain a copyright notice
+
+
+module aida_interfaces {
+  module srv {
+    @verbatim (language="comment", text=
+      "Request message")
+    struct SetState_Request {
+      @verbatim (language="comment", text=
+        "Desired state to transition to (\"active\" or \"idle\")")
+      string desired_state;
+    };
+    @verbatim (language="comment", text=
+      "Response message")
+    struct SetState_Response {
+      @verbatim (language="comment", text=
+        "Whether the state change was successful")
+      boolean success;
+
+      @verbatim (language="comment", text=
+        "Optional message describing the outcome (e.g., error message)")
+      string message;
+    };
+  };
+};

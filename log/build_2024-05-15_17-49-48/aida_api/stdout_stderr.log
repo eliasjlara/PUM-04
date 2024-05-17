@@ -1,0 +1,35 @@
+running egg_info
+creating ../../../../build/aida_api/aida_api.egg-info
+writing ../../../../build/aida_api/aida_api.egg-info/PKG-INFO
+writing dependency_links to ../../../../build/aida_api/aida_api.egg-info/dependency_links.txt
+writing entry points to ../../../../build/aida_api/aida_api.egg-info/entry_points.txt
+writing requirements to ../../../../build/aida_api/aida_api.egg-info/requires.txt
+writing top-level names to ../../../../build/aida_api/aida_api.egg-info/top_level.txt
+writing manifest file '../../../../build/aida_api/aida_api.egg-info/SOURCES.txt'
+reading manifest file '../../../../build/aida_api/aida_api.egg-info/SOURCES.txt'
+writing manifest file '../../../../build/aida_api/aida_api.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/johannes/PUM-04/build/aida_api/build
+creating /home/johannes/PUM-04/build/aida_api/build/lib
+creating /home/johannes/PUM-04/build/aida_api/build/lib/aida_api
+copying aida_api/ros2_interface.py -> /home/johannes/PUM-04/build/aida_api/build/lib/aida_api
+copying aida_api/__init__.py -> /home/johannes/PUM-04/build/aida_api/build/lib/aida_api
+running install
+running install_lib
+creating /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api
+copying /home/johannes/PUM-04/build/aida_api/build/lib/aida_api/ros2_interface.py -> /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api
+copying /home/johannes/PUM-04/build/aida_api/build/lib/aida_api/__init__.py -> /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api
+byte-compiling /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api/ros2_interface.py to ros2_interface.cpython-310.pyc
+byte-compiling /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/johannes/PUM-04/install/aida_api/share/ament_index
+creating /home/johannes/PUM-04/install/aida_api/share/ament_index/resource_index
+creating /home/johannes/PUM-04/install/aida_api/share/ament_index/resource_index/packages
+copying resource/aida_api -> /home/johannes/PUM-04/install/aida_api/share/ament_index/resource_index/packages
+copying package.xml -> /home/johannes/PUM-04/install/aida_api/share/aida_api
+running install_egg_info
+Copying ../../../../build/aida_api/aida_api.egg-info to /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api-0.0.0-py3.10.egg-info
+running install_scripts
+Installing ros2_interface script to /home/johannes/PUM-04/install/aida_api/lib/aida_api
+writing list of installed files to '/home/johannes/PUM-04/build/aida_api/install.log'

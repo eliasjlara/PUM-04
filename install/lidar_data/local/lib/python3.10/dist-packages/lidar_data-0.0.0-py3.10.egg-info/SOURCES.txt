@@ -1,0 +1,6 @@
+setup.py
+lidar_data/__init__.py
+lidar_data.egg-info/PKG-INFO
+lidar_data.egg-info/SOURCES.txt
+lidar_data.egg-info/dependency_links.txt
+lidar_data.egg-info/top_level.txt

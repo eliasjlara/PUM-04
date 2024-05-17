@@ -1,0 +1,41 @@
+running egg_info
+creating ../../../../build/lidar/lidar.egg-info
+writing ../../../../build/lidar/lidar.egg-info/PKG-INFO
+writing dependency_links to ../../../../build/lidar/lidar.egg-info/dependency_links.txt
+writing entry points to ../../../../build/lidar/lidar.egg-info/entry_points.txt
+writing requirements to ../../../../build/lidar/lidar.egg-info/requires.txt
+writing top-level names to ../../../../build/lidar/lidar.egg-info/top_level.txt
+writing manifest file '../../../../build/lidar/lidar.egg-info/SOURCES.txt'
+reading manifest file '../../../../build/lidar/lidar.egg-info/SOURCES.txt'
+writing manifest file '../../../../build/lidar/lidar.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/johannes/PUM-04/build/lidar/build
+creating /home/johannes/PUM-04/build/lidar/build/lib
+creating /home/johannes/PUM-04/build/lidar/build/lib/lidar
+copying lidar/lidar.py -> /home/johannes/PUM-04/build/lidar/build/lib/lidar
+copying lidar/lidar_to_image.py -> /home/johannes/PUM-04/build/lidar/build/lib/lidar
+copying lidar/__init__.py -> /home/johannes/PUM-04/build/lidar/build/lib/lidar
+running install
+running install_lib
+creating /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar
+copying /home/johannes/PUM-04/build/lidar/build/lib/lidar/lidar.py -> /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar
+copying /home/johannes/PUM-04/build/lidar/build/lib/lidar/lidar_to_image.py -> /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar
+copying /home/johannes/PUM-04/build/lidar/build/lib/lidar/__init__.py -> /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar
+byte-compiling /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar/lidar.py to lidar.cpython-310.pyc
+byte-compiling /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar/lidar_to_image.py to lidar_to_image.cpython-310.pyc
+byte-compiling /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/johannes/PUM-04/install/lidar/share
+creating /home/johannes/PUM-04/install/lidar/share/ament_index
+creating /home/johannes/PUM-04/install/lidar/share/ament_index/resource_index
+creating /home/johannes/PUM-04/install/lidar/share/ament_index/resource_index/packages
+copying resource/lidar -> /home/johannes/PUM-04/install/lidar/share/ament_index/resource_index/packages
+creating /home/johannes/PUM-04/install/lidar/share/lidar
+copying package.xml -> /home/johannes/PUM-04/install/lidar/share/lidar
+running install_egg_info
+Copying ../../../../build/lidar/lidar.egg-info to /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar-0.0.0-py3.10.egg-info
+running install_scripts
+Installing lidar script to /home/johannes/PUM-04/install/lidar/lib/lidar
+Installing lidar_to_image script to /home/johannes/PUM-04/install/lidar/lib/lidar
+writing list of installed files to '/home/johannes/PUM-04/build/lidar/install.log'

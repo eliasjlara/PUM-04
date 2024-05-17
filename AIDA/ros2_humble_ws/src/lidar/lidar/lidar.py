@@ -1,16 +1,40 @@
 """
-This is code to interact lidar: HLS-LFCD2 with python3.
-:author: Wahaj Murtaza
-:github: https://github.com/wahajmurtaza
-:email: wahajmurtaza@gmail.com
+MIT License
+
+Copyright (c) 2022 MUHAMMAD WAHAJ MURTAZA
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+
+Additional modifications made by Johannes Eriksson, 2024:
+Added publish_lidar_data()
+Modified __init__()
+Modified read_serial()
+Modified read_range()
+Modified start_loop()
+Modified main()
 """
 
 import serial
 from time import sleep
 import threading
-import tkinter as tk
-import math
-
 
 import rclpy
 from rclpy.node import Node
@@ -18,32 +42,45 @@ from lidar_data.msg import LidarData
 
 
 
-# LIDAR DATASHEET: https://emanual.robotis.com/assets/docs/LDS_Basic_Specification.pdf
-# RED       5V
-# BROWN     TX
-# ORANGE    PWM     (connect with pwm) # ground internally
-# BLACK     GND
-# GREEN     RX
-# BLUE      BOT     (not used)
-
-# BLACK     PWM     (connect with pwm)
-# RED       5V
-
 
 class Lidar(Node):
+    """
+    A ROS2 node for transmitting lidar data.
+
+    This node initializes a publisher to publish lidar data and captures lidar data from the sensor.
+
+    Attributes: 
+
+    Methods: 
+        __init__ : Initializes the ros node, as well as the publisher and capturer of lidar data
+        publish_lidar_data: publishes lidar data to a ROS2 topic
+        read_serial: reads serial data from port
+        read_range: reads parameters from serial data and stores it
+        start: starts the lidar
+        stop: stops the lidar
+        start_loop: start the lidar loop
+        terminate: stops and terimnate the process
+    """
+
     distance = [0] * 360
     confidence = [0] * 360
-    rpm = 0
     keep_loop = True
 
     def __init__(self, port, angle_offset=0):
-        super().__init__("lidar")   
+        """
+        Initializes the Lidar Node
 
+        This method initiate Lidar object, aquire serial port, create ROS2 topic and start a lidar thread
+        
+        Args:
+            port: Serial Port at which lidar is connected
+            angle_offset: Angle Offset (to adjust the front at zero) { 0 > angle_offset < 360 }
+
+        Returns:
+             None
         """
-        Initiate Lidar object, aquire serial port, set parameters and start a lidar thread
-        :param port: Serial Port at which lidar is connected
-        :param angle_offset: Angle Offset (to adjust the front at zero) { 0 > angle_offset < 360 }
-        """
+
+        super().__init__("lidar")   
 
         self.ser = serial.Serial(port=port, baudrate=115200)
         self.angle_offset = angle_offset
@@ -51,132 +88,122 @@ class Lidar(Node):
 
         self.publisher_ = self.create_publisher(LidarData, 'lidar/data', 10)
         timer_period = 1  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.i = 0
-        
-        self.counterr = 0
-        # Instansiera TKinter
-        #root = tk.Tk()
-        #self.canvas = tk.Canvas(root, width=600, height=600)
-        #self.canvas.pack()
+        self.timer = self.create_timer(timer_period, self.publish_lidar_data)
 
         self.thread.start()
-        #root.mainloop()
-        #self.counter_ = 0
 
-      
 
-    def timer_callback(self):
+
+    def publish_lidar_data(self):
+        """
+        Publish lidar data
+
+        This method publishes the lidar data array distance and the length of the array to a ros2 topic
+
+        Args:
+            None
+
+        Returns:
+             None
+        """
         msg = LidarData()
-        #msg.header.frame_id = 10
         msg.data = self.distance
         msg.length = len(self.distance)
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
-        self.i += 1
 
 
-    def _read_serial(self):
+    def read_serial(self):
         """
-        read serial data (42 bytes)
-        :return: serial data
+        Reads serial data
+
+        This method reads serial data (47 bytes) from port
+
+        Args:
+            None
+
+        Returns:
+             serial data
         """
         data = self.ser.read(47)
-        #print("1")
-        #print(data)
         return data
 
-    def _read_range(self, data):
+
+    def read_range(self, data):
         """
-        read parameters from data
-        :param data: serial data
-        :return: None
+        Reads parameters from data
+
+        This method reads parameters from serial data (47 bytes) and stores the distance 
+        points and confidence of the lidar in arrays
+
+        Args:
+            data: serial data
+
+        Returns:
+             None
         """
+
         bytes_data = list(data)
-        #print(bytes_data)
-        #print("Hello")
-        degree = (bytes_data[1] - 0xA0) * 6
-        self.rpm = (bytes_data[3] << 8) | bytes_data[2]
-
-        if bytes_data[41] != bytes_data[40]  or bytes_data[40] == 0:
-           # print(f'invalid data: {degree}')
-            return
-
-        for i in range(6):
-            distance = (bytes_data[2 + (i*4)+3] << 8) | (bytes_data[2 + (i*4)+2])
-            intensity = (bytes_data[2 + (i*4)+1] << 8) | (bytes_data[2 + (i*4)+0])
-            angle = degree + i
-            angle_offsetted = angle + self.angle_offset if angle + self.angle_offset < 360 else angle + self.angle_offset - 360
-            self.distance[angle_offsetted] = distance
-            self.intensity[angle_offsetted] = intensity
-
-
-    def _new_read_range(self, data):
-        bytes_data = list(data)
-
         length = bytes_data[1]
-       # print("this is length " + str(length))
-
         speed = (bytes_data[3] << 8) | bytes_data[2]
-        #print("this is speed " + str(speed))
-
         start_angel = (bytes_data[5] << 8) | bytes_data[4]
-        #print("this is start_angel " + str(start_angel/100))
-
         end_angel = (bytes_data[43] << 8) | bytes_data[42]
-        #print("this is end_angel " + str(end_angel/100))
-
         time_stamp = (bytes_data[45] << 8) | bytes_data[44]
-        #print("this is time_stamp " + str(time_stamp))
-
         crc = bytes_data[1]
-       # print("this is crs " + str(crc))
+    
         
-        for i in range(11):
-            
+        for i in range(11):       
             distance = (bytes_data[4 + (i*3)+3] << 8) | (bytes_data[3 + (i*3)+3])
             confidence = (bytes_data[5 + (i*3)+3]) 
             startangle = start_angel/100
-            endangle = end_angel/100
-            #angle_offsetted = angle + self.angle_offset if angle + self.angle_offset < 360 else angle + self.angle_offset - 360
+            endangle = end_angel/100            
             angle_offsetted = (endangle + (i*(endangle - startangle)/11)) % 360
-          #  print("this is start angle " + str(startangle))
-           # print("this is end angle " + str(endangle))
-            #print(str(i) +" this is angle offsetted " + str(angle_offsetted))
             self.distance[round(angle_offsetted)-1] = distance
             self.confidence[round(angle_offsetted)-1] = confidence
-        
-       
-
-       # print("this is distance " + str(self.distance))
-        #print("this is confidence " + str(self.confidence))
        
 
     def start(self):
         """
-        start the lidar
-        :return: None
+        Start the lidar
+
+        This method starts the lidar
+
+        Args:
+            None
+
+        Returns:
+             None
         """
         self.ser.write(b'b')
 
     def stop(self):
         """
-        stop the lidar, can be started again
-        :return: None
+        Stop the lidar
+
+        This method stop the lidar, can be started again
+
+        Args:
+            None
+
+        Returns:
+             None
         """
         self.ser.write(b'e')
 
-    def _start_loop(self):
+    def start_loop(self):
         """
-        Start the lidar loop (must be called in a separate thread)
-        :return: None
+        Start the lidar loop
+
+        This method start the lidar loop (must be called in a separate thread) 
+
+        Args:
+            None
+
+        Returns:
+             None
         """
-        counter = 0
         while self.keep_loop:
             data = self._read_serial()
-           # print(data)
-            #print(data[0])
-            
             
             if data[0] != 84:
                 self.ser.write(b'e')
@@ -185,66 +212,25 @@ class Lidar(Node):
                 self.ser.open()
                 self.ser.write(b'b')
                 continue
-            
 
-            #print("Hello")
-            #sleep(1)
-            self._new_read_range(data)
+            self.read_range(data)
             
-            #if counter == 100:
-             #   counter = 0
-              #  self.draw_lidar_data(self.distance, self.confidence)
-            #counter += 1
 
     def terminate(self):
         """
-        stop the leader, close serial port, and terminate thread
-        :return: None
+        Stop and erminate the process 
+
+        This method stop the lidar, close serial port, and terminate thread
+        Args:
+            None
+
+        Returns:
+             None
         """
         self.stop()
         self.keep_loop = False
         self.ser.close()
         self.thread.join()
-
-    def get_distance(self):
-        """
-        get  distace
-        :return: return distance array 1x360
-        """
-        return self.distance
-
-    def get_intensity(self):
-        """
-        get lidar intensity
-        :return: return intensity array 1x360
-        """
-        return self.intensity
-
-    def get_rpm(self):
-        """
-        get lidar RPM
-        :return: int
-        """
-        return self.rpm
-    
-    # Metod för att rita lidar-data 
-    def draw_lidar_data(self, data, confidence):
-        center_x, center_y = 300, 300  # Anta mitten av canvas
-        max_radius = 250  # Hur långt ifrån mittpunkten datan ritas
-        
-
-        self.canvas.delete("all")
-        for i, distance in enumerate(data):
-            if(confidence[i]) < 220:
-                continue
-            angle_radians = math.radians(i)
-            x = center_x + (distance/(max_radius*10)) * max_radius * math.cos(angle_radians)  
-            y = center_y + (distance/(max_radius*10)) * max_radius * math.sin(angle_radians)  
-            self.canvas.create_oval(x-1, y-1, x+1, y+1, fill="black") 
-
-    # Hämtar lidar-data (exempeldata, ska bytas mot riktig sensor)
-    # Ritar/Uppdaterar canvas
-
 
 def main(args=None):
     
@@ -254,16 +240,6 @@ def main(args=None):
     rclpy.spin(lidar)
     rclpy.shutdown()
 
-
-
-    a = 0
-    while(True):
-        a+=1        
-        sleep(2)
-
-    #lidar.stop()
-
-    #lidar.terminate()
  
 
 if __name__ == '__main__':

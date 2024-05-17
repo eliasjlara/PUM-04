@@ -1,0 +1,37 @@
+[2.585s] Invoking command in '/home/johannes/PUM-04/AIDA/ros2_humble_ws/src/aida_api': PYTHONPATH=/home/johannes/PUM-04/build/aida_api/prefix_override:/home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../../build/aida_api build --build-base /home/johannes/PUM-04/build/aida_api/build install --record /home/johannes/PUM-04/build/aida_api/install.log --single-version-externally-managed install_data
+[3.597s] running egg_info
+[3.598s] creating ../../../../build/aida_api/aida_api.egg-info
+[3.643s] writing ../../../../build/aida_api/aida_api.egg-info/PKG-INFO
+[3.644s] writing dependency_links to ../../../../build/aida_api/aida_api.egg-info/dependency_links.txt
+[3.644s] writing entry points to ../../../../build/aida_api/aida_api.egg-info/entry_points.txt
+[3.644s] writing requirements to ../../../../build/aida_api/aida_api.egg-info/requires.txt
+[3.644s] writing top-level names to ../../../../build/aida_api/aida_api.egg-info/top_level.txt
+[3.644s] writing manifest file '../../../../build/aida_api/aida_api.egg-info/SOURCES.txt'
+[3.751s] reading manifest file '../../../../build/aida_api/aida_api.egg-info/SOURCES.txt'
+[3.751s] writing manifest file '../../../../build/aida_api/aida_api.egg-info/SOURCES.txt'
+[3.756s] running build
+[3.756s] running build_py
+[3.756s] creating /home/johannes/PUM-04/build/aida_api/build
+[3.756s] creating /home/johannes/PUM-04/build/aida_api/build/lib
+[3.756s] creating /home/johannes/PUM-04/build/aida_api/build/lib/aida_api
+[3.756s] copying aida_api/ros2_interface.py -> /home/johannes/PUM-04/build/aida_api/build/lib/aida_api
+[3.756s] copying aida_api/__init__.py -> /home/johannes/PUM-04/build/aida_api/build/lib/aida_api
+[3.756s] running install
+[3.766s] running install_lib
+[3.807s] creating /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api
+[3.807s] copying /home/johannes/PUM-04/build/aida_api/build/lib/aida_api/ros2_interface.py -> /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api
+[3.807s] copying /home/johannes/PUM-04/build/aida_api/build/lib/aida_api/__init__.py -> /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api
+[3.809s] byte-compiling /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api/ros2_interface.py to ros2_interface.cpython-310.pyc
+[3.812s] byte-compiling /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api/__init__.py to __init__.cpython-310.pyc
+[3.812s] running install_data
+[3.812s] creating /home/johannes/PUM-04/install/aida_api/share/ament_index
+[3.812s] creating /home/johannes/PUM-04/install/aida_api/share/ament_index/resource_index
+[3.812s] creating /home/johannes/PUM-04/install/aida_api/share/ament_index/resource_index/packages
+[3.812s] copying resource/aida_api -> /home/johannes/PUM-04/install/aida_api/share/ament_index/resource_index/packages
+[3.812s] copying package.xml -> /home/johannes/PUM-04/install/aida_api/share/aida_api
+[3.813s] running install_egg_info
+[3.855s] Copying ../../../../build/aida_api/aida_api.egg-info to /home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages/aida_api-0.0.0-py3.10.egg-info
+[3.859s] running install_scripts
+[4.197s] Installing ros2_interface script to /home/johannes/PUM-04/install/aida_api/lib/aida_api
+[4.197s] writing list of installed files to '/home/johannes/PUM-04/build/aida_api/install.log'
+[4.262s] Invoked command in '/home/johannes/PUM-04/AIDA/ros2_humble_ws/src/aida_api' returned '0': PYTHONPATH=/home/johannes/PUM-04/build/aida_api/prefix_override:/home/johannes/PUM-04/install/aida_api/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../../build/aida_api build --build-base /home/johannes/PUM-04/build/aida_api/build install --record /home/johannes/PUM-04/build/aida_api/install.log --single-version-externally-managed install_data

@@ -1,0 +1,35 @@
+running egg_info
+creating ../../../../build/audio/audio.egg-info
+writing ../../../../build/audio/audio.egg-info/PKG-INFO
+writing dependency_links to ../../../../build/audio/audio.egg-info/dependency_links.txt
+writing entry points to ../../../../build/audio/audio.egg-info/entry_points.txt
+writing requirements to ../../../../build/audio/audio.egg-info/requires.txt
+writing top-level names to ../../../../build/audio/audio.egg-info/top_level.txt
+writing manifest file '../../../../build/audio/audio.egg-info/SOURCES.txt'
+reading manifest file '../../../../build/audio/audio.egg-info/SOURCES.txt'
+writing manifest file '../../../../build/audio/audio.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/johannes/PUM-04/build/audio/build
+creating /home/johannes/PUM-04/build/audio/build/lib
+creating /home/johannes/PUM-04/build/audio/build/lib/audio
+copying audio/__init__.py -> /home/johannes/PUM-04/build/audio/build/lib/audio
+copying audio/audio_transmit_mic.py -> /home/johannes/PUM-04/build/audio/build/lib/audio
+running install
+running install_lib
+creating /home/johannes/PUM-04/install/audio/lib/python3.10/site-packages/audio
+copying /home/johannes/PUM-04/build/audio/build/lib/audio/__init__.py -> /home/johannes/PUM-04/install/audio/lib/python3.10/site-packages/audio
+copying /home/johannes/PUM-04/build/audio/build/lib/audio/audio_transmit_mic.py -> /home/johannes/PUM-04/install/audio/lib/python3.10/site-packages/audio
+byte-compiling /home/johannes/PUM-04/install/audio/lib/python3.10/site-packages/audio/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/johannes/PUM-04/install/audio/lib/python3.10/site-packages/audio/audio_transmit_mic.py to audio_transmit_mic.cpython-310.pyc
+running install_data
+creating /home/johannes/PUM-04/install/audio/share/ament_index
+creating /home/johannes/PUM-04/install/audio/share/ament_index/resource_index
+creating /home/johannes/PUM-04/install/audio/share/ament_index/resource_index/packages
+copying resource/audio -> /home/johannes/PUM-04/install/audio/share/ament_index/resource_index/packages
+copying package.xml -> /home/johannes/PUM-04/install/audio/share/audio
+running install_egg_info
+Copying ../../../../build/audio/audio.egg-info to /home/johannes/PUM-04/install/audio/lib/python3.10/site-packages/audio-0.0.0-py3.10.egg-info
+running install_scripts
+Installing audio_transmit_mic script to /home/johannes/PUM-04/install/audio/lib/audio
+writing list of installed files to '/home/johannes/PUM-04/build/audio/install.log'

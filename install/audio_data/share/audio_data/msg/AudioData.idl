@@ -1,0 +1,33 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from audio_data/msg/AudioData.msg
+// generated code does not contain a copyright notice
+
+#include "std_msgs/msg/Header.idl"
+
+module audio_data {
+  module msg {
+    @verbatim (language="comment", text=
+      "AudioData.msg")
+    struct AudioData {
+      @verbatim (language="comment", text=
+        "Header for the message")
+      std_msgs::msg::Header header;
+
+      @verbatim (language="comment", text=
+        "The audio data, as a byte array")
+      sequence<uint8> data;
+
+      @verbatim (language="comment", text=
+        "The sample rate of the audio data")
+      int32 sample_rate;
+
+      @verbatim (language="comment", text=
+        "The number of channels in the audio data")
+      int32 channels;
+
+      @verbatim (language="comment", text=
+        "The audio sample count")
+      int32 samples;
+    };
+  };
+};

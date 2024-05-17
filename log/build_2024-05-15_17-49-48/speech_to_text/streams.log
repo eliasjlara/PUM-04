@@ -1,0 +1,44 @@
+[2.453s] Invoking command in '/home/johannes/PUM-04/AIDA/ros2_humble_ws/src/speech_to_text': PYTHONPATH=/home/johannes/PUM-04/build/speech_to_text/prefix_override:/home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../../build/speech_to_text build --build-base /home/johannes/PUM-04/build/speech_to_text/build install --record /home/johannes/PUM-04/build/speech_to_text/install.log --single-version-externally-managed install_data
+[3.479s] running egg_info
+[3.479s] creating ../../../../build/speech_to_text/speech_to_text.egg-info
+[3.514s] writing ../../../../build/speech_to_text/speech_to_text.egg-info/PKG-INFO
+[3.515s] writing dependency_links to ../../../../build/speech_to_text/speech_to_text.egg-info/dependency_links.txt
+[3.515s] writing entry points to ../../../../build/speech_to_text/speech_to_text.egg-info/entry_points.txt
+[3.515s] writing requirements to ../../../../build/speech_to_text/speech_to_text.egg-info/requires.txt
+[3.515s] writing top-level names to ../../../../build/speech_to_text/speech_to_text.egg-info/top_level.txt
+[3.516s] writing manifest file '../../../../build/speech_to_text/speech_to_text.egg-info/SOURCES.txt'
+[3.637s] reading manifest file '../../../../build/speech_to_text/speech_to_text.egg-info/SOURCES.txt'
+[3.638s] writing manifest file '../../../../build/speech_to_text/speech_to_text.egg-info/SOURCES.txt'
+[3.638s] running build
+[3.638s] running build_py
+[3.638s] creating /home/johannes/PUM-04/build/speech_to_text/build
+[3.639s] creating /home/johannes/PUM-04/build/speech_to_text/build/lib
+[3.639s] creating /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+[3.639s] copying speech_to_text/whisper_logic.py -> /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+[3.642s] copying speech_to_text/receive_str_result.py -> /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+[3.643s] copying speech_to_text/faster_whisper_node.py -> /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+[3.643s] copying speech_to_text/__init__.py -> /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+[3.649s] running install
+[3.662s] running install_lib
+[3.730s] creating /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+[3.730s] copying /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text/whisper_logic.py -> /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+[3.730s] copying /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text/receive_str_result.py -> /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+[3.730s] copying /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text/faster_whisper_node.py -> /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+[3.730s] copying /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text/__init__.py -> /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+[3.739s] byte-compiling /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text/whisper_logic.py to whisper_logic.cpython-310.pyc
+[3.740s] byte-compiling /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text/receive_str_result.py to receive_str_result.cpython-310.pyc
+[3.744s] byte-compiling /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text/faster_whisper_node.py to faster_whisper_node.cpython-310.pyc
+[3.746s] byte-compiling /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text/__init__.py to __init__.cpython-310.pyc
+[3.746s] running install_data
+[3.747s] creating /home/johannes/PUM-04/install/speech_to_text/share/ament_index
+[3.747s] creating /home/johannes/PUM-04/install/speech_to_text/share/ament_index/resource_index
+[3.747s] creating /home/johannes/PUM-04/install/speech_to_text/share/ament_index/resource_index/packages
+[3.747s] copying resource/speech_to_text -> /home/johannes/PUM-04/install/speech_to_text/share/ament_index/resource_index/packages
+[3.747s] copying package.xml -> /home/johannes/PUM-04/install/speech_to_text/share/speech_to_text
+[3.747s] running install_egg_info
+[3.819s] Copying ../../../../build/speech_to_text/speech_to_text.egg-info to /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text-0.0.0-py3.10.egg-info
+[3.819s] running install_scripts
+[4.177s] Installing faster_whisper_node script to /home/johannes/PUM-04/install/speech_to_text/lib/speech_to_text
+[4.178s] Installing receive_str_result script to /home/johannes/PUM-04/install/speech_to_text/lib/speech_to_text
+[4.178s] writing list of installed files to '/home/johannes/PUM-04/build/speech_to_text/install.log'
+[4.225s] Invoked command in '/home/johannes/PUM-04/AIDA/ros2_humble_ws/src/speech_to_text' returned '0': PYTHONPATH=/home/johannes/PUM-04/build/speech_to_text/prefix_override:/home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../../build/speech_to_text build --build-base /home/johannes/PUM-04/build/speech_to_text/build install --record /home/johannes/PUM-04/build/speech_to_text/install.log --single-version-externally-managed install_data

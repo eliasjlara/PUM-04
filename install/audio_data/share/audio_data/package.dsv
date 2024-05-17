@@ -1,0 +1,11 @@
+source;share/audio_data/hook/cmake_prefix_path.ps1
+source;share/audio_data/hook/cmake_prefix_path.dsv
+source;share/audio_data/hook/cmake_prefix_path.sh
+source;share/audio_data/hook/ld_library_path_lib.ps1
+source;share/audio_data/hook/ld_library_path_lib.dsv
+source;share/audio_data/hook/ld_library_path_lib.sh
+source;share/audio_data/local_setup.bash
+source;share/audio_data/local_setup.dsv
+source;share/audio_data/local_setup.ps1
+source;share/audio_data/local_setup.sh
+source;share/audio_data/local_setup.zsh

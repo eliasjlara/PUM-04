@@ -1,0 +1,43 @@
+[3.137s] Invoking command in '/home/johannes/PUM-04/AIDA/ros2_humble_ws/src/lidar': PYTHONPATH=/home/johannes/PUM-04/build/lidar/prefix_override:/home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../../build/lidar build --build-base /home/johannes/PUM-04/build/lidar/build install --record /home/johannes/PUM-04/build/lidar/install.log --single-version-externally-managed install_data
+[4.170s] running egg_info
+[4.171s] creating ../../../../build/lidar/lidar.egg-info
+[4.215s] writing ../../../../build/lidar/lidar.egg-info/PKG-INFO
+[4.216s] writing dependency_links to ../../../../build/lidar/lidar.egg-info/dependency_links.txt
+[4.216s] writing entry points to ../../../../build/lidar/lidar.egg-info/entry_points.txt
+[4.216s] writing requirements to ../../../../build/lidar/lidar.egg-info/requires.txt
+[4.216s] writing top-level names to ../../../../build/lidar/lidar.egg-info/top_level.txt
+[4.217s] writing manifest file '../../../../build/lidar/lidar.egg-info/SOURCES.txt'
+[4.303s] reading manifest file '../../../../build/lidar/lidar.egg-info/SOURCES.txt'
+[4.304s] writing manifest file '../../../../build/lidar/lidar.egg-info/SOURCES.txt'
+[4.304s] running build
+[4.304s] running build_py
+[4.304s] creating /home/johannes/PUM-04/build/lidar/build
+[4.304s] creating /home/johannes/PUM-04/build/lidar/build/lib
+[4.304s] creating /home/johannes/PUM-04/build/lidar/build/lib/lidar
+[4.305s] copying lidar/lidar.py -> /home/johannes/PUM-04/build/lidar/build/lib/lidar
+[4.305s] copying lidar/lidar_to_image.py -> /home/johannes/PUM-04/build/lidar/build/lib/lidar
+[4.309s] copying lidar/__init__.py -> /home/johannes/PUM-04/build/lidar/build/lib/lidar
+[4.310s] running install
+[4.318s] running install_lib
+[4.360s] creating /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar
+[4.361s] copying /home/johannes/PUM-04/build/lidar/build/lib/lidar/lidar.py -> /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar
+[4.361s] copying /home/johannes/PUM-04/build/lidar/build/lib/lidar/lidar_to_image.py -> /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar
+[4.361s] copying /home/johannes/PUM-04/build/lidar/build/lib/lidar/__init__.py -> /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar
+[4.363s] byte-compiling /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar/lidar.py to lidar.cpython-310.pyc
+[4.366s] byte-compiling /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar/lidar_to_image.py to lidar_to_image.cpython-310.pyc
+[4.367s] byte-compiling /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar/__init__.py to __init__.cpython-310.pyc
+[4.367s] running install_data
+[4.367s] creating /home/johannes/PUM-04/install/lidar/share
+[4.368s] creating /home/johannes/PUM-04/install/lidar/share/ament_index
+[4.368s] creating /home/johannes/PUM-04/install/lidar/share/ament_index/resource_index
+[4.368s] creating /home/johannes/PUM-04/install/lidar/share/ament_index/resource_index/packages
+[4.368s] copying resource/lidar -> /home/johannes/PUM-04/install/lidar/share/ament_index/resource_index/packages
+[4.368s] creating /home/johannes/PUM-04/install/lidar/share/lidar
+[4.368s] copying package.xml -> /home/johannes/PUM-04/install/lidar/share/lidar
+[4.368s] running install_egg_info
+[4.407s] Copying ../../../../build/lidar/lidar.egg-info to /home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages/lidar-0.0.0-py3.10.egg-info
+[4.408s] running install_scripts
+[4.758s] Installing lidar script to /home/johannes/PUM-04/install/lidar/lib/lidar
+[4.758s] Installing lidar_to_image script to /home/johannes/PUM-04/install/lidar/lib/lidar
+[4.758s] writing list of installed files to '/home/johannes/PUM-04/build/lidar/install.log'
+[4.829s] Invoked command in '/home/johannes/PUM-04/AIDA/ros2_humble_ws/src/lidar' returned '0': PYTHONPATH=/home/johannes/PUM-04/build/lidar/prefix_override:/home/johannes/PUM-04/install/lidar/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../../build/lidar build --build-base /home/johannes/PUM-04/build/lidar/build install --record /home/johannes/PUM-04/build/lidar/install.log --single-version-externally-managed install_data

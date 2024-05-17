@@ -1,0 +1,42 @@
+running egg_info
+creating ../../../../build/speech_to_text/speech_to_text.egg-info
+writing ../../../../build/speech_to_text/speech_to_text.egg-info/PKG-INFO
+writing dependency_links to ../../../../build/speech_to_text/speech_to_text.egg-info/dependency_links.txt
+writing entry points to ../../../../build/speech_to_text/speech_to_text.egg-info/entry_points.txt
+writing requirements to ../../../../build/speech_to_text/speech_to_text.egg-info/requires.txt
+writing top-level names to ../../../../build/speech_to_text/speech_to_text.egg-info/top_level.txt
+writing manifest file '../../../../build/speech_to_text/speech_to_text.egg-info/SOURCES.txt'
+reading manifest file '../../../../build/speech_to_text/speech_to_text.egg-info/SOURCES.txt'
+writing manifest file '../../../../build/speech_to_text/speech_to_text.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/johannes/PUM-04/build/speech_to_text/build
+creating /home/johannes/PUM-04/build/speech_to_text/build/lib
+creating /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+copying speech_to_text/whisper_logic.py -> /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+copying speech_to_text/receive_str_result.py -> /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+copying speech_to_text/faster_whisper_node.py -> /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+copying speech_to_text/__init__.py -> /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text
+running install
+running install_lib
+creating /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+copying /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text/whisper_logic.py -> /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+copying /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text/receive_str_result.py -> /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+copying /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text/faster_whisper_node.py -> /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+copying /home/johannes/PUM-04/build/speech_to_text/build/lib/speech_to_text/__init__.py -> /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text
+byte-compiling /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text/whisper_logic.py to whisper_logic.cpython-310.pyc
+byte-compiling /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text/receive_str_result.py to receive_str_result.cpython-310.pyc
+byte-compiling /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text/faster_whisper_node.py to faster_whisper_node.cpython-310.pyc
+byte-compiling /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/johannes/PUM-04/install/speech_to_text/share/ament_index
+creating /home/johannes/PUM-04/install/speech_to_text/share/ament_index/resource_index
+creating /home/johannes/PUM-04/install/speech_to_text/share/ament_index/resource_index/packages
+copying resource/speech_to_text -> /home/johannes/PUM-04/install/speech_to_text/share/ament_index/resource_index/packages
+copying package.xml -> /home/johannes/PUM-04/install/speech_to_text/share/speech_to_text
+running install_egg_info
+Copying ../../../../build/speech_to_text/speech_to_text.egg-info to /home/johannes/PUM-04/install/speech_to_text/lib/python3.10/site-packages/speech_to_text-0.0.0-py3.10.egg-info
+running install_scripts
+Installing faster_whisper_node script to /home/johannes/PUM-04/install/speech_to_text/lib/speech_to_text
+Installing receive_str_result script to /home/johannes/PUM-04/install/speech_to_text/lib/speech_to_text
+writing list of installed files to '/home/johannes/PUM-04/build/speech_to_text/install.log'

@@ -1,0 +1,3 @@
+source;share/lidar/hook/pythonpath.ps1
+source;share/lidar/hook/pythonpath.dsv
+source;share/lidar/hook/pythonpath.sh

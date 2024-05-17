@@ -9,6 +9,19 @@ from cv_bridge import CvBridge
 MAX_LIDAR_DISTANCE = 5000  # Maximum distance in millimeters
 
 class LidarToImage(Node):
+    """
+    A ROS2 node for transmitting lidar data as a image.
+
+    This node initializes a publisher to publish lidar data as a image and a subscriber to subscribe to lidar data as a array.
+
+    Attributes: 
+
+    Methods: 
+        __init__ : Initializes the subscriber node 
+        subscribe_to_lidar: subscribes to a ROS2 topic that sends lidar data as a array
+        publish_lidar_image: publishes lidar data as a image to a ROS2 topic
+        draw_points_on_canvas: draws points on a canvas based on a list of distances from the center
+    """
     distance = [0] * 360
     length = 0
 
@@ -17,10 +30,18 @@ class LidarToImage(Node):
         self.bridge = CvBridge()
         self.frame_count = 0
         self.publisher = self.create_publisher(Image, 'lidar/image', 10)
-        self.subscribe_to_lidar()
-        #self.subscription
+        self.subscription = self.create_subscription(LidarData,'lidar/data',self.subscribe_to_lidar,10)
 
-    def listener_callback(self, msg):
+    def subscribe_to_lidar(self, msg):
+        """
+        Subscribes to a ROS2 topic that sends lidar data as a array,creates a image and calls publish_lidar_image.
+
+        Args:
+            msg: lidar data as an array
+
+        Returns:
+            None
+        """
         self.get_logger().info('Subscribing: "%s"' % msg.data) 
         self.distance = msg.data
         self.lenght = msg.length
@@ -33,11 +54,17 @@ class LidarToImage(Node):
         self.frame_count =+ 1
         self.publish_lidar_image(canvas)
         
-            
-    def subscribe_to_lidar(self):
-        self.subscription = self.create_subscription(LidarData,'lidar/data',self.listener_callback,10)
          
     def publish_lidar_image(self, cv_img):
+        """
+        Published the lidar data as a image to a topic.
+
+        Args:
+            cv_img: image of the lidar data
+
+        Returns:
+            None
+        """
         msg = self.bridge.cv2_to_imgmsg(cv_img, "bgr8")
         msg.header.frame_id = str(self.frame_count)
         self.publisher.publish(msg)
@@ -52,7 +79,7 @@ class LidarToImage(Node):
             point_size: The size of the points (default: 3).
 
         Returns:
-            None (modifies the canvas in-place).
+            None
         """
 
         # Calculate center coordinates
@@ -73,14 +100,6 @@ class LidarToImage(Node):
             x = int(center_x + radius * np.cos(np.radians(angle)))
             y = int(center_y - radius * np.sin(np.radians(angle)))  # Subtract for upward Y-axis
             cv2.circle(canvas, (x, y), point_size, color, -1)
-
-
-
-
-
-
-   
-
 
 
 def main(args=None):
