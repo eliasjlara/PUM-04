@@ -111,7 +111,9 @@ class InterfaceNode(Node):
         self.host = host
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.host, self.port))
+        self.client_list = []
 
         self.init_clients()
         self.init_pubs()
@@ -317,6 +319,11 @@ class InterfaceNode(Node):
 
         if hasattr(self, "server_event") and self.server_event != None:
             self.server_event.set()
+        for client in self.client_list:
+            client.shutdown(socket.SHUT_RDWR)
+            client.close()
+        self.socket.shutdown(socket.SHUT_RDWR)
+        self.socket.close()
         if hasattr(self, "server_thread") and self.server_thread.is_alive():
             self.server_thread.join()
 
@@ -367,12 +374,11 @@ class InterfaceNode(Node):
             while not self.server_event.is_set():
                 client, addr = self.socket.accept()
                 self.get_logger().info(f"Server| Connection from {addr}")
+                self.client_list.append(client)
                 thread = threading.Thread(target=self.handle_client, args=(client, addr))
                 thread.start()
         except Exception as e:
             self.get_logger().error(f"Server: Error: {e}")
-        finally:
-            self.socket.close()
 
 
     def handle_client(self, client, addr):
@@ -404,8 +410,9 @@ class InterfaceNode(Node):
                     payload = b"\0x00"
                 self.get_logger().info(f"Server| Received message {message_type} from {addr}")
                 self.handle_message(client, message_type, payload)
-            except ConnectionError:
+            except Exception as e:
                 self.get_logger().info(f"Server| Connection to [{addr}] was interrupted.")
+                self.client_list.remove(client)
                 break
 
     def handle_message(self, client, message_type, data):
@@ -560,13 +567,13 @@ class InterfaceNode(Node):
         self.joystick_queue.put(jstk_msg)
         # self.joystick_queue_lock.release()
 
-    def send_video_stream(self, conn):
+    def send_video_stream(self, client):
         """
         Send video stream to a client.
 
         This method sends the video stream to a client by continuously sending video frames at a specified frequency.
         Args:
-            conn: The client socket.
+            client: The client socket.
         """
         if not isinstance(self.video_frame, np.ndarray):
             self.get_logger().info("Server| No video feed available.")
@@ -577,29 +584,25 @@ class InterfaceNode(Node):
             frame = self.video_frame
             self.video_frame_lock.release()
 
-            try:
-                self.send_video_frame(conn, frame)
-            except ConnectionError:
-                self.get_logger().info(f"Server| Video feed connection was interrupted.")
-                break
+            self.send_video_frame(client, frame)
 
-    def send_video_frame(self, conn, frame):
+    def send_video_frame(self, client, frame):
         """
         Send a video frame to a client.
 
         This method sends a video frame to a client by encoding the frame as a JPEG image and sending it over the socket connection.
         Args:
-            conn: The client socket.
+            client: The client socket.
             frame: The video frame.
         """
 
         frame_bytes = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, VIDEO_COMPRESSION_QUALITY])[1].tobytes()  # Encode as JPEG
         # Send video frame header
-        conn.sendall(
+        client.sendall(
             struct.pack(HEADER_FORMAT, MessageType.VIDEO_FRAME, len(frame_bytes))
         )
         # Send video frame data
-        conn.sendall(frame_bytes)
+        client.sendall(frame_bytes)
 
 
 def main(args=None):
@@ -611,9 +614,10 @@ def main(args=None):
         rclpy.spin(api)
     except KeyboardInterrupt:
         api.get_logger().info("Keyboard interrupt")
+    except Exception as e:
+        api.get_logger().info(f"Exception {str(e)}")
     finally:
         api.stop_workers()
-        api.socket.shutdown()
         api.destroy_node()
 
         rclpy.shutdown()
