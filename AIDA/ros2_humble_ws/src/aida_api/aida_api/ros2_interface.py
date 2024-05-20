@@ -10,6 +10,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from aida_interfaces.srv import SetState
 from aida_interfaces.msg import Joystick
+from lidar_data.msg import LidarData
 import socket
 import struct
 import threading
@@ -284,7 +285,7 @@ class InterfaceNode(Node):
             Image, VIDEO_TOPIC, self.video_callback, 10
         )
         self.lidar_sub = self.create_subscription(
-            Image, LIDAR_TOPIC, self.lidar_callback, 10
+            LidarData, LIDAR_TOPIC, self.lidar_callback, 10
         )
         self.stt_sub = self.create_subscription(
             String, STT_TOPIC, self.stt_callback, 10
