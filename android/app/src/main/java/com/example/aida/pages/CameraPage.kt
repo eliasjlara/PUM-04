@@ -74,7 +74,6 @@ fun CameraPage(
             ipAddress = viewModel.ipAddress.collectAsState().value,
             port = viewModel.port.collectAsState().value,
         )
-        // TODO - need to send the imageBitmap and handle inside lidardisplay
         Lidar(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -113,19 +112,9 @@ fun CameraPage(
             thumbSize = 45f,
             enabled = viewModel.joystickConnectionStage
         ) { offset: Offset ->
-            // TODO - Is there a better way to prevent sending data
-            // at higher then 60 Hz?
-            //val lowerValue = 26
-            //val upperValue = 104
-            //val middleValue = 65
-            // TODO - split normalizer to function
-            //val normalizedX = 2.0f*(offset.x - lowerValue) / (upperValue - lowerValue) - 1.0f
-            //val normalizedY = 2.0f*(offset.y - lowerValue) / (upperValue - lowerValue) - 1.0f
             if(viewModel.sendingJoystickData.value == false) {
                 viewModel.sendJoystickData(offset.x, offset.y)
-            //    viewModel.sendJoystickData(normalizedX, normalizedY)
             }
-            // TODO: Sent offset x to AIDA
         }
 
         RecordVoiceButton(

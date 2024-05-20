@@ -4,8 +4,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import java.nio.ByteBuffer
 
-// TODO - Add function that receives video data and converts to image
-// TODO - instead of using fetch() function and converting in main activity
 /**
  * Client class that connects to server to receive
  * video data

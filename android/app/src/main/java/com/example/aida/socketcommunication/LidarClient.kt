@@ -4,7 +4,6 @@ import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import java.nio.ByteBuffer
-// TODO - Add function that receives Lidar data and converts to image
 /**
  * This class is used to create a LidarClient object to receive Lidar data from the server
  */

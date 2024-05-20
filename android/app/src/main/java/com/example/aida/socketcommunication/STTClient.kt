@@ -1,8 +1,6 @@
 package com.example.aida.socketcommunication
 
 import java.nio.ByteBuffer
-// TODO - Add function that receives STT data and converts to string
-// TODO - instead of using fetch() function and converting in main activity
 /**
  * Client class that connects to server and sends messages
  * to get STT data
