@@ -1,10 +1,10 @@
 launch:
 
-- node:
-    pkg: "audio"
-    exec: "audio_transmit_mic"
-    name: "ros2_mic_node"
-    namespace: "mic"
+# - node:
+#     pkg: "audio"
+#     exec: "audio_transmit_mic"
+#     name: "ros2_mic_node"
+#     namespace: "mic"
 
 # - node:
 #     pkg: "speech_to_text"
@@ -27,3 +27,13 @@ launch:
 - node:
     pkg: "image_recognition"
     exec: "video_analyzer"
+
+# - node:
+#     pkg: "lidar"
+#     exec: "lidar_reader"
+#     name: "lidar"
+
+# - node:
+#     pkg: "lidar"
+#     exec: "lidar_to_image"
+#     name: "lidar_to_image"
