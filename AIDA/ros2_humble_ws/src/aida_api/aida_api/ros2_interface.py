@@ -36,6 +36,7 @@ MIC_CONTROL_SERVICE = "mic/SetState"
 VIDEO_STREAM_FREQUENCY = 30
 LIDAR_STREAM_FREQUENCY = 1
 
+VIDEO_COMPRESSION_QUALITY = 70
 
 # Message Type Enums (make sure these match your client-side definitions)
 class MessageType:
@@ -69,7 +70,7 @@ msg_formats = {
     MessageType.VIDEO_FRAME: "!HII",
     MessageType.LIDAR_DATA: "!H",
     MessageType.AUDIO: "!H",
-    MessageType.JOYSTICK_MOVE: "!ii",
+    MessageType.JOYSTICK_MOVE: "!ff",
 }
 
 
@@ -113,7 +114,9 @@ class InterfaceNode(Node):
         self.host = host
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.host, self.port))
+        self.client_list = []
 
         self.init_clients()
         self.init_pubs()
@@ -335,6 +338,11 @@ class InterfaceNode(Node):
 
         if hasattr(self, "server_event") and self.server_event != None:
             self.server_event.set()
+        for client in self.client_list:
+            client.shutdown(socket.SHUT_RDWR)
+            client.close()
+        self.socket.shutdown(socket.SHUT_RDWR)
+        self.socket.close()
         if hasattr(self, "server_thread") and self.server_thread.is_alive():
             self.server_thread.join()
 
@@ -349,8 +357,8 @@ class InterfaceNode(Node):
             Joystick: The converted Joystick message.
         """
         msg = Joystick()
-        msg.x = data[0].tobytes()
-        msg.y = data[1].tobytes()
+        msg.x = data[0]
+        msg.y = data[1]
         return msg
 
     def publish_joystick(self):
@@ -363,13 +371,13 @@ class InterfaceNode(Node):
             if self.joystick_publisher_event.is_set():
                 break
             try:
-                msg = self.joystick_queue.get(block=True, timeout=2)
+                msg = self.joystick_queue.get(block=False)
             except queue.Empty:
                 msg = None
             if self.joystick_publisher_event.is_set():
                 break
             if msg != None:
-                self.joystick_publisher.publish(msg)
+                self.joystick_pub.publish(msg)
 
     def start_server(self):
         """
@@ -385,12 +393,11 @@ class InterfaceNode(Node):
             while not self.server_event.is_set():
                 client, addr = self.socket.accept()
                 self.get_logger().info(f"Server| Connection from {addr}")
+                self.client_list.append(client)
                 thread = threading.Thread(target=self.handle_client, args=(client, addr))
                 thread.start()
         except Exception as e:
             self.get_logger().error(f"Server: Error: {e}")
-        finally:
-            self.socket.close()
 
 
     def handle_client(self, client, addr):
@@ -422,8 +429,9 @@ class InterfaceNode(Node):
                     payload = b"\0x00"
                 self.get_logger().info(f"Server| Received message {message_type} from {addr}")
                 self.handle_message(client, message_type, payload)
-            except ConnectionError:
+            except Exception as e:
                 self.get_logger().info(f"Server| Connection to [{addr}] was interrupted.")
+                self.client_list.remove(client)
                 break
 
     def handle_message(self, client, message_type, data):
@@ -532,8 +540,7 @@ class InterfaceNode(Node):
         """
         self.get_logger().info("Server| Sending video feed to client.")
         # Send video stream
-        thread = threading.Thread(target=self.send_video_stream, args=(client,))
-        thread.start()
+        self.send_video_stream(client)
 
     def handle_req_lidar_feed(self, client):
         """
@@ -585,35 +592,37 @@ class InterfaceNode(Node):
         Args:
             data: The joystick movement data.
         """
+        self.get_logger().info(f"Server| Received joystick data: {data}")   
         data = struct.unpack(msg_formats.get(MessageType.JOYSTICK_MOVE), data)
+        self.get_logger().info(f"Server| Received joystick data: {data}")   
         jstk_msg = self.to_joystick_msg(data)
-        self.joystick_queue_lock.acquire()
+        # self.joystick_queue_lock.acquire()
         self.joystick_queue.put(jstk_msg)
-        self.joystick_queue_lock.release()
+        # self.joystick_queue_lock.release()
 
-    def send_video_stream(self, conn):
+    def send_video_stream(self, client):
         """
         Send video stream to a client.
 
         This method sends the video stream to a client by continuously sending video frames at a specified frequency.
         Args:
-            conn: The client socket.
+            client: The client socket.
         """
+        if not isinstance(self.video_frame, np.ndarray):
+            self.get_logger().info("Server| No video feed available.")
+
         while True:  # Video streaming loop
             time.sleep(1 / VIDEO_STREAM_FREQUENCY)
             self.video_frame_lock.acquire()
             frame = self.video_frame
             self.video_frame_lock.release()
-            if frame is None:
-                self.get_logger().info("Server| Video feed is empty.")
-            else:
-                try:
-                    self.send_frame(conn, frame, MessageType.VIDEO_FRAME)
-                except ConnectionError:
-                    self.get_logger().info(f"Server| Video feed connection was interrupted.")
-                    break
+            try:
+                self.send_frame(client, frame, MessageType.VIDEO_FRAME)
+            except ConnectionError:
+                self.get_logger().info(f"Server| Video feed connection was interrupted.")
+                break
 
-    def send_lidar_stream(self, conn):
+    def send_lidar_stream(self, client):
         """
         Send lidar stream to a client.
 
@@ -621,36 +630,37 @@ class InterfaceNode(Node):
         Args:
             conn: The client socket.
         """
+        if not isinstance(self.lidar_frame, np.ndarray):
+            self.get_logger().info("Server| No lidar feed available.")
+
         while True:  # Lidar streaming loop
             time.sleep(1 / LIDAR_STREAM_FREQUENCY)
             self.lidar_frame_lock.acquire()
             frame = self.lidar_frame
             self.lidar_frame_lock.release()
-            if frame is None:
-                self.get_logger().info("Server| LiDAR frame feed is empty.")
-            else:
-                try:
-                    self.send_frame(conn, frame, MessageType.LIDAR_FRAME)
-                except ConnectionError:
-                    self.get_logger().info(f"Server| LiDAR feed connection was interrupted.")
-                    break
+            try:
+                self.send_frame(client, frame, MessageType.LIDAR_FRAME)
+            except ConnectionError:
+                self.get_logger().info(f"Server| LiDAR feed connection was interrupted.")
+                break
 
-    def send_frame(self, conn, frame, frame_type):
+    def send_frame(self, client, frame, frame_type):
         """
         Send a video frame to a client.
 
         This method sends a video frame to a client by encoding the frame as a JPEG image and sending it over the socket connection.
         Args:
-            conn: The client socket.
+            client: The client socket.
             frame: The video frame.
         """
-        frame_bytes = cv2.imencode(".jpg", frame)[1].tobytes()  # Encode as JPEG
+
+        frame_bytes = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, VIDEO_COMPRESSION_QUALITY])[1].tobytes()  # Encode as JPEG
         # Send video frame header
-        conn.sendall(
+        client.sendall(
             struct.pack(HEADER_FORMAT, frame_type, len(frame_bytes))
         )
         # Send video frame data
-        conn.sendall(frame_bytes)
+        client.sendall(frame_bytes)
 
 
 def main(args=None):
@@ -662,9 +672,10 @@ def main(args=None):
         rclpy.spin(api)
     except KeyboardInterrupt:
         api.get_logger().info("Keyboard interrupt")
+    except Exception as e:
+        api.get_logger().info(f"Exception {str(e)}")
     finally:
         api.stop_workers()
-        api.socket.shutdown()
         api.destroy_node()
 
         rclpy.shutdown()

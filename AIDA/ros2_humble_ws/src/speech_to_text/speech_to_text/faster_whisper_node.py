@@ -29,7 +29,7 @@ class STTNode(Node):
         publish_result : Publishes the inputed string to stt_result topic
     """
 
-    def __init__(self, model_size: str = "base.en"):
+    def __init__(self, model_size: str = "tiny.en"):
         """
         Initializes the STTNode object.
 
@@ -157,7 +157,6 @@ class STTNode(Node):
             None
         """
         self.srv = self.create_service(SetState, 'stt/SetState', self.set_state_of_node)
-        self.get_logger().info("STT node: Service list: " + str(self.get_service_names_and_types()))
     
     def set_state_of_node(self, request: SetState.Request, response: SetState.Response) -> SetState.Response:
         """
