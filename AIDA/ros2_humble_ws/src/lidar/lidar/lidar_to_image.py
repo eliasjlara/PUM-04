@@ -47,7 +47,7 @@ class LidarToImage(Node):
         self.lenght = msg.length
 
         canvas_width = 640
-        canvas_height = 480
+        canvas_height = 640
         canvas = np.full((canvas_height, canvas_width, 3), 255, dtype=np.uint8)  # Create white canvas
 
         self.draw_points_on_canvas(canvas, self.distance)
