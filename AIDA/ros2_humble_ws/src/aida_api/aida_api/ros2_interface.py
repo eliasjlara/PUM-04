@@ -238,7 +238,6 @@ class InterfaceNode(Node):
         self.lidar_data = msg.data
         self.lidar_data_lenght = msg.length
         self.lidar_frame_lock.release()
-        self.get_logger().info(f"Received LiDAR data: {msg.data} {msg.length}")
 
     def stt_callback(self, msg) -> None:
         """
@@ -650,8 +649,6 @@ class InterfaceNode(Node):
     def send_data(self, client, data, frame_type):
         """
         Send a data to a client.
-
-        This method sends a video frame to a client by encoding the frame as a JPEG image and sending it over the socket connection.
         Args:
             client: The client socket.
             data: The data.
@@ -659,10 +656,10 @@ class InterfaceNode(Node):
 
         # Send video frame header
         client.sendall(
-            struct.pack(HEADER_FORMAT, frame_type, len(data))
+            struct.pack(HEADER_FORMAT, frame_type, len(data) * data.itemsize)
         )
         # Send video frame data
-        client.sendall(data)
+        client.sendall(data.tobytes())
 
     def send_frame(self, client, frame, frame_type):
         """
