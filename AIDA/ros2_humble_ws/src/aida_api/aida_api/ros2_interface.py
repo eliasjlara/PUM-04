@@ -636,8 +636,8 @@ class InterfaceNode(Node):
             time.sleep(1 / LIDAR_STREAM_FREQUENCY)
             self.lidar_frame_lock.acquire()
             data = self.lidar_data
-            self.get_logger().info(f"Server| Sending LiDAR data: {data}")
             self.lidar_frame_lock.release()
+            self.get_logger().info(f"Server| Sending LiDAR data:{len(data)} {data}")
             try:
                 self.send_data(client, data, MessageType.LIDAR_FRAME)
             except ConnectionError:
