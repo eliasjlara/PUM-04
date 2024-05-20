@@ -85,7 +85,7 @@ fun CameraPage(
             lidarBitmap = viewModel.lidarImageBitmap.collectAsState().value,
             onToggleLidar = { isLidarExpanded = !isLidarExpanded },
             lidarConnectionStage = viewModel.lidarConnectionStage.collectAsState().value,
-        ) // Do we need to add ipAddress and port here? as in camerafeed?
+        )
         val voiceCommand by viewModel.voiceCommand.observeAsState("I am listening ...")
 
         // Displays the text from recorded AIDA instructions, i.e., speech to text
