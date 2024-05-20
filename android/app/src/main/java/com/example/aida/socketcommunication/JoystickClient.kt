@@ -17,9 +17,8 @@ class JoystickClient(ip : String = "localhost", port : Int = 12345, timeToTimeou
         try {
             checkIfJoystickDataValid(x, y)
         } catch (e : IllegalArgumentException){
-            println("Sending joystick data to server: failed")
             println(e.message)
-            return
+            throw IllegalArgumentException("Joystick values must be between -1 and 1")
         }
         val id = MessageType.JOYSTICK.value
         // The values are floats of size 4 bytes

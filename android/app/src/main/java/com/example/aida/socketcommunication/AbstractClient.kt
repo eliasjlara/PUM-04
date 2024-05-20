@@ -11,7 +11,7 @@ import java.nio.ByteOrder
  */
 abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) {
     // TODO - should this be lateinit? As we are using specific init function
-    val socket: Socket
+    private val socket: Socket
 
     init {
         socket = Socket().apply {
@@ -36,7 +36,7 @@ abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, tim
      * Get the body of message sent over socket
      * @return The message as a ByteArray
      */
-    fun getBody(size : Int) : ByteArray {
+    private fun getBody(size : Int) : ByteArray {
         val frameBuffer = ByteBuffer.allocate(size)
         var bytesRead = 0
 
@@ -50,7 +50,7 @@ abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, tim
      * Get the latest response from server
      * @return The message sent over socket
      */
-    fun fetch() : ByteArray{
+    protected fun fetch() : ByteArray{
         val (id, size) = getHeader()
         //sendResponse()
         return getBody(size)
@@ -61,7 +61,7 @@ abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, tim
      * @param id Id explains to server the what type of message @see MessageType
      * @param data The data to be sent to the server
      */
-    fun sendDataToServer(id: Short, data: ByteArray) {
+    protected fun sendDataToServer(id: Short, data: ByteArray) {
         val frameSize = data.size
         val header = ByteBuffer.allocate(6)
         header.order(ByteOrder.BIG_ENDIAN)

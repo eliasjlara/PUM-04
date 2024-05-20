@@ -2,6 +2,7 @@ package com.example.aida.socketcommunication
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.Ignore
 import java.io.File
 import java.lang.Thread.sleep
 import java.nio.ByteBuffer
@@ -15,6 +16,7 @@ class SocketTest {
     fun testGetHeaderSTT(){
         val serverThread = Thread {
             val server = Server()
+            server.receiveMessage()
             server.sendData(MessageType.STT.value, "Hello, World!".toByteArray())
             server.closeConnection()
         }
@@ -37,6 +39,8 @@ class SocketTest {
     fun testGetHeaderLidar(){
         val serverThread = Thread {
             val server = Server()
+            server.receiveMessage()
+            server.receiveMessage()
             // TODO - Send a message with lidar data
             server.sendData(MessageType.LIDAR.value, "Hello, World!".toByteArray())
             server.closeConnection()
@@ -52,6 +56,7 @@ class SocketTest {
         assertEquals(13, size)
         client.stop()
         serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -61,6 +66,8 @@ class SocketTest {
     fun testGetHeaderVideo(){
         val serverThread = Thread {
             val server = Server()
+            server.receiveMessage()
+            server.receiveMessage()
             // TODO - Send a message with video data
             server.sendData(MessageType.CAMERA.value, "Hello, World!".toByteArray())
             server.closeConnection()
@@ -76,6 +83,7 @@ class SocketTest {
         assertEquals(13, size)
         client.stop()
         serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -94,10 +102,11 @@ class SocketTest {
         sleep(1000)
         val client = STTClient()
         client.sendStartSTT()
-        val receivedMessage  = client.fetch()
-        assertEquals("Hello, World!", receivedMessage.toString(Charsets.UTF_8))
+        val receivedMessage = client.receiveSTTData()
+        assertEquals("Hello, World!", receivedMessage)
         client.stop()
         serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -116,10 +125,11 @@ class SocketTest {
         sleep(1000)
         val client = STTClient()
         client.sendStartSTT()
-        val receivedMessage  = client.fetch()
-        assertEquals("", receivedMessage.toString(Charsets.UTF_8))
+        val receivedMessage = client.receiveSTTData()
+        assertEquals("", receivedMessage)
         client.stop()
         serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -138,10 +148,11 @@ class SocketTest {
         sleep(1000)
         val client = STTClient()
         client.sendStartSTT()
-        val receivedMessage  = client.fetch()
-        assertEquals("A", receivedMessage.toString(Charsets.UTF_8))
+        val receivedMessage = client.receiveSTTData()
+        assertEquals("A", receivedMessage)
         client.stop()
         serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -156,7 +167,7 @@ class SocketTest {
             assertEquals(MessageType.MIC.value, id)
             assertEquals(2, size)
             val message = server.getBody(size)
-            assertEquals(1, ByteBuffer.wrap(message).short)
+            assertEquals(Instructions.ON.value, ByteBuffer.wrap(message).short)
 
             server.closeConnection()
         }
@@ -167,6 +178,33 @@ class SocketTest {
         client.sendStartMic()
         client.stop()
         serverThread.join()
+        sleep(1000)
+    }
+
+    /**
+     * Check that StopMic message is sent correctly
+     */
+    @Test
+    fun testSendStopMic(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            val (id, size) = server.getHeader()
+            assertEquals(MessageType.MIC.value, id)
+            assertEquals(2, size)
+            val message = server.getBody(size)
+            assertEquals(Instructions.OFF.value, ByteBuffer.wrap(message).short)
+
+            server.closeConnection()
+        }
+        serverThread.start()
+        // Wait for the server to come online
+        sleep(1000)
+        val client = STTClient()
+        client.sendStopMic()
+        client.stop()
+        serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -181,7 +219,7 @@ class SocketTest {
             val message = server.getBody(size)
             assertEquals(MessageType.STT.value, id)
             assertEquals(2, size)
-            assertEquals(1, ByteBuffer.wrap(message).short)
+            assertEquals(Instructions.ON.value, ByteBuffer.wrap(message).short)
 
             server.closeConnection()
         }
@@ -192,7 +230,35 @@ class SocketTest {
         client.sendStartSTT()
         client.stop()
         serverThread.join()
+        sleep(1000)
     }
+
+    /**
+     * Check that stopSTT message is sent correctly
+     */
+    @Test
+    fun testSendStopSTT(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            val (id, size) = server.getHeader()
+            assertEquals(MessageType.STT.value, id)
+            assertEquals(2, size)
+            val message = server.getBody(size)
+            assertEquals(Instructions.OFF.value, ByteBuffer.wrap(message).short)
+
+            server.closeConnection()
+        }
+        serverThread.start()
+        // Wait for the server to come online
+        sleep(1000)
+        val client = STTClient()
+        client.sendStopSTT()
+        client.stop()
+        serverThread.join()
+        sleep(1000)
+    }
+
 
     /**
      * Check that ReqSTT message is sent correctly
@@ -214,6 +280,7 @@ class SocketTest {
         client.sendRequestSTTData()
         client.stop()
         serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -228,7 +295,7 @@ class SocketTest {
             val message = server.getBody(size)
             assertEquals(MessageType.LIDAR.value, id)
             assertEquals(2, size)
-            assertEquals(1, ByteBuffer.wrap(message).short)
+            assertEquals(Instructions.ON.value, ByteBuffer.wrap(message).short)
             server.closeConnection()
         }
         serverThread.start()
@@ -238,6 +305,32 @@ class SocketTest {
         client.sendStartLidar()
         client.stop()
         serverThread.join()
+        sleep(1000)
+    }
+
+    /**
+     * Check that StopLidar message is sent correctly
+     */
+    @Test
+    fun testSendStopLidar(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            val (id, size) = server.getHeader()
+            val message = server.getBody(size)
+            assertEquals(MessageType.LIDAR.value, id)
+            assertEquals(2, size)
+            assertEquals(Instructions.OFF.value, ByteBuffer.wrap(message).short)
+            server.closeConnection()
+        }
+        serverThread.start()
+        // Wait for the server to come online
+        sleep(1000)
+        val client = LidarClient()
+        client.sendStopLidar()
+        client.stop()
+        serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -261,6 +354,7 @@ class SocketTest {
         client.sentRequestLidarData()
         client.stop()
         serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -275,7 +369,7 @@ class SocketTest {
             val message = server.getBody(size)
             assertEquals(MessageType.CAMERA.value, id)
             assertEquals(2, size)
-            assertEquals(1, ByteBuffer.wrap(message).short)
+            assertEquals(Instructions.ON.value, ByteBuffer.wrap(message).short)
             server.closeConnection()
         }
         serverThread.start()
@@ -285,6 +379,32 @@ class SocketTest {
         client.sendStartCamera()
         client.stop()
         serverThread.join()
+        sleep(1000)
+    }
+
+    /**
+     * Check that StopCamera message is sent correctly
+     */
+    @Test
+    fun testSendStopCamera(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            val (id, size) = server.getHeader()
+            val message = server.getBody(size)
+            assertEquals(MessageType.CAMERA.value, id)
+            assertEquals(2, size)
+            assertEquals(Instructions.OFF.value, ByteBuffer.wrap(message).short)
+            server.closeConnection()
+        }
+        serverThread.start()
+        // Wait for the server to come online
+        sleep(1000)
+        val client = VideoClient()
+        client.sendStopCamera()
+        client.stop()
+        serverThread.join()
+        sleep(1000)
     }
 
     /**
@@ -307,5 +427,134 @@ class SocketTest {
         client.sendGetVideo()
         client.stop()
         serverThread.join()
+        sleep(1000)
+    }
+
+    /**
+     * Test that joystick client gives the correct message
+     */
+    @Test
+    fun testSendJoystick(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            val (id, size) = server.getHeader()
+            val message = server.getBody(size)
+            assertEquals(MessageType.JOYSTICK.value, id)
+            val messageBuffer = ByteBuffer.wrap(message).asFloatBuffer()
+            assertEquals(8, size)
+            assertEquals(1.0f, messageBuffer.get(0))
+            assertEquals(-0.5f, messageBuffer.get(1))
+            server.closeConnection()
+        }
+        serverThread.start()
+        // Wait for the server to come online
+        sleep(1000)
+        val client = JoystickClient()
+        client.sendJoystickData(1.0f, -0.5f)
+        client.stop()
+        serverThread.join()
+        sleep(1000)
+    }
+
+    /**
+     * Check that joystick throws an exception if the x value is too high
+     */
+    @Test
+    fun testSendJoystickXTooHigh(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            server.closeConnection()
+        }
+        serverThread.start()
+        sleep(1000)
+        val client = JoystickClient()
+        try {
+            client.sendJoystickData(1.1f, 0.0f)
+            assertEquals("Joystick values must be between -1 and 1", "Worked")
+        } catch (e : IllegalArgumentException){
+            assertEquals("Joystick values must be between -1 and 1", e.message)
+        }
+        finally {
+            client.stop()
+            serverThread.join()
+        }
+    }
+
+    /**
+     * Check that joystick throws an exception if the x value is too low
+     */
+
+    @Test
+    fun testSendJoystickXTooLow(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            server.closeConnection()
+        }
+        serverThread.start()
+        sleep(1000)
+        val client = JoystickClient()
+        try {
+            client.sendJoystickData(-1.1f, 0.0f)
+            assertEquals("Joystick values must be between -1 and 1", "Worked")
+        } catch (e : IllegalArgumentException){
+            assertEquals("Joystick values must be between -1 and 1", e.message)
+        }
+        finally {
+            client.stop()
+            serverThread.join()
+        }
+    }
+
+    /**
+     * Check that joystick throws an exception if the y value is too high
+     */
+    @Test
+    fun testSendJoystickYTooHigh(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            server.closeConnection()
+        }
+        serverThread.start()
+        sleep(1000)
+        val client = JoystickClient()
+        try {
+            client.sendJoystickData(0.0f, 1.1f)
+            assertEquals("Joystick values must be between -1 and 1", "Worked")
+        } catch (e : IllegalArgumentException){
+            assertEquals("Joystick values must be between -1 and 1", e.message)
+        }
+        finally {
+            client.stop()
+            serverThread.join()
+        }
+    }
+
+    /**
+     * Check that joystick throws an exception if the y value is too low
+     */
+    @Test
+    fun testSendJoystickYTooLow(){
+        val serverThread = Thread{
+            val server = Server()
+            sleep(500)
+            server.closeConnection()
+        }
+        serverThread.start()
+        sleep(1000)
+        val client = JoystickClient()
+        try {
+            client.sendJoystickData(0.0f, -1.1f)
+            assertEquals("Joystick values must be between -1 and 1", "Worked")
+        } catch (e : IllegalArgumentException){
+            assertEquals("Joystick values must be between -1 and 1", e.message)
+        }
+        finally {
+            client.stop()
+            serverThread.join()
+        }
     }
 }
