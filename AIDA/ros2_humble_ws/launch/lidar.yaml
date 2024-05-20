@@ -8,7 +8,7 @@ launch:
 
 - node:
     pkg: "lidar"
-    exec: "lidar"
+    exec: "lidar_reader"
     name: "lidar"
 
 - node:
