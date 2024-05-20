@@ -43,10 +43,10 @@ class VideoTransmitNode(Node):
         self.bridge = CvBridge()
 
         self.counter = 0
-        self.trigger_interval = 6
+        self.trigger_interval = 30
         self.img_out = None
         self.cv2_img = None
-        self.active_analysis = AnalysisType.POSE_LANDMARKER # Default analysis type
+        self.active_analysis = AnalysisType.NONE # Default analysis type
 
         self.pose_landmarker = PoseLandmarkerWrapper()
         self.gesture_recognizer = GestureRecognizerWrapper()
