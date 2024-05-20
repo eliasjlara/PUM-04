@@ -26,7 +26,7 @@ VIDEO_STREAM_ID = 0  # We'll keep things simple with a single stream
 # ROS2 Constants
 # VIDEO_TOPIC = "image"
 VIDEO_TOPIC = "video_analysis/result"  # "video/camera"
-LIDAR_TOPIC = "lidar/image"
+LIDAR_TOPIC = "lidar/data"
 STT_TOPIC = "stt/stt_result"
 JOYSTICK_TOPIC = "joystick/pos"
 
@@ -234,8 +234,7 @@ class InterfaceNode(Node):
             msg: The lidar image message.
         """
         self.lidar_frame_lock.acquire()
-        cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        self.lidar_frame = cv_image
+        self.lidar_data = msg.data
         self.lidar_frame_lock.release()
 
     def stt_callback(self, msg) -> None:
@@ -636,13 +635,30 @@ class InterfaceNode(Node):
         while True:  # Lidar streaming loop
             time.sleep(1 / LIDAR_STREAM_FREQUENCY)
             self.lidar_frame_lock.acquire()
-            frame = self.lidar_frame
+            data = self.lidar_data
             self.lidar_frame_lock.release()
             try:
-                self.send_frame(client, frame, MessageType.LIDAR_FRAME)
+                self.send_data(client, data, MessageType.LIDAR_FRAME)
             except ConnectionError:
                 self.get_logger().info(f"Server| LiDAR feed connection was interrupted.")
                 break
+
+    def send_data(self, client, data, frame_type):
+        """
+        Send a data to a client.
+
+        This method sends a video frame to a client by encoding the frame as a JPEG image and sending it over the socket connection.
+        Args:
+            client: The client socket.
+            data: The data.
+        """
+
+        # Send video frame header
+        client.sendall(
+            struct.pack(HEADER_FORMAT, frame_type, len(data))
+        )
+        # Send video frame data
+        client.sendall(data)
 
     def send_frame(self, client, frame, frame_type):
         """
