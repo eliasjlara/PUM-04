@@ -235,7 +235,9 @@ class InterfaceNode(Node):
         """
         self.lidar_frame_lock.acquire()
         self.lidar_data = msg.data
+        self.lidar_data_lenght = msg.length
         self.lidar_frame_lock.release()
+        self.get_logger().info(f"Received LiDAR data: {msg.data} {msg.length}")
 
     def stt_callback(self, msg) -> None:
         """
