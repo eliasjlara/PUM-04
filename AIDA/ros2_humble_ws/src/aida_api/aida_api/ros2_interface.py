@@ -654,12 +654,15 @@ class InterfaceNode(Node):
             data: The data.
         """
 
+        data = np.frombuffer(data, dtype=np.float32, count=len(data))
+        data.byteswap(inplace=True) # TODO: replace with big endian
+        byte_data = data.tobytes()
         # Send video frame header
         client.sendall(
-            struct.pack(HEADER_FORMAT, frame_type, len(data) * data.itemsize)
+            struct.pack(HEADER_FORMAT, frame_type, len(byte_data))
         )
         # Send video frame data
-        client.sendall(data.tobytes())
+        client.sendall(byte_data)
 
     def send_frame(self, client, frame, frame_type):
         """
