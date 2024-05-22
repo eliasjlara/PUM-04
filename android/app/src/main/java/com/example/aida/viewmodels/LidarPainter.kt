@@ -40,7 +40,7 @@ class LidarPainter(val width: Int, val height: Int, val maxLidarDistance: Int = 
      *  @param distance the distance to calculate the pixel value for
      *  @param angleInDegrees the angle in degrees to calculate the pixel value for
      */
-    private fun calculatePixelValue(distance: Int, angleInDegrees: Double): Pair<Float, Float>{
+    fun calculatePixelValue(distance: Int, angleInDegrees: Double): Pair<Float, Float>{
         val angleInRadians = Math.toRadians(angleInDegrees)
         val normalizedDistanceX = distance.toFloat() / (maxLidarDistance/width)
         val normalizedDistanceY = distance.toFloat() / (maxLidarDistance/height)
