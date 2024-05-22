@@ -1,21 +1,17 @@
 package com.example.aida.socketcommunication
 
-//import kotlin.math.radians
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.example.aida.viewmodels.LidarPainter
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import kotlin.math.cos
-import kotlin.math.sin
 
 /**
  * This class is used to create a LidarClient object to receive Lidar data from the server
  */
 class LidarClient(ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) : AbstractClient(ip, port, timeToTimeout){
+    // Create a LidarPainter object to convert Lidar data to Bitmap
+    private val lidarPainter = LidarPainter(640, 640, 5000)
+
     /**
      * Send message to server requesting to turn on Lidar
      */
@@ -58,9 +54,9 @@ class LidarClient(ip : String = "localhost", port : Int = 12345, timeToTimeout :
         return BitmapFactory.decodeByteArray(data, 0, data.size)
             ?.asImageBitmap()
     }*/
-    @OptIn(ExperimentalUnsignedTypes::class)
-    fun receiveLidarData() : ImageBitmap{
-        println("AAAAHHH !!")
+    // This function is used to receive Lidar data from the server and convert it to ImageBitmap
+    // This works - But should test if I can use fetch instead
+    /*fun receiveLidarData() : ImageBitmap{
         getHeader()
         //val data = fetch()
         val byteArray = ByteArray(1440)
@@ -71,58 +67,25 @@ class LidarClient(ip : String = "localhost", port : Int = 12345, timeToTimeout :
         }
         val intArray = IntArray(byteArray.size / 4)
         val byteBuffer = ByteBuffer.wrap(byteArray).order(ByteOrder.BIG_ENDIAN)
-        val intValue = 2147483647
         for (i in intArray.indices) {
             intArray[i] = byteBuffer.int
-            print("AAAAHHH: ${intArray[i]} ")
         }
-        //val dataAsInts = ByteBuffer.wrap(byteArray).order(ByteOrder.BIG_ENDIAN).asIntBuffer()
-        // Bytearray with 360 values
-        println("AAAAHHH 3")
-        val a = createLiDARBitmap(intArray, 640, 640)
-        println("AAAAHHH 10")
+        val a = lidarPainter.createLiDARBitmap(intArray)
+        return a.asImageBitmap()
+    }*/
+    /**
+     * Receives lidar data from server and converts to Image
+     * @return ImageBitmap of the Lidar data
+     */
+    fun receiveLidarData() : ImageBitmap {
+        val data = fetch()
+        val intArray = IntArray(data.size / 4)
+        val byteBuffer = ByteBuffer.wrap(data).order(java.nio.ByteOrder.BIG_ENDIAN)
+        for (i in intArray.indices) {
+            intArray[i] = byteBuffer.int
+        }
+        val a = lidarPainter.createLiDARBitmap(intArray)
         return a.asImageBitmap()
     }
 
-    /**
-     * Create a bitmap from the lidar values received
-     * @param lidarValues The lidar values received from the server
-     * @param width The width of the bitmap
-     * @param height The height of the bitmap
-     * @return Bitmap of the lidar values
-     */
-    private fun createLiDARBitmap(lidarValues: IntArray, width: Int, height: Int): Bitmap {
-        println("AAAAHHH 4")
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-        val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.WHITE)
-        println("AAAAHHH 5")
-        val MAX_LIDAR_DISTANCE = 5000  // Max distance of lidar in mm
-        val centerX = width / 2f
-        val centerY = height / 2f
-        //val radius = min(width, height) / 2
-
-
-        val paint = Paint()
-        paint.color = Color.BLACK
-        paint.strokeWidth = 3f
-        println("AAAAHHH 6")
-
-        for ((index, distance) in lidarValues.withIndex()) {
-            println("AAAAHHH 7")
-            val angle = Math.toRadians(index.toDouble())
-            val normalizedDistanceX = distance.toFloat() / (MAX_LIDAR_DISTANCE/centerX)
-            val normalizedDistanceY = distance.toFloat() / (MAX_LIDAR_DISTANCE/centerY)
-
-            val x = centerX + normalizedDistanceX * cos(angle).toFloat()
-            val y = centerY + normalizedDistanceY * sin(angle).toFloat()
-
-            if (x >= 0 && x < width && y >= 0 && y < height) {
-                canvas.drawPoint(x, y, paint)
-                println("AAAAHHH 8")
-            }
-        }
-        println("AAAAHHH 9")
-        return bitmap
-    }
 }
