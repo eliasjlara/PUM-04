@@ -1,8 +1,6 @@
 package com.example.aida.viewmodels
 
-import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -299,7 +297,7 @@ class MainViewModel(private val dataStore: DataStore<Preferences>) : ViewModel()
                 lidarClient = LidarClient(
                     ip = ip,
                     port = prt,
-                    timeToTimeout = 5000
+                    timeToTimeout = 10000
                 )
                 lidarClient.sendStartLidar()
                 lidarClient.sentRequestLidarData()
