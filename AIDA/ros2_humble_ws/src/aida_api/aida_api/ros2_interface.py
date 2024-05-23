@@ -36,7 +36,7 @@ MIC_CONTROL_SERVICE = "mic/SetState"
 VIDEO_STREAM_FREQUENCY = 30
 LIDAR_STREAM_FREQUENCY = 1
 
-VIDEO_COMPRESSION_QUALITY = 70
+VIDEO_COMPRESSION_QUALITY = 50
 
 # Message Type Enums (make sure these match your client-side definitions)
 class MessageType:

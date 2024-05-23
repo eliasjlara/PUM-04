@@ -2,7 +2,7 @@ import cv2
 import rclpy
 from rclpy.node import Node
 from aida_interfaces.srv import SetState
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage, Image
 from cv_bridge import CvBridge
 
 
@@ -25,10 +25,16 @@ class VideoPublisherNode(Node):
     def __init__(self):
         super().__init__('image_publisher', namespace='video')
         self.bridge = CvBridge()
+        width = 640
+        height = 480
         self.cap = cv2.VideoCapture(0)
+        # Set capture property for frame width
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        # Set capture property for frame height
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.srv = self.create_service(SetState, 'SetState', self.set_state_callback)
         self.publisher_ = self.create_publisher(Image, 'camera', 10)
-        self.timer_period = 0.03
+        self.timer_period = 0.05 # 0.05 => 20 Hz
         self.is_active = True  # Begins as active
         self.timer = self.create_timer(self.timer_period, self.publish_image)
 
@@ -44,6 +50,7 @@ class VideoPublisherNode(Node):
             ret, frame = self.cap.read()
             frame_num += 1
             if ret == True:
+                # self.bridge.cv2_to_compressed_imgmsg(frame)
                 msg = self.bridge.cv2_to_imgmsg(frame, "bgr8")
                 msg.header.frame_id = str(frame_num)
                 self.publisher_.publish(msg)

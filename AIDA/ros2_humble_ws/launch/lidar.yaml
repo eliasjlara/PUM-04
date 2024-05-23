@@ -1,0 +1,17 @@
+launch:
+
+- node:
+    pkg: "aida_api"
+    exec: "ros2_interface"
+    name: "api"
+    namespace: ""
+
+- node:
+    pkg: "lidar"
+    exec: "lidar_reader"
+    name: "lidar"
+
+- node:
+    pkg: "lidar"
+    exec: "lidar_to_image"
+    name: "lidar_to_image"

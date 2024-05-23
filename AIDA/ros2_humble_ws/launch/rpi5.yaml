@@ -27,3 +27,13 @@ launch:
 - node:
     pkg: "image_recognition"
     exec: "video_analyzer"
+
+# - node:
+#     pkg: "lidar"
+#     exec: "lidar_reader"
+#     name: "lidar"
+
+# - node:
+#     pkg: "lidar"
+#     exec: "lidar_to_image"
+#     name: "lidar_to_image"
