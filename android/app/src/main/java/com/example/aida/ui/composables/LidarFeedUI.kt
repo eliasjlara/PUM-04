@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -67,6 +68,7 @@ fun Lidar(
     screenWidth: Dp,
     screenHeight: Dp,
     isLidarExpanded: Boolean,
+    lidarBitmap: ImageBitmap?,
     onToggleLidar: () -> Unit,
     lidarConnectionStage: ConnectionStages
 ) {
@@ -103,8 +105,8 @@ fun Lidar(
                 }
             ),
     ) {
-        if (lidarConnectionStage == ConnectionStages.CONNECTION_SUCCEEDED) {
-            DisplayLidarFeed(visible, expandButtonSize, isLidarExpanded)
+        if (lidarBitmap != null) {
+            DisplayLidarFeed(lidarBitmap, visible, expandButtonSize, isLidarExpanded)
         } else {
             DisplayLidarLoadingOrErrorMessage(lidarConnectionStage)
         }
@@ -124,6 +126,7 @@ fun Lidar(
  */
 @Composable
 fun DisplayLidarFeed(
+    lidarBitmap: ImageBitmap,
     visible: Boolean,
     expandButtonSize: Dp,
     isLidarExpanded: Boolean
@@ -131,7 +134,7 @@ fun DisplayLidarFeed(
     Box(modifier = Modifier.fillMaxSize()) {
         // Set the image to lidar feed
         Image(
-            painter = painterResource(id = R.drawable.lidar_small),
+            bitmap = lidarBitmap,
             contentDescription = "lidar map",
             modifier = Modifier
                 .fillMaxSize()

@@ -1,66 +1,54 @@
 package com.example.aida.socketcommunication
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 /**
  * Client class that connects to server to receive
  * video data
  */
-
 class VideoClient (ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) : AbstractClient(ip, port, timeToTimeout){
-    /**
-     * Receives the message and shows it using helper method
-     * in SocketHelpers.kt
-     */
-    /*
-    fun receiveImage(imagePainter: ImagePainter) {
-        val imageData = fetch()
-        imagePainter.displayImageFromByteArray(imageData)
-    }*/
-
     /**
      * Sends a request to start the camera to the server
      */
     fun sendStartCamera(){
         val id = MessageType.CAMERA.value
         val size = 2
-        val frameBufferSize = ByteBuffer.allocate(6)
-        frameBufferSize.putShort(id.toShort())
-        frameBufferSize.putInt(size)
-        frameBufferSize.order(ByteOrder.BIG_ENDIAN)
-        socket.getOutputStream().write(frameBufferSize.array())
-        val start = 1 // What should this be?
-        val startBuffer = ByteBuffer.allocate(2)
-        startBuffer.putShort(start.toShort())
-        startBuffer.order(ByteOrder.BIG_ENDIAN)
-        socket.getOutputStream().write(startBuffer.array())
+        val start = Instructions.ON.value
+        val buffer = ByteBuffer.allocate(size)
+        buffer.putShort(start)
+        sendDataToServer(id, buffer.array())
     }
-
+    /**
+     * Sends a request to stop the camera feed to the server
+     */
+    fun sendStopCamera() {
+        val id = MessageType.CAMERA.value
+        val size = 2
+        val stop = Instructions.OFF.value
+        val buffer = ByteBuffer.allocate(size)
+        buffer.putShort(stop)
+        sendDataToServer(id, buffer.array())
+    }
     /**
      * Sends a request to server to start sending video data
      */
     fun sendGetVideo(){
         val id = MessageType.REQ_VIDEO_FEED.value
         val size = 0
-        val frameBufferSize = ByteBuffer.allocate(6)
-        frameBufferSize.putShort(id.toShort())
-        frameBufferSize.putInt(size)
-        frameBufferSize.order(ByteOrder.BIG_ENDIAN)
-        socket.getOutputStream().write(frameBufferSize.array())
+        val buffer = ByteBuffer.allocate(size)
+        sendDataToServer(id, buffer.array())
     }
-}
-fun main(args: Array<String>) {
-    //val client = Client("192.168.37.50", 9000)
-    val videoClient = VideoClient()
-    //val imagePainter = ImagePainter()
-    //imagePainter.setDefaultCloseOperation()
 
-    videoClient.sendStartCamera()
-    videoClient.sendGetVideo()
-    //videoClient.frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-    while (true){
-        //videoClient.receiveImage(imagePainter)
-        videoClient.fetch()
+    /**
+     * Receives video data from server and converts to Image
+     * @return ImageBitmap? of the video data
+     */
+    fun receiveVideoData() : ImageBitmap?{
+        val data = fetch()
+        return BitmapFactory.decodeByteArray(data, 0, data.size)
+            ?.asImageBitmap()
+
     }
-    videoClient.stop()
 }
