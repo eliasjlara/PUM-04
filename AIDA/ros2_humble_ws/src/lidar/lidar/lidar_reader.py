@@ -110,7 +110,7 @@ class Lidar(Node):
         msg.data = self.distance
         msg.length = len(self.distance)
         self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
+        # self.get_logger().info('Publishing: "%s"' % msg.data)
 
 
     def read_serial(self):

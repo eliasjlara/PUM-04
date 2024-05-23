@@ -42,7 +42,7 @@ class LidarToImage(Node):
         Returns:
             None
         """
-        self.get_logger().info('Subscribing: "%s"' % msg.data) 
+        # self.get_logger().info('Subscribing: "%s"' % msg.data) 
         self.distance = msg.data
         self.lenght = msg.length
 
