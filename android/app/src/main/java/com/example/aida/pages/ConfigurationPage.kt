@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.VerticalDivider
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,11 +55,12 @@ fun ConfigurationPage(
         val paddingSides = 30.dp
         val rowSpacing = 10.dp
 
+
         // First column for SSH Connection Data
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
-                .padding(top = paddingTop, start = paddingSides, end = paddingSides, ),
+                .padding(top = paddingTop, start = paddingSides, end = paddingSides),
             verticalArrangement = Arrangement.spacedBy(rowSpacing)
         ) {
             var ipInput by remember { mutableStateOf(viewModel.ipAddress.value) }
@@ -65,6 +68,9 @@ fun ConfigurationPage(
             val standardInputModifier = Modifier.weight(1f)
 
             Text(text = "SSH Connection Data", modifier = Modifier.align(Alignment.Start))
+
+            var isIpError by rememberSaveable { mutableStateOf(false) }
+            var isPortError by rememberSaveable { mutableStateOf(false) }
 
             // IP & Port input
             Row(
@@ -75,14 +81,24 @@ fun ConfigurationPage(
                     value = ipInput,
                     onValueChange = { newValue ->
                         // Check that the address is correctly formatted
-                        if (newValue.matches(Regex("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\$"))) {
-                            ipInput = newValue
-                        }
+                        ipInput = newValue
+                        isIpError =
+                            !ipInput.matches(Regex("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\$"))
                     },
                     label = { Text("IP-address") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    modifier = standardInputModifier
+                    modifier = standardInputModifier,
+                    isError = isIpError,
+                    supportingText = {
+                        if (isIpError) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = "IP-address is not correctly formatted, should be of standard \"1.1.1.1\"",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
                 )
 
                 // Port input
@@ -90,14 +106,23 @@ fun ConfigurationPage(
                     value = portInput,
                     onValueChange = { newValue ->
                         // Ensure the input is 0 to 4 characters
-                        if (newValue.matches(Regex("^[0-9]{1,4}\$"))) {
-                            portInput = newValue
-                        }
+                        portInput = newValue
+                        isPortError = !newValue.matches(Regex("^[0-9]{1,4}\$"))
                     },
                     label = { Text("Port") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    modifier = standardInputModifier
+                    modifier = standardInputModifier,
+                    isError = isPortError,
+                    supportingText = {
+                        if (isPortError) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = "Port is not correctly formatted, should be of standard 1 to 9999",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
                 )
             }
 
@@ -128,10 +153,12 @@ fun ConfigurationPage(
             // Button to confirm IP address and port
             Button(
                 onClick = {
-                    viewModel.updateIpAddress(ipInput)
-                    viewModel.updatePort(portInput.toInt())
-                    viewModel.connectToAIDA()
-                    onButtonPress()
+                    if (!isIpError || !isPortError) {
+                        viewModel.updateIpAddress(ipInput)
+                        viewModel.updatePort(portInput.toInt())
+                        viewModel.connectToAIDA()
+                        onButtonPress()
+                    }
                 },
                 modifier = Modifier
                     .padding(20.dp)

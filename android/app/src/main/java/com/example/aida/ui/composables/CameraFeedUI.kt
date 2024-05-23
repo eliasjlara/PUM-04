@@ -190,10 +190,12 @@ fun DisplayLoadingOrErrorMessage(
 
         // Display loading/error message text
         Text(
-            text = if (cameraFeedConnectionStage == ConnectionStages.CONNECTING)
-                loadingText
-            else
-                "Camera feed not available",
+            text = when (cameraFeedConnectionStage) {
+                ConnectionStages.CONNECTING -> loadingText
+                ConnectionStages.CONNECTION_FAILED -> "Camera feed not available"
+                ConnectionStages.CONNECTION_CLOSED -> "Camera feed is off"
+                else -> ""
+            },
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.headlineSmall,
@@ -202,12 +204,14 @@ fun DisplayLoadingOrErrorMessage(
         )
 
         Text(
-            text = (if (cameraFeedConnectionStage == ConnectionStages.CONNECTING)
-                "The camera feed is currently fetching from AIDA\n" +
+            text = when (cameraFeedConnectionStage) {
+                ConnectionStages.CONNECTING -> "The camera feed is currently fetching from AIDA\n" +
                         "Please wait until a connection is made"
-            else
-                "Could not connect to AIDA, please try again\n" +
-                        "You are trying to connect to: $ipAddress:$port"),
+                ConnectionStages.CONNECTION_FAILED -> "Could not connect to AIDA, please try again\n" +
+                        "You are trying to connect to: $ipAddress:$port"
+                ConnectionStages.CONNECTION_CLOSED -> "Please press button"
+                else -> ""
+            },
             textAlign = TextAlign.Center,
             color = Color.LightGray
         )

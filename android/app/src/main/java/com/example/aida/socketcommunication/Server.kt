@@ -16,10 +16,12 @@ class Server (port: Int = 12345) {
     private val serverSocket = ServerSocket(port)
     private val socket = serverSocket.accept()
 
-   fun receiveResponse() : String {
-        val response = BufferedReader(InputStreamReader(socket.getInputStream())).readLine()
-        return response
-    }
+    /**
+     * Send data to the client
+     * @param id The id of the message
+     * @param data The data to be sent
+     * For testing purposes
+     */
     fun sendData(id: Short, data: ByteArray) {
         //val id = MessageType.STT.value
         val frameSize = data.size
@@ -32,11 +34,20 @@ class Server (port: Int = 12345) {
         socket.getOutputStream().write(data)
     }
 
+    /**
+     * Close the connection to the socket
+     *
+     */
     fun closeConnection() {
         socket.close()
         serverSocket.close()
     }
 
+    /**
+     * Get the header of the message sent over socket
+     * @return Pair with id of the message and size of message
+     * For testing purposes
+     */
     fun getHeader() : Pair<Short, Int>{
         var headerBuffer = ByteBuffer.allocate(6)
         socket.getInputStream().read(headerBuffer.array())
@@ -50,6 +61,7 @@ class Server (port: Int = 12345) {
     /**
      * Get the body of message sent over socket
      * @return The message as a ByteArray
+     * For testing purposes
      */
     fun getBody(size : Int) : ByteArray {
         val frameBuffer = ByteBuffer.allocate(size)
@@ -60,6 +72,10 @@ class Server (port: Int = 12345) {
         }
         return frameBuffer.array()
     }
+
+    /**
+     * Only for debug
+     */
     fun receiveMessage() {
         val (id, size) = getHeader()
         val message = getBody(size)
@@ -68,17 +84,4 @@ class Server (port: Int = 12345) {
         //}
         //sendData(id, "Hello, World!".toByteArray())
     }
-}
-fun main(args: Array<String>) {
-    val server: Server = Server()
-    val path = "/Users/eliaslara/Desktop/PUM-04/android/app/src/main/java/com/example/aida/socketcommunication/socketbild.jpeg"
-    val file = File(path)
-    val message = file.readBytes()
-    server.receiveMessage()
-    server.receiveMessage()
-
-    while (true) {
-        server.sendData(MessageType.CAMERA.value,message)
-    }
-    server.closeConnection()
 }

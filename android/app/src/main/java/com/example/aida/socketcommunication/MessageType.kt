@@ -1,5 +1,10 @@
 package com.example.aida.socketcommunication
 
+/**
+ * Enum class that contains all the different
+ * message types that can be sent and received
+ * from the server
+ */
 enum class MessageType(val value: Short) {
     CAMERA(1),
     IMAGE_ANALYSIS(2),

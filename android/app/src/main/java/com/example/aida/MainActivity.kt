@@ -160,7 +160,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         },
-                        onCameraClicked = { state = 0 },
+                        onCameraClicked = { viewModel.toggleCameraFeed() },
                         barHeight = barHeight,
                         topBarTitle = topBarTitle
                     )

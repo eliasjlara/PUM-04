@@ -69,12 +69,11 @@ fun CameraPage(
         CameraFeed(
             lidarIsExpanded = isLidarExpanded,
             screenWidth = screenWidth,
-            imageBitmap = viewModel.imageBitmap.collectAsState().value,
+            imageBitmap = viewModel.videoBitmap.collectAsState().value,
             cameraFeedConnectionStage = viewModel.cameraFeedConnectionStage.collectAsState().value,
             ipAddress = viewModel.ipAddress.collectAsState().value,
             port = viewModel.port.collectAsState().value,
         )
-
         Lidar(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -82,6 +81,7 @@ fun CameraPage(
             screenWidth = screenWidth,
             screenHeight = screenHeight,
             isLidarExpanded = isLidarExpanded,
+            lidarBitmap = viewModel.lidarImageBitmap.collectAsState().value,
             onToggleLidar = { isLidarExpanded = !isLidarExpanded },
             lidarConnectionStage = viewModel.lidarConnectionStage.collectAsState().value,
         )
@@ -111,8 +111,10 @@ fun CameraPage(
             joystickSize = 130F,
             thumbSize = 45f,
             enabled = viewModel.joystickConnectionStage
-        ) { x: Offset ->
-            // TODO: Sent offset x to AIDA
+        ) { offset: Offset ->
+            if(viewModel.sendingJoystickData.value == false) {
+                viewModel.sendJoystickData(offset.x, offset.y)
+            }
         }
 
         RecordVoiceButton(
