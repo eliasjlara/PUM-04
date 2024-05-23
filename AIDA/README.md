@@ -125,6 +125,72 @@ sudo docker run -it --rm --device=/dev/video0 --device=/dev/snd/controlC0 --devi
 ```
 The above command runs the container with an interactive environment, allows access to camera and microphone, and shares the network with host computer. If the access to either camera or microphone doesn't work, try to find the name of your device in */dev/* or */dev/snd/* and replace suiting part above command..
 
+### Running on AIDA
+***setup:***
+
+Share network:
+
+Use 2.4 GHz.
+
+```SSID: Pixel_1408```
+
+```Password: *****```
+
+If you share network from another device, connect to the network:
+    ```SSID: Pixel_1408```
+    ```Password: *****```
+
+
+
+***rpi4:***
+
+Open a new console.
+
+On the device sharing network, look up the ip-adress for the raspberry pi 4.
+
+
+```
+ssh aida@192.168.*.*
+
+cd PUM-04/AIDA/ros2_humble_ws/
+
+source /opt/ros/humble/setup.bash
+
+cd launch/
+
+source ../install/local_setup.bash
+
+sudo chmod 666 /dev/ttyUSB0
+
+ros2 launch rpi4.yaml
+```
+
+***rpi5:***
+
+Open a new console.
+
+On the device sharing network, look up the ip-adress for the raspberry pi 5.
+
+```
+
+ssh aida@192.168.*.*
+
+sudo docker run -it --rm --device=/dev/video0 --device=/dev/snd/controlC0 --device=/dev/snd/pcmC0D0c --network host ros2-aida
+
+git pull
+
+cd ..
+
+colcon build
+
+source install/local_setup.bash
+
+cd launch
+
+ros2 launch rpi5.yaml
+
+```
+
 ### Tips
 >[!NOTE]
 >The topic of publisher and subscriber must be in the same namespace
