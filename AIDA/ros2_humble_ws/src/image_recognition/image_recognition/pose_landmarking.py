@@ -22,7 +22,7 @@ class PoseLandmarkerWrapper:
         self.label_font_size = 1
         self.label_thickness = 2
 
-        self.model = "..//src//image_recognition//models//pose_landmarker.task"
+        self.model = "..//src//image_recognition//models//pose_landmarker_lite.task"
         self.result = None
         self.result_lock = threading.Lock()
 
