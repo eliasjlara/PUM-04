@@ -26,14 +26,15 @@ VIDEO_STREAM_ID = 0  # We'll keep things simple with a single stream
 # ROS2 Constants
 # VIDEO_TOPIC = "image"
 VIDEO_TOPIC = "video_analysis/result"  # "video/camera"
-LIDAR_TOPIC = "lidar"
+LIDAR_TOPIC = "lidar/image"
 STT_TOPIC = "stt/stt_result"
 JOYSTICK_TOPIC = "joystick/pos"
 
 CAMERA_CONTROL_SERVICE = "camera/SetState"
 MIC_CONTROL_SERVICE = "mic/SetState"
 
-STREAM_FREQUENCY = 30
+VIDEO_STREAM_FREQUENCY = 30
+LIDAR_STREAM_FREQUENCY = 1
 
 VIDEO_COMPRESSION_QUALITY = 70
 
@@ -47,12 +48,13 @@ class MessageType:
 
     REQ_VIDEO_FEED = 6
     REQ_STT = 7
-    REQ_LIDAR = 8
+    REQ_LIDAR_FEED = 8
 
     TEXT = 9
     VIDEO_FRAME = 10
     LIDAR_DATA = 11
     AUDIO = 12
+    LIDAR_FRAME = 13
     JOYSTICK_MOVE = 14
 
 
@@ -107,6 +109,7 @@ class InterfaceNode(Node):
         self.video_frame = None
         self.stt_result = ""
         self.video_frame_lock = threading.Lock()
+        self.lidar_frame_lock = threading.Lock()
         self.stt_result_lock = threading.Lock()
         self.host = host
         self.port = port
@@ -223,6 +226,18 @@ class InterfaceNode(Node):
         self.video_frame = cv_image
         self.video_frame_lock.release()
 
+    def lidar_callback(self, msg) -> None:
+        """
+        Callback function for lidar image messages.
+
+        Args:
+            msg: The lidar image message.
+        """
+        self.lidar_frame_lock.acquire()
+        cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        self.lidar_frame = cv_image
+        self.lidar_frame_lock.release()
+
     def stt_callback(self, msg) -> None:
         """
         Callback function for STT messages.
@@ -262,10 +277,13 @@ class InterfaceNode(Node):
         """
         Initialize the subscribers.
 
-        This method initializes the subscribers for video and speech-to-text (STT) messages.
+        This method initializes the subscribers for video, lidar and speech-to-text (STT) messages.
         """
         self.video_sub = self.create_subscription(
             Image, VIDEO_TOPIC, self.video_callback, 10
+        )
+        self.lidar_sub = self.create_subscription(
+            Image, LIDAR_TOPIC, self.lidar_callback, 10
         )
         self.stt_sub = self.create_subscription(
             String, STT_TOPIC, self.stt_callback, 10
@@ -279,6 +297,7 @@ class InterfaceNode(Node):
         """
         self.joystick_queue_lock = threading.Lock()
         self.joystick_queue = queue.Queue()
+        
 
     def start_workers(self, start_socket=True) -> None:
         """
@@ -441,6 +460,8 @@ class InterfaceNode(Node):
             self.handle_lidar(data)
         elif message_type == MessageType.REQ_VIDEO_FEED:
             self.handle_req_video_feed(client)
+        elif message_type == MessageType.REQ_LIDAR_FEED:
+            self.handle_req_lidar_feed(client)
         elif message_type == MessageType.REQ_STT:
             self.handle_req_stt(client)
         elif message_type == MessageType.TEXT:
@@ -521,6 +542,18 @@ class InterfaceNode(Node):
         # Send video stream
         self.send_video_stream(client)
 
+    def handle_req_lidar_feed(self, client):
+        """
+        Handle requests for lidar feed.
+
+        
+        Starts a new thread to send the lidar feed to the client.
+        Args:
+            client: The client socket.
+        """
+        self.get_logger().info("Server| Sending lidar feed to client.")
+        self.send_lidar_stream(client)
+
     def handle_req_stt(self, client):
         """
         Handle requests for STT.
@@ -579,14 +612,39 @@ class InterfaceNode(Node):
             self.get_logger().info("Server| No video feed available.")
 
         while True:  # Video streaming loop
-            time.sleep(1 / STREAM_FREQUENCY)
+            time.sleep(1 / VIDEO_STREAM_FREQUENCY)
             self.video_frame_lock.acquire()
             frame = self.video_frame
             self.video_frame_lock.release()
+            try:
+                self.send_frame(client, frame, MessageType.VIDEO_FRAME)
+            except ConnectionError:
+                self.get_logger().info(f"Server| Video feed connection was interrupted.")
+                break
 
-            self.send_video_frame(client, frame)
+    def send_lidar_stream(self, client):
+        """
+        Send lidar stream to a client.
 
-    def send_video_frame(self, client, frame):
+        This method sends the lidar stream to a client by continuously sending lidar frames at a specified frequency.
+        Args:
+            conn: The client socket.
+        """
+        if not isinstance(self.lidar_frame, np.ndarray):
+            self.get_logger().info("Server| No lidar feed available.")
+
+        while True:  # Lidar streaming loop
+            time.sleep(1 / LIDAR_STREAM_FREQUENCY)
+            self.lidar_frame_lock.acquire()
+            frame = self.lidar_frame
+            self.lidar_frame_lock.release()
+            try:
+                self.send_frame(client, frame, MessageType.LIDAR_FRAME)
+            except ConnectionError:
+                self.get_logger().info(f"Server| LiDAR feed connection was interrupted.")
+                break
+
+    def send_frame(self, client, frame, frame_type):
         """
         Send a video frame to a client.
 
@@ -599,7 +657,7 @@ class InterfaceNode(Node):
         frame_bytes = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, VIDEO_COMPRESSION_QUALITY])[1].tobytes()  # Encode as JPEG
         # Send video frame header
         client.sendall(
-            struct.pack(HEADER_FORMAT, MessageType.VIDEO_FRAME, len(frame_bytes))
+            struct.pack(HEADER_FORMAT, frame_type, len(frame_bytes))
         )
         # Send video frame data
         client.sendall(frame_bytes)
