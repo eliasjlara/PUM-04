@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FrontHand
+import androidx.compose.material.icons.outlined.Videocam
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,12 +23,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aida.R
+import com.example.aida.socketcommunication.Instructions
 import com.example.aida.ui.theme.TopBarColor
 
 /**
@@ -41,6 +47,7 @@ import com.example.aida.ui.theme.TopBarColor
 fun TopBar(
     onMenuClicked: () -> Unit,
     onCameraClicked: () -> Unit,
+    onGestureClicked: (Instructions) -> Unit = {},
     barHeight: Dp,
     topBarTitle: String,
 ) {
@@ -87,7 +94,7 @@ fun TopBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             var cameraPress by remember { mutableStateOf("on") }
-            var speakerPress by remember { mutableStateOf("on") }
+            var gesturePress by remember { mutableStateOf("gesture") }
 
             Spacer(Modifier.weight(5f))
 
@@ -100,12 +107,18 @@ fun TopBar(
                     )
                     .padding(top = 10.dp)
             ) {
-                Image(
+               Icon(Icons.Outlined.Videocam,
+                   contentDescription = "camera",
+                   Modifier
+                       .scale(1.4f)
+               )
+
+                /* Image(
                     painter = painterResource(id = R.drawable.camera_button),
                     contentDescription = "camera",
                     Modifier
                         .scale(1.2f)
-                )
+                )*/
                 Text(
                     text = cameraPress,
                     Modifier
@@ -118,22 +131,46 @@ fun TopBar(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .clickable(onClick = {
-                        speakerPress = if (speakerPress == "on") "off" else "on"
-
+                        // Todo - 3 different states
+                        //gesturePress = if (gesturePress == "on") "off" else "on"
+                        //gesturePress = when (gesturePress) {
+                        //    "off" -> "gesture"
+                        //    "gesture" -> "pose"
+                        //    else -> "off"
+                        when (gesturePress) {
+                            "off" -> {
+                                gesturePress = "gesture"
+                                onGestureClicked(Instructions.GESTURE)
+                            }
+                            "gesture" -> {
+                                gesturePress = "pose"
+                                onGestureClicked(Instructions.POSE)}
+                            else -> {
+                                gesturePress = "off"
+                                onGestureClicked(Instructions.OFF)
+                            }
+                        }
                     }
                     )
-                    .padding(top = 10.dp)
+                    .padding(top = 10.dp)// was 10
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.volume_button),
-                    contentDescription = "camera",
+
+                Icon(Icons.Outlined.FrontHand, contentDescription = "gesture",
                     Modifier
                         .scale(1.2f)
+                        .rotate(-45.0f)
                 )
+                /*Image(
+                    painter = painterResource(id = R.drawable.volume_button),
+                    contentDescription = "gesture",
+                    Modifier
+                        .scale(1.2f)
+                )*/
                 Text(
-                    text = speakerPress,
+                    text = gesturePress,
                     Modifier
                         .offset(y = (-2).dp)
+                        //.offset(y = (-8).dp)
                 )
             }
             Spacer(Modifier.weight(1f))

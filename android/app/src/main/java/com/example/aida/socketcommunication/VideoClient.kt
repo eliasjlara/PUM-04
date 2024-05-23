@@ -40,7 +40,6 @@ class VideoClient (ip : String = "localhost", port : Int = 12345, timeToTimeout 
         val buffer = ByteBuffer.allocate(size)
         sendDataToServer(id, buffer.array())
     }
-
     /**
      * Receives video data from server and converts to Image
      * @return ImageBitmap? of the video data

@@ -36,6 +36,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aida.pages.CameraPage
 import com.example.aida.pages.ConfigurationPage
+import com.example.aida.socketcommunication.Instructions
 import com.example.aida.ui.composables.TopBar
 import com.example.aida.ui.theme.AIDATheme
 import com.example.aida.viewmodels.MainViewModel
@@ -150,7 +151,7 @@ class MainActivity : ComponentActivity() {
                     val screenWidth = configuration.screenWidthDp.dp
 
                     // Dynamically set bar height depending on phone/tablet
-                    val barHeight = if (screenHeight / 8 < 50.dp) screenHeight / 6 else 50.dp
+                    val barHeight = if (screenHeight / 8 < 50.dp) screenHeight / 6 else 55.dp
 
                     TopBar(
                         onMenuClicked = {
@@ -161,6 +162,7 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         onCameraClicked = { viewModel.toggleCameraFeed() },
+                        onGestureClicked = { instruction: Instructions ->   viewModel.toggleGestureDetection(instruction)},
                         barHeight = barHeight,
                         topBarTitle = topBarTitle
                     )
