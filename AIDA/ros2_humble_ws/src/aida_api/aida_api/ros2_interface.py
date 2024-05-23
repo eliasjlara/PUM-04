@@ -450,7 +450,8 @@ class InterfaceNode(Node):
             instr = struct.unpack(msg_formats.get(MessageType.CAMERA), data)[0]
             self.handle_camera(instr)
         elif message_type == MessageType.IMAGE_ANALYSIS:
-            self.handle_image_analysis(data)
+            instr = struct.unpack(msg_formats.get(MessageType.IMAGE_ANALYSIS), data)[0]
+            self.handle_image_analysis(instr)
         elif message_type == MessageType.MIC:
             instr = struct.unpack(msg_formats.get(MessageType.MIC), data)[0]
             self.handle_mic(instr)
