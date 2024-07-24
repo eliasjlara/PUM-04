@@ -32,6 +32,7 @@ JOYSTICK_TOPIC = "joystick/pos"
 
 CAMERA_CONTROL_SERVICE = "camera/SetState"
 MIC_CONTROL_SERVICE = "mic/SetState"
+GESTURE_CONTROL_SERICE = "video_analyzer/SetState"
 
 VIDEO_STREAM_FREQUENCY = 30
 LIDAR_STREAM_FREQUENCY = 1
@@ -264,6 +265,7 @@ class InterfaceNode(Node):
         """
         self.camera_client = self.create_client(SetState, CAMERA_CONTROL_SERVICE)
         self.mic_client = self.create_client(SetState, MIC_CONTROL_SERVICE)
+        self.image_analysis_client = self.create_client(SetState, GESTURE_CONTROL_SERICE)
 
     def init_pubs(self):
         """
@@ -450,7 +452,8 @@ class InterfaceNode(Node):
             instr = struct.unpack(msg_formats.get(MessageType.CAMERA), data)[0]
             self.handle_camera(instr)
         elif message_type == MessageType.IMAGE_ANALYSIS:
-            self.handle_image_analysis(data)
+            instr = struct.unpack(msg_formats.get(MessageType.IMAGE_ANALYSIS), data)[0]
+            self.handle_image_analysis(instr)
         elif message_type == MessageType.MIC:
             instr = struct.unpack(msg_formats.get(MessageType.MIC), data)[0]
             self.handle_mic(instr)
