@@ -11,7 +11,7 @@ import java.nio.ByteOrder
  */
 abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, timeToTimeout : Int = 60000) {
     // TODO - should this be lateinit? As we are using specific init function
-    private val socket: Socket
+    val socket: Socket
 
     init {
         socket = Socket().apply {
@@ -53,6 +53,9 @@ abstract class AbstractClient(ip : String = "localhost", port : Int = 12345, tim
     protected fun fetch() : ByteArray{
         val (id, size) = getHeader()
         //sendResponse()
+        //if (id == 13.toShort()){
+            println("Data received " + "size: " + size + " id: " + id)
+        //}
         return getBody(size)
     }
 
